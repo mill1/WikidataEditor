@@ -12,25 +12,6 @@
         public object content { get; set; }
     }
 
-    //public class StringValue
-    //{
-    //    public string type { get; set; }
-    //    public string content { get; set; }
-    //}
-
-    //public class TimeValue
-    //{
-    //    public string type { get; set; }
-    //    public TimeContent content { get; set; }
-    //}
-
-    //public class TimeContent
-    //{
-    //    public string time { get; set; }
-    //    public int precision { get; set; }
-    //    public string calendarmodel { get; set; }
-    //}
-
     public class Reference
     {
         public string hash { get; set; }

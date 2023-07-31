@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
 using System.Net.Http.Headers;
-using System.Xml.Linq;
 using WikidataEditor.Dtos;
 using WikidataEditor.Models;
 
@@ -11,9 +9,9 @@ namespace WikidataEditor.Services
     {
         private readonly HttpClient _client;
 
-        public WikidataService()
+        public WikidataService(HttpClient httpClient)
         {
-            _client = new HttpClient();
+            _client = httpClient;
             _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Add("User-Agent", "C# Application");
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -25,17 +23,14 @@ namespace WikidataEditor.Services
 
             var jsonString = _client.GetStringAsync(uri).Result;
 
-            JObject statements = JObject.Parse(jsonString);
+            JObject jsonObject = JObject.Parse(jsonString);
 
-            if (statements == null)
+            if (jsonObject == null)
                 throw new ArgumentException($"Item {id} could not be deserialized");
 
-            // TODO obviously:
-            // Casten naar meest uitgebreide: StatementsQ8016.cs moet uiteindelijk worden: Statements.cs
-            // Uitzonderingen afvangen in controller?
-            var statementsCunliffe = statements.ToObject<StatementsQ99589194>();
+            var statements = jsonObject.ToObject<Statements>();
 
-            if (!IsHuman(statementsCunliffe))
+            if (!IsHuman(statements))
             {
                 return new WikidataStatementsDto
                 {
@@ -43,25 +38,10 @@ namespace WikidataEditor.Services
                     IsHuman = false
                 };
             }
-
-            return new WikidataStatementsDto
-            {
-                Id = id,
-                IsHuman = IsHuman(statementsCunliffe),
-                SexOrGender = ResolveValue(statementsCunliffe.P21),
-                CountryOfCitizenship = ResolveValue(statementsCunliffe.P27),
-                GivenName = ResolveValue(statementsCunliffe.P735),
-                FamilyName = ResolveValue(statementsCunliffe.P734),
-                DateOfBirth = statementsCunliffe.P569.Select(x => GetTimeValue(x.value.content)),
-                PlaceOfBirth = ResolveValue(statementsCunliffe.P19),
-                DateOfDeath = statementsCunliffe.P570.Select(x => GetTimeValue(x.value.content)),
-                PlaceOfDeath = ResolveValue(statementsCunliffe.P20),
-                // TODO: DTO containing most important human wikidata statements;
-                // aantal dto-props moet dus overeenkomen met aantal classes in StatementTypes.cs
-            };
+            return MapToDto(id, statements);
         }
 
-        private IEnumerable<string> ResolveValue(Statement[] statement) //StatementsQ99589194 statementsCunliffe)
+        private IEnumerable<string> ResolveValue(Statement[] statement)
         {
             // A 'statement' can consist of multiple values (claims about the statement)
             if(statement == null)
@@ -94,9 +74,27 @@ namespace WikidataEditor.Services
                 return label.en;
         }
 
-        private static bool IsHuman(StatementsQ99589194 statementsQ99589194)
+        private static bool IsHuman(Statements statements)
         {
-            return statementsQ99589194.P31.Any(prop => prop.value.content.ToString() == "Q5");
+            return statements.P31.Any(prop => prop.value.content.ToString() == "Q5");
+        }
+
+        private WikidataStatementsDto MapToDto(string id, Statements statements)
+        {
+            return new WikidataStatementsDto
+            {
+                Id = id,
+                IsHuman = IsHuman(statements),
+                SexOrGender = ResolveValue(statements.P21),
+                CountryOfCitizenship = ResolveValue(statements.P27),
+                GivenName = ResolveValue(statements.P735),
+                FamilyName = ResolveValue(statements.P734),
+                DateOfBirth = statements.P569.Select(x => GetTimeValue(x.value.content)),
+                PlaceOfBirth = ResolveValue(statements.P19),
+                DateOfDeath = statements.P570.Select(x => GetTimeValue(x.value.content)),
+                PlaceOfDeath = ResolveValue(statements.P20),
+                Occupation = ResolveValue(statements.P106),
+            };
         }
     }
 }
