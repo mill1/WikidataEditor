@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WikidataEditor", "WikidataEditor\WikidataEditor.csproj", "{8CDEA19D-A14D-4716-8D73-CAE2BDA28CB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikidataEditorTests", "WikidataEditorTests\WikidataEditorTests.csproj", "{8C8010AE-119D-44E7-8F0E-7B93B0BA04D7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8CDEA19D-A14D-4716-8D73-CAE2BDA28CB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CDEA19D-A14D-4716-8D73-CAE2BDA28CB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CDEA19D-A14D-4716-8D73-CAE2BDA28CB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CDEA19D-A14D-4716-8D73-CAE2BDA28CB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C8010AE-119D-44E7-8F0E-7B93B0BA04D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C8010AE-119D-44E7-8F0E-7B93B0BA04D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C8010AE-119D-44E7-8F0E-7B93B0BA04D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C8010AE-119D-44E7-8F0E-7B93B0BA04D7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {389345AA-C48B-400E-979A-4FBC37DF712F}
+	EndGlobalSection
+EndGlobal
