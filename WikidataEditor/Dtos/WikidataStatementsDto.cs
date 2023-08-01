@@ -5,9 +5,13 @@
     public class WikidataStatementsDto
     {
         /// <summary>
-        /// The unique identifier of the -item        
+        /// The unique identifier of the wikidata-item        
         /// </summary>
         public string Id { get; set; }
+        /// <summary>
+        /// The label of the wikidata-item        
+        /// </summary>
+        public string Label { get; set; }
 
         /// <summary>
         /// Property https://www.wikidata.org/wiki/Property:P31
