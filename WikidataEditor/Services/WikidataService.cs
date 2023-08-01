@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
+using System.Text.Json.Nodes;
 using WikidataEditor.Dtos;
 using WikidataEditor.Models;
 
@@ -8,6 +9,8 @@ namespace WikidataEditor.Services
     public class WikidataService 
     {
         private readonly HttpClient _client;
+
+        private const string Missing = "*missing*";
 
         public WikidataService(HttpClient httpClient)
         {
@@ -25,29 +28,49 @@ namespace WikidataEditor.Services
 
             JObject jsonObject = JObject.Parse(jsonString);
 
-            if (jsonObject == null)
-                throw new ArgumentException($"Item {id} could not be deserialized");
-
             var statements = jsonObject.ToObject<Statements>();
 
             if (!IsHuman(statements))
             {
-                return new WikidataStatementsDto
-                {
-                    Id = id,
-                    IsHuman = false
-                };
+                return new WikidataStatementsDto{ Id = id, IsHuman = false };
             }
             return MapToDto(id, statements);
+        }
+
+        private WikidataStatementsDto MapToDto(string id, Statements statements)
+        {
+            return new WikidataStatementsDto
+            {
+                Id = id,
+                Label = GetLabel(id),
+                IsHuman = IsHuman(statements),
+                SexOrGender = ResolveValue(statements.P21),
+                CountryOfCitizenship = ResolveValue(statements.P27),
+                GivenName = ResolveValue(statements.P735),
+                FamilyName = ResolveValue(statements.P734),
+                DateOfBirth = ResolveTimeValue(statements.P569),
+                PlaceOfBirth = ResolveValue(statements.P19),
+                DateOfDeath = ResolveTimeValue(statements.P570),
+                PlaceOfDeath = ResolveValue(statements.P20),
+                Occupation = ResolveValue(statements.P106),
+            };
         }
 
         private IEnumerable<string> ResolveValue(Statement[] statement)
         {
             // A 'statement' can consist of multiple values (claims about the statement)
             if(statement == null)
-                return new List<string> { "*missing*" };
+                return new List<string> { Missing };
             
             return statement.Select(x => GetLabel(x.value.content.ToString()));
+        }
+
+        private IEnumerable<string> ResolveTimeValue(Statement[] statement)
+        {            
+            if (statement == null)
+                return new List<string> { Missing };
+
+            return statement.Select(x => GetTimeValue(x.value.content));
         }
 
         private string GetTimeValue(object content)
@@ -60,41 +83,27 @@ namespace WikidataEditor.Services
             return ((JValue)((JProperty)timeProperty).Value).Value.ToString();
         }
 
-        private string GetLabel(string wikidataItemId)
+        private string GetLabel(string id)
         {
-            var uri = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + wikidataItemId + @"/labels";
+            var uri = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id + @"/labels";
 
             var jsonString = _client.GetStringAsync(uri).Result;
             JObject labels = JObject.Parse(jsonString);
+
             var label = labels.ToObject<LabelEnglish>();
 
             if (label.en == null)
-                return labels.Count == 0 ? null : ((JValue)((JProperty)labels.First).Value).Value.ToString();
+                return labels.Count == 0 ? Missing : ((JValue)((JProperty)labels.First).Value).Value.ToString();
             else
                 return label.en;
         }
 
         private static bool IsHuman(Statements statements)
         {
-            return statements.P31.Any(prop => prop.value.content.ToString() == "Q5");
-        }
+            if(statements.P31 == null)
+                return false;
 
-        private WikidataStatementsDto MapToDto(string id, Statements statements)
-        {
-            return new WikidataStatementsDto
-            {
-                Id = id,
-                IsHuman = IsHuman(statements),
-                SexOrGender = ResolveValue(statements.P21),
-                CountryOfCitizenship = ResolveValue(statements.P27),
-                GivenName = ResolveValue(statements.P735),
-                FamilyName = ResolveValue(statements.P734),
-                DateOfBirth = statements.P569.Select(x => GetTimeValue(x.value.content)),
-                PlaceOfBirth = ResolveValue(statements.P19),
-                DateOfDeath = statements.P570.Select(x => GetTimeValue(x.value.content)),
-                PlaceOfDeath = ResolveValue(statements.P20),
-                Occupation = ResolveValue(statements.P106),
-            };
+            return statements.P31.Any(prop => prop.value.content.ToString() == "Q5");
         }
     }
 }

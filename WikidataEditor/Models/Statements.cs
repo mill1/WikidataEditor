@@ -22,14 +22,6 @@
         /// Statements regarding WorldCat Identities ID (superseded)
         /// </summary>
         public P7859[] P7859 { get; set; }
-
-
-
-
-
-
-
-
         /// <summary>
         /// Statements regarding VIAF ID
         /// </summary>
