@@ -3,6 +3,8 @@
  * https://doc.wikimedia.org/Wikibase/master/js/rest-api/
  */
 
+using WikidataEditor.Interfaces;
+using WikidataEditor.Middleware;
 using WikidataEditor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,8 +17,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<HttpClient>();
-builder.Services.AddScoped<WikidataService>();
-builder.Services.AddScoped<StatementService>();
+builder.Services.AddScoped<IWikidataService, WikidataService>();
+builder.Services.AddScoped<IStatementService, StatementService>();
 
 var app = builder.Build();
 
@@ -26,6 +28,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware(typeof(ExceptionHandlingMiddleware));
 
 app.UseHttpsRedirection();
 
