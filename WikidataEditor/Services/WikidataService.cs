@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
-using System.Text.Json.Nodes;
 using WikidataEditor.Dtos;
+using WikidataEditor.Interfaces;
 using WikidataEditor.Models;
 
 namespace WikidataEditor.Services
 {
-    public class WikidataService 
+    public class WikidataService : IWikidataService
     {
         private readonly HttpClient _client;
 
@@ -30,19 +30,21 @@ namespace WikidataEditor.Services
 
             var statements = jsonObject.ToObject<Statements>();
 
+            var label = GetLabel(id);
+
             if (!IsHuman(statements))
             {
-                return new WikidataStatementsDto{ Id = id, IsHuman = false };
+                return new WikidataStatementsDto { Id = id, Label = label, IsHuman = false };
             }
-            return MapToDto(id, statements);
+            return MapToDto(id, label, statements);
         }
 
-        private WikidataStatementsDto MapToDto(string id, Statements statements)
+        private WikidataStatementsDto MapToDto(string id, string label, Statements statements)
         {
             return new WikidataStatementsDto
             {
                 Id = id,
-                Label = GetLabel(id),
+                Label = label,
                 IsHuman = IsHuman(statements),
                 SexOrGender = ResolveValue(statements.P21),
                 CountryOfCitizenship = ResolveValue(statements.P27),
@@ -59,14 +61,14 @@ namespace WikidataEditor.Services
         private IEnumerable<string> ResolveValue(Statement[] statement)
         {
             // A 'statement' can consist of multiple values (claims about the statement)
-            if(statement == null)
+            if (statement == null)
                 return new List<string> { Missing };
-            
+
             return statement.Select(x => GetLabel(x.value.content.ToString()));
         }
 
         private IEnumerable<string> ResolveTimeValue(Statement[] statement)
-        {            
+        {
             if (statement == null)
                 return new List<string> { Missing };
 
@@ -78,8 +80,8 @@ namespace WikidataEditor.Services
             var timeProperty = ((JContainer)content).Where(p => ((JProperty)p).Name == "time").FirstOrDefault();
 
             if (timeProperty == null)
-                return null;
-            
+                return Missing;
+
             return ((JValue)((JProperty)timeProperty).Value).Value.ToString();
         }
 
@@ -100,7 +102,7 @@ namespace WikidataEditor.Services
 
         private static bool IsHuman(Statements statements)
         {
-            if(statements.P31 == null)
+            if (statements.P31 == null)
                 return false;
 
             return statements.P31.Any(prop => prop.value.content.ToString() == "Q5");

@@ -1,12 +1,13 @@
 ﻿using WikidataEditor.Dtos;
+using WikidataEditor.Interfaces;
 
 namespace WikidataEditor.Services
 {
-    public class StatementService
+    public class StatementService : IStatementService
     {
-        private readonly WikidataService _wikidataService;
+        private readonly IWikidataService _wikidataService;
 
-        public StatementService(WikidataService wikidataService) 
+        public StatementService(IWikidataService wikidataService)
         {
             _wikidataService = wikidataService;
         }
