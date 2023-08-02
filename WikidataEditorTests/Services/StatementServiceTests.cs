@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Moq;
+using WikidataEditor.Dtos;
 using WikidataEditor.Interfaces;
 using WikidataEditor.Services;
 
@@ -16,16 +17,17 @@ namespace WikidataEditorTests.Services
 
             var id = Guid.NewGuid().ToString();
 
+            var expected  = new WikidataStatementsDto { Id = id, Label = $"Label{id}", IsHuman = true };
+
             wikidataService.Setup(x => x.GetStatements(id))
-            .Returns(new WikidataEditor.Dtos.WikidataStatementsDto { Id = id, IsHuman = true });
+            .Returns(expected);
 
             // Act
             var statementService = new StatementService(wikidataService.Object);
-            var dto = statementService.GetWikidataStatements(id);
+            var actual = statementService.GetWikidataStatements(id);
 
             // Assert
-            Assert.IsNotNull(dto);
-            dto.Id.Should().Be(id);
+            actual.Should().BeEquivalentTo(expected);
         }
     }
 }
