@@ -14,7 +14,7 @@ namespace WikidataEditorTests.Services
             // Arrange
             const string idNonHuman = "Q368481";
 
-            var expected = new WikidataStatementsDto { Id = idNonHuman, Label = "Bonfire", IsHuman = false };
+            var expected = new HumanDto { Id = idNonHuman, Label = "Bonfire", Description = "horse" };
 
             string jsonString = @"{""P31"":[{""id"":""Q368481"",""value"":{""type"":""value"",""content"":""Q726""}}]}";
 
@@ -25,10 +25,12 @@ namespace WikidataEditorTests.Services
             handlerMock
                 .When(urlBase + idNonHuman + @"/statements")
                 .Respond("application/json", jsonString);
-
             handlerMock
                 .When(urlBase + idNonHuman + @"/labels")
                 .Respond("application/json", @"{""en"":""Bonfire"",""nl"":""Vreugdevuur""}");
+            handlerMock
+                .When(urlBase + idNonHuman + @"/descriptions")
+                .Respond("application/json", @"{""en"":""horse"",""nl"":""renpaard""}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
@@ -49,11 +51,10 @@ namespace WikidataEditorTests.Services
 
             var missing = new List<string> { Missing };
 
-            var expected = new WikidataStatementsDto
+            var expected = new HumanDto
             {
                 Id = id,
                 Label = Missing,
-                IsHuman = true,
                 SexOrGender = missing,
                 CountryOfCitizenship = missing,
                 GivenName = missing,
@@ -84,7 +85,6 @@ namespace WikidataEditorTests.Services
             handlerMock
                 .When(urlBase + id + @"/statements")
                 .Respond("application/json", jsonString);
-
             handlerMock
                 .When(urlBase + id + @"/labels")
                 .Respond("application/json", "{}");
@@ -99,7 +99,7 @@ namespace WikidataEditorTests.Services
         }
 
         [TestMethod]
-        public void GetStatements_ShouldReturnFirstLabelIfEnglishIsNotFound()
+        public void GetStatements_ShouldReturnFirstFilledMainLanguageIfEnglishIsNotFound()
         {
             // Arrange
             const string id = "Q99589194";
@@ -115,7 +115,10 @@ namespace WikidataEditorTests.Services
                 .Respond("application/json", jsonString);
             handlerMock
                 .When(urlBase + id + @"/labels")
-                .Respond("application/json", @"{""nl"":""Dutch label"",""no"":""Norwegian label""}");
+                .Respond("application/json", @"{""af"":""Afrikaans label"",""nl"":""Dutch label"",""no"":""Norwegian label""}");
+            handlerMock
+                .When(urlBase + id + @"/descriptions")
+                .Respond("application/json", @"{}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
@@ -127,6 +130,37 @@ namespace WikidataEditorTests.Services
         }
 
         [TestMethod]
+        public void GetStatements_ShouldReturnFirstLabelIfAllMainLanguagesAreEmpty()
+        {
+            // Arrange
+            const string id = "Q99589194";
+
+            string jsonString = @"{""P31"":[{""id"":""Q368481"",""value"":{""type"":""value"",""content"":""Q5""}}]}";
+
+            var handlerMock = new MockHttpMessageHandler();
+            var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
+
+            // Setup various responses
+            handlerMock
+                .When(urlBase + id + @"/statements")
+                .Respond("application/json", jsonString);
+            handlerMock
+                .When(urlBase + id + @"/labels")
+                .Respond("application/json", @"{""af"":""Afrikaans label"",""no"":""Norwegian label""}");
+            handlerMock
+                .When(urlBase + id + @"/descriptions")
+                .Respond("application/json", @"{}");
+
+            // Act
+            var httpClient = new HttpClient(handlerMock);
+            var service = new WikidataService(httpClient);
+
+            var actual = service.GetStatements(id);
+
+            actual.Label.Should().Be("Afrikaans label");
+        }
+
+        [TestMethod]
         public void GetStatements_ShouldReturnStatements()
         {
             // Arrange
@@ -134,11 +168,11 @@ namespace WikidataEditorTests.Services
             string jsonString = GetJsonString();
 
             var id = "Q99589194";
-            var expected = new WikidataStatementsDto
+            var expected = new HumanDto
             {
                 Id = id,
                 Label = "Lesley Cunliffe",
-                IsHuman = true,
+                Description = "American journalist and writer",
                 SexOrGender = new List<string> { "female" },
                 CountryOfCitizenship = new List<string> { Missing },
                 GivenName = new List<string> { "Lesley" },
@@ -160,6 +194,9 @@ namespace WikidataEditorTests.Services
             handlerMock
                 .When(urlBase + id + @"/labels")
                 .Respond("application/json", @"{""en"":""Lesley Cunliffe"",""nl"":""Lesley Cunliffe"",""sq"":""Lesley Cunliffe""}");
+            handlerMock
+                .When(urlBase + id + @"/descriptions")
+                .Respond("application/json", @"{""en"":""American journalist and writer"",""nl"":""Amerikaanse journalist en schrijfster""}");
             handlerMock
                 .When(urlBase + "Q6581072" + @"/labels") // https://www.wikidata.org/wiki/Q6581072 : to be used in "sex or gender" (P21)
                 .Respond("application/json", @"{""af"":""vroulik"", ""en"":""female"",""zu"":""isifazane""}");

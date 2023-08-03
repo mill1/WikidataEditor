@@ -20,32 +20,29 @@ namespace WikidataEditor.Services
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public WikidataStatementsDto GetStatements(string id)
+        public HumanDto GetStatements(string id)
         {
-            string uri = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id + @"/statements";
-
-            var jsonString = _client.GetStringAsync(uri).Result;
-
-            JObject jsonObject = JObject.Parse(jsonString);
+            JObject jsonObject = GetEntityData(id, "statements");
 
             var statements = jsonObject.ToObject<Statements>();
 
             var label = GetLabel(id);
+            var description = GetDescription(id);
 
             if (!IsHuman(statements))
             {
-                return new WikidataStatementsDto { Id = id, Label = label, IsHuman = false };
+                return new HumanDto { Id = id, Label = label, Description = description };
             }
-            return MapToDto(id, label, statements);
+            return MapToDto(id, label, description, statements);
         }
 
-        private WikidataStatementsDto MapToDto(string id, string label, Statements statements)
+        private HumanDto MapToDto(string id, string label, string description, Statements statements)
         {
-            return new WikidataStatementsDto
+            return new HumanDto
             {
                 Id = id,
                 Label = label,
-                IsHuman = IsHuman(statements),
+                Description = description,
                 SexOrGender = ResolveValue(statements.P21),
                 CountryOfCitizenship = ResolveValue(statements.P27),
                 GivenName = ResolveValue(statements.P735),
@@ -87,25 +84,58 @@ namespace WikidataEditor.Services
 
         private string GetLabel(string id)
         {
-            var uri = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id + @"/labels";
+            return GetTextValue(id, "labels");
+        }
 
-            var jsonString = _client.GetStringAsync(uri).Result;
-            JObject labels = JObject.Parse(jsonString);
+        private string GetDescription(string id)
+        {
+            return GetTextValue(id, "descriptions");
+        }
 
-            var label = labels.ToObject<LabelEnglish>();
+        private string GetTextValue(string id, string wikidataTypeOfData)
+        {
+            JObject jsonObject = GetEntityData(id, wikidataTypeOfData);
 
-            if (label.en == null)
-                return labels.Count == 0 ? Missing : ((JValue)((JProperty)labels.First).Value).Value.ToString();
+            var mainCodes = jsonObject.ToObject<MainLanguageCodes>();
+
+            if (mainCodes.en == null)
+            {
+                var value = GetValueOfFirstFilledProperty(mainCodes);
+
+                if (value != null)
+                    return value;
+
+                return jsonObject.Count == 0 ? Missing : ((JValue)((JProperty)jsonObject.First).Value).Value.ToString();
+            }
             else
-                return label.en;
+                return mainCodes.en;
+        }
+
+        private JObject GetEntityData(string itemId, string wikidataTypeOfData)
+        {
+            string uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + itemId + "/" + wikidataTypeOfData;
+            var jsonString = _client.GetStringAsync(uri).Result;
+
+            return JObject.Parse(jsonString);
+        }
+
+        private string GetValueOfFirstFilledProperty(MainLanguageCodes codes)
+        {
+            // Q114658910
+            return codes.GetType().GetProperties()
+            .Where(pi => pi.PropertyType == typeof(string))
+            .Select(pi => (string)pi.GetValue(codes))
+            .FirstOrDefault(value => !string.IsNullOrEmpty(value));
         }
 
         private static bool IsHuman(Statements statements)
         {
+            const string Human = "Q5";
+
             if (statements.P31 == null)
                 return false;
 
-            return statements.P31.Any(prop => prop.value.content.ToString() == "Q5");
+            return statements.P31.Any(prop => prop.value.content.ToString() == Human);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace WikidataEditorTests.Services
 
             var id = Guid.NewGuid().ToString();
 
-            var expected  = new WikidataStatementsDto { Id = id, Label = $"Label{id}", IsHuman = true };
+            var expected  = new HumanDto { Id = id, Label = $"Label{id}", Description = $"Description of {id}" };
 
             wikidataService.Setup(x => x.GetStatements(id))
             .Returns(expected);
