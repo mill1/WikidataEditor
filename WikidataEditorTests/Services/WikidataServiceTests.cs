@@ -1,6 +1,7 @@
 using FluentAssertions;
 using RichardSzalay.MockHttp;
 using WikidataEditor.Dtos;
+using WikidataEditor.Models;
 using WikidataEditor.Services;
 
 namespace WikidataEditorTests.Services
@@ -57,6 +58,7 @@ namespace WikidataEditorTests.Services
                 Label = Missing,
                 Description = Missing,
                 SexOrGender = missing,
+                Aliases = missing,
                 CountryOfCitizenship = missing,
                 GivenName = missing,
                 FamilyName = missing,
@@ -65,6 +67,7 @@ namespace WikidataEditorTests.Services
                 DateOfDeath = missing,
                 PlaceOfDeath = missing,
                 Occupation = missing,
+                LibraryOfCongressAuthorityURI = Missing
             };
 
             var handlerMock = new MockHttpMessageHandler();
@@ -81,6 +84,9 @@ namespace WikidataEditorTests.Services
                 .Respond("application/json", "{}");
             handlerMock
                 .When(urlBase + id + @"/descriptions")
+                .Respond("application/json", "{}");
+            handlerMock
+                .When(urlBase + id + @"/aliases")
                 .Respond("application/json", "{}");
 
             // Act
@@ -112,7 +118,10 @@ namespace WikidataEditorTests.Services
                 .Respond("application/json", @"{""af"":""Afrikaans label"",""nl"":""Dutch label"",""no"":""Norwegian label""}");
             handlerMock
                 .When(urlBase + id + @"/descriptions")
-                .Respond("application/json", @"{}");
+                .Respond("application/json", "{}");
+            handlerMock
+                .When(urlBase + id + @"/aliases")
+                .Respond("application/json", "{}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
@@ -126,8 +135,18 @@ namespace WikidataEditorTests.Services
         [TestMethod]
         public void GetStatements_ShouldReturnFirstLabelIfAllMainLanguagesAreEmpty()
         {
+            // TODO reflection test : main codes
+
             // Arrange
             const string id = "Q99589194";
+
+            // First check if the main languages model has not changed
+            var expectedLanguageCodes = new string[]{ "en", "nl", "de", "fr", "es", "it" };
+            var properties = new MainLanguageCodes().GetType().GetProperties().Where(pi => pi.PropertyType == typeof(string));
+            properties.Should().HaveCount(expectedLanguageCodes.Length);
+            
+            foreach (var languageCode in expectedLanguageCodes) 
+                properties.Select(p => p.Name).Should().Contain(languageCode);
 
             string jsonString = @"{""P31"":[{""id"":""Q368481"",""value"":{""type"":""value"",""content"":""Q5""}}]}";
 
@@ -143,7 +162,10 @@ namespace WikidataEditorTests.Services
                 .Respond("application/json", @"{""af"":""Afrikaans label"",""no"":""Norwegian label""}");
             handlerMock
                 .When(urlBase + id + @"/descriptions")
-                .Respond("application/json", @"{}");
+                .Respond("application/json", "{}");
+            handlerMock
+                .When(urlBase + id + @"/aliases")
+                .Respond("application/json", "{}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
@@ -151,6 +173,7 @@ namespace WikidataEditorTests.Services
 
             var actual = service.GetStatements(id);
 
+            // Assert
             actual.Label.Should().Be("Afrikaans label");
         }
 
@@ -167,6 +190,7 @@ namespace WikidataEditorTests.Services
                 Id = id,
                 Label = "Lesley Cunliffe",
                 Description = "American journalist and writer",
+                Aliases = new List<string> { "Lesley Hume Cunliffe", "Hume" },
                 SexOrGender = new List<string> { "female" },
                 CountryOfCitizenship = new List<string> { Missing },
                 GivenName = new List<string> { "Lesley" },
@@ -176,6 +200,7 @@ namespace WikidataEditorTests.Services
                 DateOfDeath = new List<string> { "+1997-03-28T00:00:00Z" },
                 PlaceOfDeath = new List<string> { Missing },
                 Occupation = new List<string> { "journalist", "writer", "editor" },
+                LibraryOfCongressAuthorityURI = "https://id.loc.gov/authorities/names/n81098631.html"
             };
 
             var handlerMock = new MockHttpMessageHandler();
@@ -191,6 +216,9 @@ namespace WikidataEditorTests.Services
             handlerMock
                 .When(urlBase + id + @"/descriptions")
                 .Respond("application/json", @"{""en"":""American journalist and writer"",""nl"":""Amerikaanse journalist en schrijfster""}");
+            handlerMock
+                .When(urlBase + id + @"/aliases")
+                .Respond("application/json", "{\"en\":[\"Lesley Hume Cunliffe\",\"Hume\"]}"); // vage sh*t; zonder '@' mbt dic..
             handlerMock
                 .When(urlBase + "Q6581072" + @"/labels") // https://www.wikidata.org/wiki/Q6581072 : to be used in "sex or gender" (P21)
                 .Respond("application/json", @"{""af"":""vroulik"", ""en"":""female"",""zu"":""isifazane""}");

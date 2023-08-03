@@ -43,6 +43,7 @@ namespace WikidataEditor.Services
                 Id = id,
                 Label = label,
                 Description = description,
+                Aliases = GetAliases(id),
                 SexOrGender = ResolveValue(statements.P21),
                 CountryOfCitizenship = ResolveValue(statements.P27),
                 GivenName = ResolveValue(statements.P735),
@@ -52,6 +53,7 @@ namespace WikidataEditor.Services
                 DateOfDeath = ResolveTimeValue(statements.P570),
                 PlaceOfDeath = ResolveValue(statements.P20),
                 Occupation = ResolveValue(statements.P106),
+                LibraryOfCongressAuthorityURI = GetLibraryOfCongressAuthorityURI(statements.P244)
             };
         }
 
@@ -80,6 +82,28 @@ namespace WikidataEditor.Services
                 return Missing;
 
             return ((JValue)((JProperty)timeProperty).Value).Value.ToString();
+        }
+
+        private List<string> GetAliases(string id)
+        {
+            JObject jsonObject = GetEntityData(id, "aliases");
+
+            var aliases = jsonObject.ToObject<Dictionary<string, List<string>>>();
+
+            if (!aliases.Any())
+                return new List<string> { Missing };
+
+            return aliases.Aggregate((x, y) => x.Value.Count > y.Value.Count ? x : y).Value;
+        }
+
+        private string GetLibraryOfCongressAuthorityURI(Statement[] statement)
+        {
+            const string uriBase = "https://id.loc.gov/authorities/names/";
+
+            if (statement == null)
+                return Missing;
+
+            return uriBase + statement.First().value.content + ".html";
         }
 
         private string GetLabel(string id)
