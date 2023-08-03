@@ -1,6 +1,6 @@
 ﻿namespace WikidataEditor.Models
 {
-    public class Statements
+    public class StatementsOnHumans
     {
         /// <summary>
         /// Statements regarding instance (human = 'Q5')

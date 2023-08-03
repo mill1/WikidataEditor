@@ -8,20 +8,20 @@ using WikidataEditor.Interfaces;
 namespace WikidataEditorTests.Controllers
 {
     [TestClass]
-    public class StatementControllerTests
+    public class WikidataItemControllerTests
     {
         [TestMethod]
-        public void GetWikidataStatements_ShouldReturnOkResult()
+        public void GetHumanById_ShouldReturnOkResult()
         {
             // Arrange
-            var statementService = new Mock<IStatementService>();
+            var wikidataService = new Mock<IWikidataService>();
             var id = "Q1";
 
-            statementService.Setup(x => x.GetWikidataStatements(It.IsAny<string>())).Returns(new HumanDto { Id = id });
+            wikidataService.Setup(x => x.GetDataOnHuman(It.IsAny<string>())).Returns(new HumanDto { Id = id });
 
-            var controller = new StatementController(statementService.Object);
+            var controller = new WikidataItemController(wikidataService.Object);
 
-            var result = controller.GetById("some id");
+            var result = controller.GetHumanById("some id");
 
             result.Should().BeOfType<OkObjectResult>();
             var value = ((ObjectResult)result).Value;
