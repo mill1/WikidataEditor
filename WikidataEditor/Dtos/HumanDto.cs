@@ -2,21 +2,22 @@
 {
     // https://www.wikidata.org/wiki/Help:Properties
 
-    public class WikidataStatementsDto
+    public class HumanDto
     {
         /// <summary>
         /// The unique identifier of the wikidata-item        
         /// </summary>
         public string Id { get; set; }
+
         /// <summary>
         /// The label of the wikidata-item        
         /// </summary>
         public string Label { get; set; }
 
         /// <summary>
-        /// Property https://www.wikidata.org/wiki/Property:P31
+        /// The description of the wikidata-item        
         /// </summary>
-        public bool IsHuman { get; set; }
+        public string Description { get; set; }
 
         /// <summary>
         /// Property https://www.wikidata.org/wiki/Property:P21

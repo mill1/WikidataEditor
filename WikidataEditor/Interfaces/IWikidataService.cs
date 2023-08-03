@@ -4,6 +4,6 @@ namespace WikidataEditor.Interfaces
 {
     public interface IWikidataService
     {
-        WikidataStatementsDto GetStatements(string id);
+        HumanDto GetStatements(string id);
     }
 }

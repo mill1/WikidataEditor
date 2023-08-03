@@ -17,7 +17,7 @@ namespace WikidataEditorTests.Controllers
             var statementService = new Mock<IStatementService>();
             var id = "Q1";
 
-            statementService.Setup(x => x.GetWikidataStatements(It.IsAny<string>())).Returns(new WikidataStatementsDto { Id = id });
+            statementService.Setup(x => x.GetWikidataStatements(It.IsAny<string>())).Returns(new HumanDto { Id = id });
 
             var controller = new StatementController(statementService.Object);
 
@@ -25,8 +25,8 @@ namespace WikidataEditorTests.Controllers
 
             result.Should().BeOfType<OkObjectResult>();
             var value = ((ObjectResult)result).Value;
-            value.Should().BeOfType<WikidataStatementsDto>();
-            ((WikidataStatementsDto)value).Id.Should().Be(id);
+            value.Should().BeOfType<HumanDto>();
+            ((HumanDto)value).Id.Should().Be(id);
         }
     }
 }
