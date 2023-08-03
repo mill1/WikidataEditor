@@ -26,8 +26,12 @@ namespace WikidataEditor.Services
             var jsonString = _client.GetStringAsync(uri).Result;
 
             var jObject = JObject.Parse(jsonString);
-            //var labels = jObject["labels"].ToObject<LanguageCodes>(); also works
+            //var labels = jObject["sitelinks"].ToObject<Sitelinks>(); 
+            //var labels = jObject["labels"].ToObject<LanguageCodes>(); // also works
             var item = jObject.ToObject<WikidataItem>();
+
+            if (item.type != "item")
+                throw new ArgumentException($"Response is not of type item. Encountered type: {item.type}");
            
             var label = GetTextValue(item.labels);
             var description = GetTextValue(item.descriptions);
@@ -56,9 +60,9 @@ namespace WikidataEditor.Services
                 DateOfDeath = ResolveTimeValue(item.statements.P570),
                 PlaceOfDeath = ResolveValue(item.statements.P20),
                 Occupation = ResolveValue(item.statements.P106),
-                LibraryOfCongressAuthorityURI = GetLibraryOfCongressAuthorityURI(item.statements.P244)
+                UriCollectionDto = GetUriCollection(item)
             };
-        }
+        }        
 
         private IEnumerable<string> ResolveValue(Statement[] statement)
         {
@@ -124,14 +128,29 @@ namespace WikidataEditor.Services
             return aliases.Aggregate((x, y) => x.Value.Count > y.Value.Count ? x : y).Value;
         }
 
+        private URICollectionDto GetUriCollection(WikidataItem item)
+        {
+            return new URICollectionDto
+            {
+                WikidataURI = "https://www.wikidata.org/wiki/" + item.id,
+                LibraryOfCongressAuthorityURI = GetLibraryOfCongressAuthorityURI(item.statements.P244),
+                Wikis = new List<string>{
+                    item.sitelinks.enwiki?.url ?? $"enwiki: {Missing}",
+                    item.sitelinks.nlwiki?.url ?? $"nlwiki: {Missing}",
+                    item.sitelinks.dewiki?.url ?? $"dewiki: {Missing}",
+                    item.sitelinks.frwiki?.url ?? $"frwiki: {Missing}",
+                    item.sitelinks.eswiki?.url ?? $"eswiki: {Missing}",
+                    item.sitelinks.itwiki?.url ?? $"itwiki: {Missing}"
+                }
+            };
+        }
+
         private string GetLibraryOfCongressAuthorityURI(Statement[] statement)
         {
-            const string uriBase = "https://id.loc.gov/authorities/names/";
-
             if (statement == null)
                 return Missing;
 
-            return uriBase + statement.First().value.content + ".html";
+            return "https://id.loc.gov/authorities/names/" + statement.First().value.content + ".html";
         }
 
 

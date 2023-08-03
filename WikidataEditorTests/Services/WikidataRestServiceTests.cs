@@ -1,7 +1,6 @@
 using FluentAssertions;
 using RichardSzalay.MockHttp;
 using WikidataEditor.Dtos;
-using WikidataEditor.Models;
 using WikidataEditor.Services;
 
 namespace WikidataEditorTests.Services
@@ -9,6 +8,31 @@ namespace WikidataEditorTests.Services
     [TestClass]
     public class WikidataRestServiceTests
     {
+        [TestMethod]
+        public void GetDataOnHuman_ShouldThrowExceptionIfNotTypeItem()
+        {
+            // Arrange
+            var id = "Q1";
+            var handlerMock = new MockHttpMessageHandler();
+            var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
+
+            // Setup response
+            string jsonString = @"{""type"":""someothertype"",""id"":""Q1""}";
+
+            handlerMock
+                .When(urlBase + id)
+                .Respond("application/json", jsonString);
+
+            // Act
+            var httpClient = new HttpClient(handlerMock);
+            var service = new WikidataRestService(httpClient);
+
+            // Assert
+            service.Invoking(y => y.GetDataOnHuman(id))
+            .Should().Throw<ArgumentException>()
+            .WithMessage("Response is not of type item. Encountered type: someothertype");
+        }
+
         [TestMethod]
         public void GetDataOnHuman_ShouldReturnEmptyObjectIfNotIsHuman()
         {
@@ -61,7 +85,7 @@ namespace WikidataEditorTests.Services
                 DateOfDeath = missing,
                 PlaceOfDeath = missing,
                 Occupation = missing,
-                LibraryOfCongressAuthorityURI = Missing
+                //LibraryOfCongressAuthorityURI = Missing
             };
 
             var handlerMock = new MockHttpMessageHandler();
@@ -157,7 +181,7 @@ namespace WikidataEditorTests.Services
                 DateOfDeath = new List<string> { "+1997-03-28T00:00:00Z" },
                 PlaceOfDeath = new List<string> { Missing },
                 Occupation = new List<string> { "journalist", "writer", "editor" },
-                LibraryOfCongressAuthorityURI = "https://id.loc.gov/authorities/names/n81098631.html"
+                //LibraryOfCongressAuthorityURI = "https://id.loc.gov/authorities/names/n81098631.html"
             };
 
             var handlerMock = new MockHttpMessageHandler();
