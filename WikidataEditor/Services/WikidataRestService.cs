@@ -135,12 +135,12 @@ namespace WikidataEditor.Services
                 WikidataURI = "https://www.wikidata.org/wiki/" + item.id,
                 LibraryOfCongressAuthorityURI = GetLibraryOfCongressAuthorityURI(item.statements.P244),
                 Wikis = new List<string>{
-                    item.sitelinks.enwiki?.url ?? Missing,
-                    item.sitelinks.nlwiki?.url ?? Missing,
-                    item.sitelinks.dewiki?.url ?? Missing,
-                    item.sitelinks.frwiki?.url ?? Missing,
-                    item.sitelinks.eswiki?.url ?? Missing,
-                    item.sitelinks.itwiki?.url ?? Missing
+                    item.sitelinks.enwiki?.url ?? $"enwiki: {Missing}",
+                    item.sitelinks.nlwiki?.url ?? $"nlwiki: {Missing}",
+                    item.sitelinks.dewiki?.url ?? $"dewiki: {Missing}",
+                    item.sitelinks.frwiki?.url ?? $"frwiki: {Missing}",
+                    item.sitelinks.eswiki?.url ?? $"eswiki: {Missing}",
+                    item.sitelinks.itwiki?.url ?? $"itwiki: {Missing}"
                 }
             };
         }
