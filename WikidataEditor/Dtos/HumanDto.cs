@@ -19,6 +19,8 @@
         /// </summary>
         public string Description { get; set; }
 
+        public IEnumerable<string> Aliases { get; set; }
+
         /// <summary>
         /// Property https://www.wikidata.org/wiki/Property:P21
         /// </summary>
@@ -63,5 +65,11 @@
         /// Property https://www.wikidata.org/wiki/Property:P106
         /// </summary>
         public IEnumerable<string> Occupation { get; set; }
+
+        // LibraryOfCongressAuthorityURI
+        /// <summary>
+        /// Property https://www.wikidata.org/wiki/Property:P244
+        /// </summary>
+        public string LibraryOfCongressAuthorityURI { get; set; }
     }
 }
