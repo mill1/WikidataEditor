@@ -68,8 +68,8 @@
 
         // LibraryOfCongressAuthorityURI
         /// <summary>
-        /// Property https://www.wikidata.org/wiki/Property:P244
+        /// Collection of uri's on the human
         /// </summary>
-        public string LibraryOfCongressAuthorityURI { get; set; }
+        public URICollectionDto UriCollectionDto { get; set; } = new();
     }
 }
