@@ -55,6 +55,7 @@ namespace WikidataEditorTests.Services
             {
                 Id = id,
                 Label = Missing,
+                Description = Missing,
                 SexOrGender = missing,
                 CountryOfCitizenship = missing,
                 GivenName = missing,
@@ -69,16 +70,6 @@ namespace WikidataEditorTests.Services
             var handlerMock = new MockHttpMessageHandler();
             var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
-            /* Not used: HttpMessageHandler cannot setup different requests
-            var response = new HttpResponseMessage
-            {StatusCode = HttpStatusCode.OK, Content = new StringContent(jsonString)};              
-            var handlerMock = new Mock<HttpMessageHandler>();
-            handlerMock.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(response);
-            var httpClient = new HttpClient(handlerMock.Object);
-            */
-
             // Setup various responses
             string jsonString = @"{""P31"":[{""id"":""Q99589194"",""value"":{""type"":""value"",""content"":""Q5""}}]}";
 
@@ -87,6 +78,9 @@ namespace WikidataEditorTests.Services
                 .Respond("application/json", jsonString);
             handlerMock
                 .When(urlBase + id + @"/labels")
+                .Respond("application/json", "{}");
+            handlerMock
+                .When(urlBase + id + @"/descriptions")
                 .Respond("application/json", "{}");
 
             // Act
