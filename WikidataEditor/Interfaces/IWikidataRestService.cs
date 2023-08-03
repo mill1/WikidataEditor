@@ -2,7 +2,7 @@
 
 namespace WikidataEditor.Interfaces
 {
-    public interface IWikidataService
+    public interface IWikidataRestService
     {
         HumanDto GetDataOnHuman(string id);
     }
