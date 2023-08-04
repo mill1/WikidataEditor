@@ -4,6 +4,6 @@ namespace WikidataEditor.Interfaces
 {
     public interface IWikidataRestService
     {
-        HumanDto GetDataOnHuman(string id);
+        WikidataItemHumanDto GetDataOnHuman(string id);
     }
 }

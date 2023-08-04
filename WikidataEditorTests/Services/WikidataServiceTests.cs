@@ -17,7 +17,7 @@ namespace WikidataEditorTests.Services
 
             var id = Guid.NewGuid().ToString();
 
-            var expected  = new HumanDto { Id = id, Label = $"Label{id}", Description = $"Description of {id}" };
+            var expected  = new WikidataItemHumanDto { Id = id, Label = $"Label{id}", Description = $"Description of {id}" };
 
             wikidataRestService.Setup(x => x.GetDataOnHuman(id))
             .Returns(expected);

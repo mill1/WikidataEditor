@@ -41,7 +41,7 @@ namespace WikidataEditorTests.Services
             // Arrange
             const string idNonHuman = "Q368481";
 
-            var expected = new HumanDto 
+            var expected = new WikidataItemHumanDto 
             { 
                 Id = idNonHuman, 
                 Label = "Bonfire", 
@@ -84,7 +84,7 @@ namespace WikidataEditorTests.Services
 
             var missing = new List<string> { Missing };
 
-            var expected = new HumanDto
+            var expected = new WikidataItemHumanDto
             {
                 Id = id,
                 Label = Missing,
@@ -185,7 +185,7 @@ namespace WikidataEditorTests.Services
             string jsonString = GetJsonString();
 
             var id = "Q99589194";
-            var expected = new HumanDto
+            var expected = new WikidataItemHumanDto
             {
                 Id = id,
                 Label = "Lesley Cunliffe",

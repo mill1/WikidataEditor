@@ -9,22 +9,6 @@ namespace WikidataEditor.Services
 {
     public class WikidataRestService : IWikidataRestService
     {
-        private class Parameters
-        {
-            public Parameters(string id, string label, string description, int statementsCount)
-            {
-                Id = id;
-                Label = label;
-                Description = description;
-                StatementsCount = statementsCount;
-            }
-
-            public string Id { get; }
-            public string Label { get; }
-            public string Description { get; }
-            public int StatementsCount { get; }
-        }
-
         private readonly HttpClient _client;
 
         private const string Missing = "*missing*";
@@ -37,7 +21,7 @@ namespace WikidataEditor.Services
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public HumanDto GetDataOnHuman(string id)
+        public WikidataItemHumanDto GetDataOnHuman(string id)
         {
             string uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id;
             var jsonString = _client.GetStringAsync(uri).Result;
@@ -49,44 +33,40 @@ namespace WikidataEditor.Services
                 throw new ArgumentException($"Response is not of type item. Encountered type: {item.type}");
 
             var statements = jObject["statements"].ToObject<dynamic>();
-            Parameters parameters = ResolveBasicParameters(item, ((JContainer)statements).Count);
+            WikidataItemBaseDto basicData = ResolveBasicData(item, ((JContainer)statements).Count);
             
+            // TODO
             if (!IsHuman(item.statements.P31))
-                return CreateNonHumanDto(parameters, item);
+                return new WikidataItemHumanDto(basicData);
 
-            return MapToDto(parameters, item);
-        }
+            return MapToDto(basicData, item);
+        }        
 
-        private HumanDto CreateNonHumanDto(Parameters parameters, WikidataItem item)
+        private WikidataItemBaseDto ResolveBasicData(WikidataItem item, int statementsCount)
         {
-            return new HumanDto 
-            { 
-                Id = parameters.Id, 
-                Label = parameters.Label, 
-                Description = parameters.Description, 
-                StatementsCount = parameters.StatementsCount,
+            return new WikidataItemBaseDto
+            {
+                Id = item.id,
+                Label = GetTextValue(item.labels),
+                InstanceOf = ResolveInstanceTexts(item.statements.P31),
+                Description = GetTextValue(item.descriptions),
+                StatementsCount = statementsCount,
                 Aliases = GetAliases(item.aliases),
                 UriCollection = GetUriCollection(item)
             };
         }
 
-        private Parameters ResolveBasicParameters(WikidataItem item, int statementsCount)
+        private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
         {
-            var label = GetTextValue(item.labels);
-            var description = GetTextValue(item.descriptions);
-
-            return new Parameters(item.id, label, description, statementsCount);
+            var values = ResolveValue(instances);
+            var ids = instances.Select(i => i.value.content.ToString());
+            return values.Zip(ids, (first, second) => first + " (" + second + ")");
         }
 
-        private HumanDto MapToDto(Parameters parameters, WikidataItem item)
+        private WikidataItemHumanDto MapToDto(WikidataItemBaseDto basicData, WikidataItem item)
         {
-            return new HumanDto
-            {
-                Id = parameters.Id,
-                Label = parameters.Label,
-                Description = parameters.Description,  
-                StatementsCount = parameters.StatementsCount,
-                Aliases = GetAliases(item.aliases),
+            return new WikidataItemHumanDto(basicData)
+            {                                
                 SexOrGender = ResolveValue(item.statements.P21),
                 CountryOfCitizenship = ResolveValue(item.statements.P27),
                 GivenName = ResolveValue(item.statements.P735),
@@ -95,8 +75,7 @@ namespace WikidataEditor.Services
                 PlaceOfBirth = ResolveValue(item.statements.P19),
                 DateOfDeath = ResolveTimeValue(item.statements.P570),
                 PlaceOfDeath = ResolveValue(item.statements.P20),
-                Occupation = ResolveValue(item.statements.P106),
-                UriCollection = GetUriCollection(item)
+                Occupation = ResolveValue(item.statements.P106),                
             };
         }        
 
@@ -169,6 +148,7 @@ namespace WikidataEditor.Services
             return new URICollectionDto
             {
                 WikidataURI = "https://www.wikidata.org/wiki/" + item.id,
+                // TODO
                 LibraryOfCongressAuthorityURI = GetLibraryOfCongressAuthorityURI(item.statements.P244),
                 Wikipedias = GetWikipedias(item.sitelinks)
             };

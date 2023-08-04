@@ -1,30 +1,14 @@
-﻿namespace WikidataEditor.Dtos
+﻿using Newtonsoft.Json;
+
+namespace WikidataEditor.Dtos
 {
     // https://www.wikidata.org/wiki/Help:Properties
 
-    public class HumanDto
+    public class WikidataItemHumanDto : WikidataItemBaseDto
     {
-        /// <summary>
-        /// The unique identifier of the wikidata-item        
-        /// </summary>
-        public string Id { get; set; }
-
-        /// <summary>
-        /// The label of the wikidata-item        
-        /// </summary>
-        public string Label { get; set; }
-
-        /// <summary>
-        /// The description of the wikidata-item        
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Number of top level statements on the wikidata-item 
-        /// </summary>
-        public int StatementsCount { get; set; }
-
-        public IEnumerable<string> Aliases { get; set; }
+        public WikidataItemHumanDto(WikidataItemBaseDto wikidataItemBase) : base(wikidataItemBase)
+        {
+        }
 
         /// <summary>
         /// Property https://www.wikidata.org/wiki/Property:P21
@@ -69,12 +53,6 @@
         /// <summary>
         /// Property https://www.wikidata.org/wiki/Property:P106
         /// </summary>
-        public IEnumerable<string> Occupation { get; set; }
-
-        // LibraryOfCongressAuthorityURI
-        /// <summary>
-        /// Collection of uri's on the human
-        /// </summary>
-        public URICollectionDto UriCollection { get; set; } = new();
+        public IEnumerable<string> Occupation { get; set; }        
     }
 }
