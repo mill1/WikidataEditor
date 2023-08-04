@@ -18,6 +18,7 @@ namespace WikidataEditor.Dtos
             StatementsCount = wikidataItemBase.StatementsCount;
             InstanceOf = wikidataItemBase.InstanceOf;
             Aliases = wikidataItemBase.Aliases;
+            UriCollection = wikidataItemBase.UriCollection;
         }
 
         /// <summary>
@@ -50,6 +51,6 @@ namespace WikidataEditor.Dtos
         /// <summary>
         /// Collection of uri's on the wikidata-item
         /// </summary>
-        public URICollectionDto UriCollection { get; set; } = new();
+        public URICollectionDto UriCollection { get; set; }
     }
 }
