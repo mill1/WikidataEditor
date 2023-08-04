@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace WikidataEditor.Dtos
+﻿namespace WikidataEditor.Dtos
 {
     // https://www.wikidata.org/wiki/Help:Properties
 
@@ -53,6 +51,6 @@ namespace WikidataEditor.Dtos
         /// <summary>
         /// Property https://www.wikidata.org/wiki/Property:P106
         /// </summary>
-        public IEnumerable<string> Occupation { get; set; }        
+        public IEnumerable<string> Occupation { get; set; }
     }
 }

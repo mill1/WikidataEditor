@@ -31,6 +31,10 @@
         /// </summary>
         public Statement[] P244 { get; set; }
         /// <summary>
+        /// Statements regarding Bibliothèque nationale de France ID
+        /// </summary>
+        public Statement[] P268 { get; set; }
+        /// <summary>
         /// Statements regarding ISNI 
         /// </summary>
         public Statement[] P213 { get; set; }

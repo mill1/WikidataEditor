@@ -1,13 +1,11 @@
-﻿using Newtonsoft.Json;
-
-namespace WikidataEditor.Dtos
+﻿namespace WikidataEditor.Dtos
 {
     // https://www.wikidata.org/wiki/Help:Properties
 
     public class WikidataItemBaseDto
     {
         public WikidataItemBaseDto()
-        {                
+        {
         }
 
         public WikidataItemBaseDto(WikidataItemBaseDto wikidataItemBase)

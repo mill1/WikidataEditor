@@ -49,8 +49,8 @@ namespace WikidataEditorTests.Services
             baseData.InstanceOf = new List<string> { "horse (Q726)" };
             baseData.Aliases = new List<string> { "Gestion Bonfire" };
 
-            var expected = new WikidataItemHumanDto(baseData) 
-            { 
+            var expected = new WikidataItemHumanDto(baseData)
+            {
                 UriCollection = new UriCollectionDto
                 {
                     WikidataUri = "https://www.wikidata.org/wiki/" + idNonHuman,
@@ -67,7 +67,7 @@ namespace WikidataEditorTests.Services
             // Setup responses
             handlerMock
                 .When(urlBase + idNonHuman)
-                .Respond("application/json", jsonString);            
+                .Respond("application/json", jsonString);
             handlerMock
                 .When(urlBase + "Q726" + @"/labels")
                 .Respond("application/json", @"{""af"":""perd"",""en"":""horse"",""gl"":""Cabalo""}");
