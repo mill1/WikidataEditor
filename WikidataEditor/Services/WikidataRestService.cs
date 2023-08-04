@@ -65,6 +65,7 @@ namespace WikidataEditor.Services
                 Label = parameters.Label, 
                 Description = parameters.Description, 
                 StatementsCount = parameters.StatementsCount,
+                Aliases = GetAliases(item.aliases),
                 UriCollection = GetUriCollection(item)
             };
         }
@@ -251,10 +252,10 @@ namespace WikidataEditor.Services
                 frwiki = sitelinks.frwiki,
                 eswiki = sitelinks.eswiki,
                 itwiki = sitelinks.itwiki,
+                idwiki = sitelinks.idwiki,
+                trwiki = sitelinks.trwiki,
                 zhwiki = sitelinks.zhwiki,
                 ruwiki = sitelinks.ruwiki,
-                trwiki = sitelinks.trwiki,
-                idwiki = sitelinks.idwiki,
                 jawiki = sitelinks.jawiki,
                 kowiki = sitelinks.kowiki,
                 hiwiki = sitelinks.hiwiki,
