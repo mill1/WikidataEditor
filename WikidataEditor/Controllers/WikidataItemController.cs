@@ -13,7 +13,7 @@ namespace WikidataEditor.Controllers
         {
             _wikidataService = wikidataService;
         }
-       
+
         [HttpGet("humans/{id}")]
         public IActionResult GetHumanById(string id)
         {

@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
-using System.Reflection.Emit;
 using WikidataEditor.Dtos;
 using WikidataEditor.Interfaces;
 using WikidataEditor.Models;
@@ -26,7 +25,7 @@ namespace WikidataEditor.Services
             string Uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id;
             var jsonString = _client.GetStringAsync(Uri).Result;
 
-            var jObject = JObject.Parse(jsonString);                  
+            var jObject = JObject.Parse(jsonString);
             var item = jObject.ToObject<WikidataItem>();
 
             if (item.type != "item")
@@ -34,12 +33,12 @@ namespace WikidataEditor.Services
 
             var statements = jObject["statements"].ToObject<dynamic>();
             WikidataItemBaseDto basicData = ResolveBasicData(item, ((JContainer)statements).Count);
-            
+
             if (!IsHuman(basicData.InstanceOf))
                 return new WikidataItemHumanDto(basicData);
 
             return MapToDto(basicData, item);
-        }        
+        }
 
         private WikidataItemBaseDto ResolveBasicData(WikidataItem item, int statementsCount)
         {
@@ -59,7 +58,7 @@ namespace WikidataEditor.Services
         {
             var values = ResolveValue(instances);
 
-            if(values.First() == Missing)
+            if (values.First() == Missing)
                 return values;
 
             var ids = instances.Select(i => i.value.content.ToString());
@@ -69,7 +68,7 @@ namespace WikidataEditor.Services
         private WikidataItemHumanDto MapToDto(WikidataItemBaseDto basicData, WikidataItem item)
         {
             return new WikidataItemHumanDto(basicData)
-            {                                
+            {
                 SexOrGender = ResolveValue(item.statements.P21),
                 CountryOfCitizenship = ResolveValue(item.statements.P27),
                 GivenName = ResolveValue(item.statements.P735),
@@ -78,9 +77,9 @@ namespace WikidataEditor.Services
                 PlaceOfBirth = ResolveValue(item.statements.P19),
                 DateOfDeath = ResolveTimeValue(item.statements.P570),
                 PlaceOfDeath = ResolveValue(item.statements.P20),
-                Occupation = ResolveValue(item.statements.P106),                
+                Occupation = ResolveValue(item.statements.P106),
             };
-        }        
+        }
 
         private IEnumerable<string> ResolveValue(Statement[] statement)
         {
@@ -123,7 +122,7 @@ namespace WikidataEditor.Services
             if (value != null)
                 return value;
 
-            return jsonObject.Count == 0 ? Missing : ((JValue)((JProperty)jsonObject.First).Value).Value.ToString();                       
+            return jsonObject.Count == 0 ? Missing : ((JValue)((JProperty)jsonObject.First).Value).Value.ToString();
         }
 
         private JObject GetEntityData(string itemId, string wikidataTypeOfData)
@@ -139,21 +138,40 @@ namespace WikidataEditor.Services
             if (!aliases.Any())
                 return new List<string> { Missing };
 
-            if(aliases.Any(a => a.Key == "en"))
+            if (aliases.Any(a => a.Key == "en"))
                 if (aliases["en"].Count > 0)
-                    return aliases["en"]; 
+                    return aliases["en"];
 
             return aliases.Aggregate((x, y) => x.Value.Count > y.Value.Count ? x : y).Value;
         }
 
         private UriCollectionDto GetUriCollection(WikidataItem item)
-        {            
+        {
             return new UriCollectionDto
             {
                 WikidataUri = "https://www.wikidata.org/wiki/" + item.id,
                 Wikipedias = GetWikipedias(item.sitelinks),
-                InstanceUris = new List<string> { GetLibraryOfCongressAuthorityUri(item.statements.P244) }
+                InstanceUris = ResolveInstanceUris(item)
             };
+        }
+
+        private List<string> ResolveInstanceUris(WikidataItem item)
+        {
+            const string uriBaseLoCAuthority = "https://id.loc.gov/authorities/names/";
+            const string uriBaseBNF = "https://data.bnf.fr/en/";
+
+            var instanceUris = new List<string>();
+
+            if (item.statements.P244 != null)
+                instanceUris.Add(uriBaseLoCAuthority + item.statements.P244.First().value.content + ".html");
+
+            if (item.statements.P268 != null)
+                instanceUris.Add(uriBaseBNF + item.statements.P268.First().value.content.ToString().Substring(0, 8));
+
+            if (!instanceUris.Any())
+                instanceUris.Add("*no values*");
+
+            return instanceUris;
         }
 
         private static List<string> GetWikipedias(Sitelinks sitelinks)
@@ -163,7 +181,7 @@ namespace WikidataEditor.Services
             List<Sitelink?> filledSitelinks = GetFilledSitelinks(sitelinks);
 
             if (!filledSitelinks.Any())
-                return new List<string> { Missing };
+                return new List<string> { "*no values*" };
 
             if (filledSitelinks.Count > MaximumNumberOfUrisToOutput)
             {
@@ -182,26 +200,18 @@ namespace WikidataEditor.Services
                 .Where(x => x != null).ToList();
         }
 
-        private string GetLibraryOfCongressAuthorityUri(Statement[] statement)
-        {
-            if (statement == null)
-                return Missing;
-
-            return "https://id.loc.gov/authorities/names/" + statement.First().value.content + ".html";
-        }
-
         private string GetTextValue(LanguageCodes codes)
         {
             if (codes.en == null)
             {
                 var value = GetValueOfFirstFilledProperty(codes);
 
-                if(value == null) 
+                if (value == null)
                     return Missing;
 
                 return value;
-            }                
-            
+            }
+
             return codes.en;
         }
 
@@ -217,7 +227,7 @@ namespace WikidataEditor.Services
         private static bool IsHuman(IEnumerable<string> Instances)
         {
             if (Instances.First() == Missing)
-                return false;            
+                return false;
 
             return Instances.Any(instance => instance == "human (Q5)");
         }

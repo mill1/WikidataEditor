@@ -1,6 +1,6 @@
 ﻿namespace WikidataEditor.Models
 {
-    public class Statement 
+    public class Statement
     {
         public string id { get; set; }
         public string rank { get; set; }
