@@ -54,8 +54,8 @@ namespace WikidataEditorTests.Services
                 UriCollection = new UriCollectionDto
                 {
                     WikidataUri = "https://www.wikidata.org/wiki/" + idNonHuman,
-                    Wikipedias = new List<string> { Missing },
-                    InstanceUris = new List<string> { Missing }
+                    Wikipedias = new List<string> { "*no values*" },
+                    InstanceUris = new List<string> { "*no values*" }
                 }
             };
 
@@ -112,8 +112,8 @@ namespace WikidataEditorTests.Services
                 UriCollection = new UriCollectionDto
                 {
                     WikidataUri = "https://www.wikidata.org/wiki/" + id,
-                    Wikipedias = new List<string> { Missing },
-                    InstanceUris = new List<string> { Missing }
+                    Wikipedias = new List<string> { "*no values*" },
+                    InstanceUris = new List<string> { "*no values*" }
                 }
             };
 

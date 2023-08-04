@@ -181,7 +181,7 @@ namespace WikidataEditor.Services
             List<Sitelink?> filledSitelinks = GetFilledSitelinks(sitelinks);
 
             if (!filledSitelinks.Any())
-                return new List<string> { Missing };
+                return new List<string> { "*no values*" };
 
             if (filledSitelinks.Count > MaximumNumberOfUrisToOutput)
             {
