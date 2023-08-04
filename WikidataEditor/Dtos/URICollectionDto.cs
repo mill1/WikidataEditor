@@ -1,9 +1,9 @@
 ﻿namespace WikidataEditor.Dtos
 {
-    public class URICollectionDto
+    public class UriCollectionDto
     {
-        public string WikidataURI { get; set; }
-        public string LibraryOfCongressAuthorityURI { get; set; }
+        public string WikidataUri { get; set; }        
         public List<string> Wikipedias { get; set; }
+        public List<string> InstanceUris { get; set; } = new();
     }
 }

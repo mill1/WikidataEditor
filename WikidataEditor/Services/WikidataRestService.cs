@@ -23,8 +23,8 @@ namespace WikidataEditor.Services
 
         public WikidataItemHumanDto GetDataOnHuman(string id)
         {
-            string uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id;
-            var jsonString = _client.GetStringAsync(uri).Result;
+            string Uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id;
+            var jsonString = _client.GetStringAsync(Uri).Result;
 
             var jObject = JObject.Parse(jsonString);                  
             var item = jObject.ToObject<WikidataItem>();
@@ -128,8 +128,8 @@ namespace WikidataEditor.Services
 
         private JObject GetEntityData(string itemId, string wikidataTypeOfData)
         {
-            string uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + itemId + "/" + wikidataTypeOfData;
-            var jsonString = _client.GetStringAsync(uri).Result;
+            string Uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + itemId + "/" + wikidataTypeOfData;
+            var jsonString = _client.GetStringAsync(Uri).Result;
 
             return JObject.Parse(jsonString);
         }
@@ -146,14 +146,13 @@ namespace WikidataEditor.Services
             return aliases.Aggregate((x, y) => x.Value.Count > y.Value.Count ? x : y).Value;
         }
 
-        private URICollectionDto GetUriCollection(WikidataItem item)
+        private UriCollectionDto GetUriCollection(WikidataItem item)
         {            
-            return new URICollectionDto
+            return new UriCollectionDto
             {
-                WikidataURI = "https://www.wikidata.org/wiki/" + item.id,
-                // TODO
-                LibraryOfCongressAuthorityURI = GetLibraryOfCongressAuthorityURI(item.statements.P244),
-                Wikipedias = GetWikipedias(item.sitelinks)
+                WikidataUri = "https://www.wikidata.org/wiki/" + item.id,
+                Wikipedias = GetWikipedias(item.sitelinks),
+                InstanceUris = new List<string> { GetLibraryOfCongressAuthorityUri(item.statements.P244) }
             };
         }
 
@@ -183,7 +182,7 @@ namespace WikidataEditor.Services
                 .Where(x => x != null).ToList();
         }
 
-        private string GetLibraryOfCongressAuthorityURI(Statement[] statement)
+        private string GetLibraryOfCongressAuthorityUri(Statement[] statement)
         {
             if (statement == null)
                 return Missing;

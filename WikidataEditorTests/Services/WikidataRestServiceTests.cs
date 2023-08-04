@@ -51,11 +51,11 @@ namespace WikidataEditorTests.Services
 
             var expected = new WikidataItemHumanDto(baseData) 
             { 
-                UriCollection = new URICollectionDto
+                UriCollection = new UriCollectionDto
                 {
-                    WikidataURI = "https://www.wikidata.org/wiki/" + idNonHuman,
-                    LibraryOfCongressAuthorityURI = Missing,
-                    Wikipedias = new List<string> { Missing }
+                    WikidataUri = "https://www.wikidata.org/wiki/" + idNonHuman,
+                    Wikipedias = new List<string> { Missing },
+                    InstanceUris = new List<string> { Missing }
                 }
             };
 
@@ -109,12 +109,12 @@ namespace WikidataEditorTests.Services
                 DateOfDeath = missing,
                 PlaceOfDeath = missing,
                 Occupation = missing,
-                UriCollection = new URICollectionDto
+                UriCollection = new UriCollectionDto
                 {
-                    WikidataURI = "https://www.wikidata.org/wiki/" + id,
-                    LibraryOfCongressAuthorityURI = Missing,
-                    Wikipedias = missing
-                },
+                    WikidataUri = "https://www.wikidata.org/wiki/" + id,
+                    Wikipedias = new List<string> { Missing },
+                    InstanceUris = new List<string> { Missing }
+                }
             };
 
             var handlerMock = new MockHttpMessageHandler();
@@ -222,11 +222,11 @@ namespace WikidataEditorTests.Services
                 DateOfDeath = new List<string> { "+1997-03-28T00:00:00Z" },
                 PlaceOfDeath = new List<string> { Missing },
                 Occupation = new List<string> { "journalist", "writer", "editor" },
-                UriCollection = new URICollectionDto
+                UriCollection = new UriCollectionDto
                 {
-                    WikidataURI = "https://www.wikidata.org/wiki/" + id,
-                    LibraryOfCongressAuthorityURI = "https://id.loc.gov/authorities/names/n81098631.html",
+                    WikidataUri = "https://www.wikidata.org/wiki/" + id,
                     Wikipedias = new List<string> { "https://en.wikipedia.org/wiki/Lesley_Cunliffe" },
+                    InstanceUris = new List<string> { "https://id.loc.gov/authorities/names/n81098631.html" }
                 }
             };
 

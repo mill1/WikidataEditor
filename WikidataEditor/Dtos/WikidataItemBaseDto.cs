@@ -49,8 +49,8 @@ namespace WikidataEditor.Dtos
         public IEnumerable<string> Aliases { get; set; }
 
         /// <summary>
-        /// Collection of uri's on the wikidata-item
+        /// Collection of Uri's on the wikidata-item
         /// </summary>
-        public URICollectionDto UriCollection { get; set; }
+        public UriCollectionDto UriCollection { get; set; }
     }
 }
