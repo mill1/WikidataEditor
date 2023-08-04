@@ -8,6 +8,8 @@ namespace WikidataEditorTests.Services
     [TestClass]
     public class WikidataRestServiceTests
     {
+        private const string Missing = "*missing*";
+
         [TestMethod]
         public void GetDataOnHuman_ShouldThrowExceptionIfNotTypeItem()
         {
@@ -39,7 +41,19 @@ namespace WikidataEditorTests.Services
             // Arrange
             const string idNonHuman = "Q368481";
 
-            var expected = new HumanDto { Id = idNonHuman, Label = "Bonfire", Description = "horse" };
+            var expected = new HumanDto 
+            { 
+                Id = idNonHuman, 
+                Label = "Bonfire", 
+                Description = "horse", 
+                StatementsCount = 1 ,
+                UriCollection = new URICollectionDto
+                {
+                    WikidataURI = "https://www.wikidata.org/wiki/" + idNonHuman,
+                    LibraryOfCongressAuthorityURI = Missing,
+                    Wikipedias = new List<string> { Missing }
+                }
+            };
 
             string jsonString = @"{""type"":""item"",""labels"":{""en"":""Bonfire"",""nl"":""Vreugdevuur""},""descriptions"":{""en"":""horse"",""nl"":""renpaard""},""aliases"":{},""statements"":{""P31"":[{""id"":""Q368481"",""value"":{""type"":""value"",""content"":""Q726""}}]},""sitelinks"":{},""id"":""Q368481""}";
 
@@ -63,8 +77,7 @@ namespace WikidataEditorTests.Services
         [TestMethod]
         public void GetDataOnHuman_ShouldReturnMinimalData()
         {
-            // Arrange
-            const string Missing = "*missing*";
+            // Arrange            
 
             var id = "Q99589194";
 
@@ -75,6 +88,7 @@ namespace WikidataEditorTests.Services
                 Id = id,
                 Label = Missing,
                 Description = Missing,
+                StatementsCount = 1 ,
                 SexOrGender = missing,
                 Aliases = missing,
                 CountryOfCitizenship = missing,
@@ -85,7 +99,12 @@ namespace WikidataEditorTests.Services
                 DateOfDeath = missing,
                 PlaceOfDeath = missing,
                 Occupation = missing,
-                //LibraryOfCongressAuthorityURI = Missing
+                UriCollection = new URICollectionDto
+                {
+                    WikidataURI = "https://www.wikidata.org/wiki/" + id,
+                    LibraryOfCongressAuthorityURI = Missing,
+                    Wikipedias = missing
+                },
             };
 
             var handlerMock = new MockHttpMessageHandler();
@@ -162,7 +181,6 @@ namespace WikidataEditorTests.Services
         public void GetDataOnHuman_ShouldReturnData()
         {
             // Arrange
-            const string Missing = "*missing*";
             string jsonString = GetJsonString();
 
             var id = "Q99589194";
@@ -171,6 +189,7 @@ namespace WikidataEditorTests.Services
                 Id = id,
                 Label = "Lesley Cunliffe",
                 Description = "American journalist and writer",
+                StatementsCount = 14,
                 Aliases = new List<string> { "Lesley Hume Cunliffe", "Hume" },
                 SexOrGender = new List<string> { "female" },
                 CountryOfCitizenship = new List<string> { Missing },
@@ -181,7 +200,12 @@ namespace WikidataEditorTests.Services
                 DateOfDeath = new List<string> { "+1997-03-28T00:00:00Z" },
                 PlaceOfDeath = new List<string> { Missing },
                 Occupation = new List<string> { "journalist", "writer", "editor" },
-                //LibraryOfCongressAuthorityURI = "https://id.loc.gov/authorities/names/n81098631.html"
+                UriCollection = new URICollectionDto
+                {
+                    WikidataURI = "https://www.wikidata.org/wiki/" + id,
+                    LibraryOfCongressAuthorityURI = "https://id.loc.gov/authorities/names/n81098631.html",
+                    Wikipedias = new List<string> { "https://en.wikipedia.org/wiki/Lesley_Cunliffe" },
+                }
             };
 
             var handlerMock = new MockHttpMessageHandler();

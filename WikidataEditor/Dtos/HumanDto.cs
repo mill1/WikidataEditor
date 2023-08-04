@@ -19,6 +19,11 @@
         /// </summary>
         public string Description { get; set; }
 
+        /// <summary>
+        /// Number of top level statements on the wikidata-item 
+        /// </summary>
+        public int StatementsCount { get; set; }
+
         public IEnumerable<string> Aliases { get; set; }
 
         /// <summary>
@@ -70,6 +75,6 @@
         /// <summary>
         /// Collection of uri's on the human
         /// </summary>
-        public URICollectionDto UriCollectionDto { get; set; } = new();
+        public URICollectionDto UriCollection { get; set; } = new();
     }
 }
