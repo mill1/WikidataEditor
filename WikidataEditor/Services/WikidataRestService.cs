@@ -9,6 +9,22 @@ namespace WikidataEditor.Services
 {
     public class WikidataRestService : IWikidataRestService
     {
+        private class Parameters
+        {
+            public Parameters(string id, string label, string description, int statementsCount)
+            {
+                Id = id;
+                Label = label;
+                Description = description;
+                StatementsCount = statementsCount;
+            }
+
+            public string Id { get; }
+            public string Label { get; }
+            public string Description { get; }
+            public int StatementsCount { get; }
+        }
+
         private readonly HttpClient _client;
 
         private const string Missing = "*missing*";
@@ -26,31 +42,49 @@ namespace WikidataEditor.Services
             string uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id;
             var jsonString = _client.GetStringAsync(uri).Result;
 
-            var jObject = JObject.Parse(jsonString);
-            //var labels = jObject["sitelinks"].ToObject<Sitelinks>(); 
-            //var labels = jObject["labels"].ToObject<LanguageCodes>(); // also works
+            var jObject = JObject.Parse(jsonString);                  
             var item = jObject.ToObject<WikidataItem>();
 
             if (item.type != "item")
                 throw new ArgumentException($"Response is not of type item. Encountered type: {item.type}");
-           
+
+            var statements = jObject["statements"].ToObject<dynamic>();
+            Parameters parameters = ResolveBasicParameters(item, ((JContainer)statements).Count);
+            
+            if (!IsHuman(item.statements.P31))
+                return CreateNonHumanDto(parameters, item);
+
+            return MapToDto(parameters, item);
+        }
+
+        private HumanDto CreateNonHumanDto(Parameters parameters, WikidataItem item)
+        {
+            return new HumanDto 
+            { 
+                Id = parameters.Id, 
+                Label = parameters.Label, 
+                Description = parameters.Description, 
+                StatementsCount = parameters.StatementsCount,
+                UriCollection = GetUriCollection(item)
+            };
+        }
+
+        private Parameters ResolveBasicParameters(WikidataItem item, int statementsCount)
+        {
             var label = GetTextValue(item.labels);
             var description = GetTextValue(item.descriptions);
 
-            if (!IsHuman(item.statements.P31))
-            {
-                return new HumanDto { Id = id, Label = label, Description = description };
-            }
-            return MapToDto(id, label, description, item);
+            return new Parameters(item.id, label, description, statementsCount);
         }
 
-        private HumanDto MapToDto(string id, string label, string description, WikidataItem item)
+        private HumanDto MapToDto(Parameters parameters, WikidataItem item)
         {
             return new HumanDto
             {
-                Id = id,
-                Label = label,
-                Description = description,
+                Id = parameters.Id,
+                Label = parameters.Label,
+                Description = parameters.Description,  
+                StatementsCount = parameters.StatementsCount,
                 Aliases = GetAliases(item.aliases),
                 SexOrGender = ResolveValue(item.statements.P21),
                 CountryOfCitizenship = ResolveValue(item.statements.P27),
@@ -141,38 +175,20 @@ namespace WikidataEditor.Services
 
         private static List<string> GetWikipedias(Sitelinks sitelinks)
         {
+            const int MaximumNumberOfUrisToOutput = 15;
+
             List<Sitelink?> filledSitelinks = GetFilledSitelinks(sitelinks);
 
-            if (filledSitelinks.Count > 15)
+            if (!filledSitelinks.Any())
+                return new List<string> { Missing };
+
+            if (filledSitelinks.Count > MaximumNumberOfUrisToOutput)
             {
                 var mainSitelinks = CreateMainSitelinks(sitelinks);
                 filledSitelinks = GetFilledSitelinks(mainSitelinks);
             }
 
             return filledSitelinks.Select(w => w.url).ToList();
-        }
-
-        private static Sitelinks CreateMainSitelinks(Sitelinks sitelinks)
-        {
-            return new Sitelinks
-            {
-                enwiki = sitelinks.enwiki,
-                nlwiki = sitelinks.nlwiki,
-                dewiki = sitelinks.dewiki,
-                frwiki = sitelinks.frwiki,
-                eswiki = sitelinks.eswiki,
-                itwiki = sitelinks.itwiki,
-                zhwiki = sitelinks.zhwiki,
-                ruwiki = sitelinks.ruwiki,
-                trwiki = sitelinks.trwiki,
-                idwiki = sitelinks.idwiki,
-                jawiki = sitelinks.jawiki,
-                kowiki = sitelinks.kowiki,
-                hiwiki = sitelinks.hiwiki,
-                mrwiki = sitelinks.mrwiki,
-                tewiki = sitelinks.tewiki,
-                arwiki = sitelinks.arwiki
-            };
         }
 
         private static List<Sitelink?> GetFilledSitelinks(Sitelinks sitelinks)
@@ -190,7 +206,6 @@ namespace WikidataEditor.Services
 
             return "https://id.loc.gov/authorities/names/" + statement.First().value.content + ".html";
         }
-
 
         private string GetTextValue(LanguageCodes codes)
         {
@@ -224,6 +239,29 @@ namespace WikidataEditor.Services
                 return false;
 
             return statementsOnInstance.Any(prop => prop.value.content.ToString() == Human);
+        }
+
+        private static Sitelinks CreateMainSitelinks(Sitelinks sitelinks)
+        {
+            return new Sitelinks
+            {
+                enwiki = sitelinks.enwiki,
+                nlwiki = sitelinks.nlwiki,
+                dewiki = sitelinks.dewiki,
+                frwiki = sitelinks.frwiki,
+                eswiki = sitelinks.eswiki,
+                itwiki = sitelinks.itwiki,
+                zhwiki = sitelinks.zhwiki,
+                ruwiki = sitelinks.ruwiki,
+                trwiki = sitelinks.trwiki,
+                idwiki = sitelinks.idwiki,
+                jawiki = sitelinks.jawiki,
+                kowiki = sitelinks.kowiki,
+                hiwiki = sitelinks.hiwiki,
+                mrwiki = sitelinks.mrwiki,
+                tewiki = sitelinks.tewiki,
+                arwiki = sitelinks.arwiki
+            };
         }
     }
 }

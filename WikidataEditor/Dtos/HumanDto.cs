@@ -19,6 +19,11 @@
         /// </summary>
         public string Description { get; set; }
 
+        /// <summary>
+        /// Number of top level statements on the wikidata-item 
+        /// </summary>
+        public int StatementsCount { get; set; }
+
         public IEnumerable<string> Aliases { get; set; }
 
         /// <summary>

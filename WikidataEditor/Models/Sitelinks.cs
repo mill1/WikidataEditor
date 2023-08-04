@@ -11,6 +11,17 @@
         public Sitelink frwiki { get; set; }
         public Sitelink eswiki { get; set; }
         public Sitelink itwiki { get; set; }
+        public Sitelink idwiki { get; set; }
+        public Sitelink trwiki { get; set; }
+        public Sitelink zhwiki { get; set; }
+        public Sitelink ruwiki { get; set; }
+        public Sitelink jawiki { get; set; }
+        public Sitelink kowiki { get; set; }
+        public Sitelink hiwiki { get; set; }
+        public Sitelink mrwiki { get; set; }
+        public Sitelink tewiki { get; set; }
+        public Sitelink arwiki { get; set; }
+
 
         /// <summary>
         /// Other wikipedia codes
@@ -26,7 +37,6 @@
         public Sitelink anwiki { get; set; }
         public Sitelink angwiki { get; set; }
         public Sitelink anpwiki { get; set; }
-        public Sitelink arwiki { get; set; }
         public Sitelink arcwiki { get; set; }
         public Sitelink arywiki { get; set; }
         public Sitelink arzwiki { get; set; }
@@ -115,7 +125,6 @@
         public Sitelink hakwiki { get; set; }
         public Sitelink hawwiki { get; set; }
         public Sitelink hewiki { get; set; }
-        public Sitelink hiwiki { get; set; }
         public Sitelink hifwiki { get; set; }
         public Sitelink hrwiki { get; set; }
         public Sitelink hsbwiki { get; set; }
@@ -124,7 +133,6 @@
         public Sitelink hywiki { get; set; }
         public Sitelink hywwiki { get; set; }
         public Sitelink iawiki { get; set; }
-        public Sitelink idwiki { get; set; }
         public Sitelink iewiki { get; set; }
         public Sitelink igwiki { get; set; }
         public Sitelink ikwiki { get; set; }
@@ -133,7 +141,6 @@
         public Sitelink iowiki { get; set; }
         public Sitelink iswiki { get; set; }
         public Sitelink iuwiki { get; set; }
-        public Sitelink jawiki { get; set; }
         public Sitelink jamwiki { get; set; }
         public Sitelink jbowiki { get; set; }
         public Sitelink jvwiki { get; set; }
@@ -148,7 +155,6 @@
         public Sitelink kkwiki { get; set; }
         public Sitelink kmwiki { get; set; }
         public Sitelink knwiki { get; set; }
-        public Sitelink kowiki { get; set; }
         public Sitelink koiwiki { get; set; }
         public Sitelink krcwiki { get; set; }
         public Sitelink kswiki { get; set; }
@@ -185,7 +191,6 @@
         public Sitelink mnwiki { get; set; }
         public Sitelink mniwiki { get; set; }
         public Sitelink mnwwiki { get; set; }
-        public Sitelink mrwiki { get; set; }
         public Sitelink mrjwiki { get; set; }
         public Sitelink mswiki { get; set; }
         public Sitelink mtwiki { get; set; }
@@ -232,7 +237,6 @@
         public Sitelink rmywiki { get; set; }
         public Sitelink rnwiki { get; set; }
         public Sitelink rowiki { get; set; }
-        public Sitelink ruwiki { get; set; }
         public Sitelink ruewiki { get; set; }
         public Sitelink rwwiki { get; set; }
         public Sitelink sawiki { get; set; }
@@ -269,7 +273,6 @@
         public Sitelink tawiki { get; set; }
         public Sitelink taywiki { get; set; }
         public Sitelink tcywiki { get; set; }
-        public Sitelink tewiki { get; set; }
         public Sitelink tetwiki { get; set; }
         public Sitelink tgwiki { get; set; }
         public Sitelink thwiki { get; set; }
@@ -279,7 +282,6 @@
         public Sitelink tnwiki { get; set; }
         public Sitelink towiki { get; set; }
         public Sitelink tpiwiki { get; set; }
-        public Sitelink trwiki { get; set; }
         public Sitelink trvwiki { get; set; }
         public Sitelink tswiki { get; set; }
         public Sitelink ttwiki { get; set; }
@@ -309,8 +311,6 @@
         public Sitelink yowiki { get; set; }
         public Sitelink zawiki { get; set; }
         public Sitelink zeawiki { get; set; }
-        public Sitelink zhwiki { get; set; }
         public Sitelink zuwiki { get; set; }
-
     }
 }
