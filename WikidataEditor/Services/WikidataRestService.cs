@@ -106,7 +106,7 @@ namespace WikidataEditor.Services
             if (statement == null)
                 return new List<string> { Missing };
 
-            return statement.Select(x => GetLabel(x.value.content.ToString()));
+            return statement.Select(x => x.value.content == null ? "*no value*" : GetLabel(x.value.content.ToString()));
         }
 
         private IEnumerable<string> ResolveTimeValue(Statement[] statement)
