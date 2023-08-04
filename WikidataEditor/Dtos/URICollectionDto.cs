@@ -4,6 +4,6 @@
     {
         public string WikidataURI { get; set; }
         public string LibraryOfCongressAuthorityURI { get; set; }
-        public List<string> Wikis { get; set; }
+        public List<string> Wikipedias { get; set; }
     }
 }

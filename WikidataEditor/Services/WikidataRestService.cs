@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
+using System.Reflection.Emit;
 using WikidataEditor.Dtos;
 using WikidataEditor.Interfaces;
 using WikidataEditor.Models;
@@ -60,7 +61,7 @@ namespace WikidataEditor.Services
                 DateOfDeath = ResolveTimeValue(item.statements.P570),
                 PlaceOfDeath = ResolveValue(item.statements.P20),
                 Occupation = ResolveValue(item.statements.P106),
-                UriCollectionDto = GetUriCollection(item)
+                UriCollection = GetUriCollection(item)
             };
         }        
 
@@ -129,20 +130,57 @@ namespace WikidataEditor.Services
         }
 
         private URICollectionDto GetUriCollection(WikidataItem item)
-        {
+        {            
             return new URICollectionDto
             {
                 WikidataURI = "https://www.wikidata.org/wiki/" + item.id,
                 LibraryOfCongressAuthorityURI = GetLibraryOfCongressAuthorityURI(item.statements.P244),
-                Wikis = new List<string>{
-                    item.sitelinks.enwiki?.url ?? $"enwiki: {Missing}",
-                    item.sitelinks.nlwiki?.url ?? $"nlwiki: {Missing}",
-                    item.sitelinks.dewiki?.url ?? $"dewiki: {Missing}",
-                    item.sitelinks.frwiki?.url ?? $"frwiki: {Missing}",
-                    item.sitelinks.eswiki?.url ?? $"eswiki: {Missing}",
-                    item.sitelinks.itwiki?.url ?? $"itwiki: {Missing}"
-                }
+                Wikipedias = GetWikipedias(item.sitelinks)
             };
+        }
+
+        private static List<string> GetWikipedias(Sitelinks sitelinks)
+        {
+            List<Sitelink?> filledSitelinks = GetFilledSitelinks(sitelinks);
+
+            if (filledSitelinks.Count > 15)
+            {
+                var mainSitelinks = CreateMainSitelinks(sitelinks);
+                filledSitelinks = GetFilledSitelinks(mainSitelinks);
+            }
+
+            return filledSitelinks.Select(w => w.url).ToList();
+        }
+
+        private static Sitelinks CreateMainSitelinks(Sitelinks sitelinks)
+        {
+            return new Sitelinks
+            {
+                enwiki = sitelinks.enwiki,
+                nlwiki = sitelinks.nlwiki,
+                dewiki = sitelinks.dewiki,
+                frwiki = sitelinks.frwiki,
+                eswiki = sitelinks.eswiki,
+                itwiki = sitelinks.itwiki,
+                zhwiki = sitelinks.zhwiki,
+                ruwiki = sitelinks.ruwiki,
+                trwiki = sitelinks.trwiki,
+                idwiki = sitelinks.idwiki,
+                jawiki = sitelinks.jawiki,
+                kowiki = sitelinks.kowiki,
+                hiwiki = sitelinks.hiwiki,
+                mrwiki = sitelinks.mrwiki,
+                tewiki = sitelinks.tewiki,
+                arwiki = sitelinks.arwiki
+            };
+        }
+
+        private static List<Sitelink?> GetFilledSitelinks(Sitelinks sitelinks)
+        {
+            return sitelinks.GetType().GetProperties()
+                .Where(sl => sl.PropertyType == typeof(Sitelink))
+                .Select(sl => (Sitelink?)sl.GetValue(sitelinks))
+                .Where(x => x != null).ToList();
         }
 
         private string GetLibraryOfCongressAuthorityURI(Statement[] statement)
@@ -173,8 +211,8 @@ namespace WikidataEditor.Services
         {
             // Q114658910
             return codes.GetType().GetProperties()
-            .Where(pi => pi.PropertyType == typeof(string))
-            .Select(pi => (string)pi.GetValue(codes))
+            .Where(c => c.PropertyType == typeof(string))
+            .Select(c => (string)c.GetValue(codes))
             .FirstOrDefault(value => !string.IsNullOrEmpty(value));
         }
 

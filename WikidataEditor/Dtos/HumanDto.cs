@@ -70,6 +70,6 @@
         /// <summary>
         /// Collection of uri's on the human
         /// </summary>
-        public URICollectionDto UriCollectionDto { get; set; } = new();
+        public URICollectionDto UriCollection { get; set; } = new();
     }
 }
