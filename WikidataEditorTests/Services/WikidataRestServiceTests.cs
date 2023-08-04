@@ -47,6 +47,7 @@ namespace WikidataEditorTests.Services
                 Label = "Bonfire", 
                 Description = "horse", 
                 StatementsCount = 1 ,
+                Aliases = new List<string> { "Gestion Bonfire" },
                 UriCollection = new URICollectionDto
                 {
                     WikidataURI = "https://www.wikidata.org/wiki/" + idNonHuman,
@@ -55,7 +56,7 @@ namespace WikidataEditorTests.Services
                 }
             };
 
-            string jsonString = @"{""type"":""item"",""labels"":{""en"":""Bonfire"",""nl"":""Vreugdevuur""},""descriptions"":{""en"":""horse"",""nl"":""renpaard""},""aliases"":{},""statements"":{""P31"":[{""id"":""Q368481"",""value"":{""type"":""value"",""content"":""Q726""}}]},""sitelinks"":{},""id"":""Q368481""}";
+            string jsonString = @"{""type"":""item"",""labels"":{""en"":""Bonfire"",""nl"":""Vreugdevuur""},""descriptions"":{""en"":""horse"",""nl"":""renpaard""},""aliases"":{""en"":[""Gestion Bonfire""]},""statements"":{""P31"":[{""id"":""Q368481"",""value"":{""type"":""value"",""content"":""Q726""}}]},""sitelinks"":{},""id"":""Q368481""}";
 
             var handlerMock = new MockHttpMessageHandler();
             var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
