@@ -41,18 +41,21 @@ namespace WikidataEditorTests.Services
             // Arrange
             const string idNonHuman = "Q368481";
 
-            var expected = new HumanDto 
+            var baseData = new WikidataItemBaseDto();
+            baseData.Id = idNonHuman;
+            baseData.Label = "Bonfire";
+            baseData.Description = "horse";
+            baseData.StatementsCount = 1;
+            baseData.InstanceOf = new List<string> { "horse (Q726)" };
+            baseData.Aliases = new List<string> { "Gestion Bonfire" };
+
+            var expected = new WikidataItemHumanDto(baseData) 
             { 
-                Id = idNonHuman, 
-                Label = "Bonfire", 
-                Description = "horse", 
-                StatementsCount = 1 ,
-                Aliases = new List<string> { "Gestion Bonfire" },
-                UriCollection = new URICollectionDto
+                UriCollection = new UriCollectionDto
                 {
-                    WikidataURI = "https://www.wikidata.org/wiki/" + idNonHuman,
-                    LibraryOfCongressAuthorityURI = Missing,
-                    Wikipedias = new List<string> { Missing }
+                    WikidataUri = "https://www.wikidata.org/wiki/" + idNonHuman,
+                    Wikipedias = new List<string> { Missing },
+                    InstanceUris = new List<string> { Missing }
                 }
             };
 
@@ -61,10 +64,13 @@ namespace WikidataEditorTests.Services
             var handlerMock = new MockHttpMessageHandler();
             var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
-            // Setup response
+            // Setup responses
             handlerMock
                 .When(urlBase + idNonHuman)
-                .Respond("application/json", jsonString);
+                .Respond("application/json", jsonString);            
+            handlerMock
+                .When(urlBase + "Q726" + @"/labels")
+                .Respond("application/json", @"{""af"":""perd"",""en"":""horse"",""gl"":""Cabalo""}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
@@ -84,14 +90,17 @@ namespace WikidataEditorTests.Services
 
             var missing = new List<string> { Missing };
 
-            var expected = new HumanDto
+            var baseData = new WikidataItemBaseDto();
+            baseData.Id = id;
+            baseData.Label = Missing;
+            baseData.Description = Missing;
+            baseData.StatementsCount = 1;
+            baseData.InstanceOf = new List<string> { "human (Q5)" };
+            baseData.Aliases = missing;
+
+            var expected = new WikidataItemHumanDto(baseData)
             {
-                Id = id,
-                Label = Missing,
-                Description = Missing,
-                StatementsCount = 1 ,
                 SexOrGender = missing,
-                Aliases = missing,
                 CountryOfCitizenship = missing,
                 GivenName = missing,
                 FamilyName = missing,
@@ -100,19 +109,22 @@ namespace WikidataEditorTests.Services
                 DateOfDeath = missing,
                 PlaceOfDeath = missing,
                 Occupation = missing,
-                UriCollection = new URICollectionDto
+                UriCollection = new UriCollectionDto
                 {
-                    WikidataURI = "https://www.wikidata.org/wiki/" + id,
-                    LibraryOfCongressAuthorityURI = Missing,
-                    Wikipedias = missing
-                },
+                    WikidataUri = "https://www.wikidata.org/wiki/" + id,
+                    Wikipedias = new List<string> { Missing },
+                    InstanceUris = new List<string> { Missing }
+                }
             };
 
             var handlerMock = new MockHttpMessageHandler();
             var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
-            // Setup response
+            // Setup responses
             string jsonString = @"{""type"":""item"",""labels"":{},""descriptions"":{},""aliases"":{},""statements"":{""P31"":[{""id"":""Q99589194"",""value"":{""type"":""value"",""content"":""Q5""}}]},""sitelinks"":{},""id"":""Q99589194""}";
+            handlerMock
+                .When(urlBase + "Q5" + @"/labels")
+                .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             handlerMock
                 .When(urlBase + id)
@@ -138,10 +150,13 @@ namespace WikidataEditorTests.Services
             var handlerMock = new MockHttpMessageHandler();
             var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
-            // Setup various response
+            // Setup responses
             handlerMock
                 .When(urlBase + id)
                 .Respond("application/json", jsonString);
+            handlerMock
+                .When(urlBase + "Q5" + @"/labels")
+                .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
@@ -163,10 +178,13 @@ namespace WikidataEditorTests.Services
             var handlerMock = new MockHttpMessageHandler();
             var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
-            // Setup various response
+            // Setup responses
             handlerMock
                 .When(urlBase + id)
                 .Respond("application/json", jsonString);
+            handlerMock
+                .When(urlBase + "Q5" + @"/labels")
+                .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
@@ -183,15 +201,18 @@ namespace WikidataEditorTests.Services
         {
             // Arrange
             string jsonString = GetJsonString();
-
             var id = "Q99589194";
-            var expected = new HumanDto
+
+            var baseData = new WikidataItemBaseDto();
+            baseData.Id = id;
+            baseData.Label = "Lesley Cunliffe";
+            baseData.Description = "American journalist and writer";
+            baseData.StatementsCount = 14;
+            baseData.InstanceOf = new List<string> { "human (Q5)" };
+            baseData.Aliases = new List<string> { "Lesley Hume Cunliffe", "Hume" };
+
+            var expected = new WikidataItemHumanDto(baseData)
             {
-                Id = id,
-                Label = "Lesley Cunliffe",
-                Description = "American journalist and writer",
-                StatementsCount = 14,
-                Aliases = new List<string> { "Lesley Hume Cunliffe", "Hume" },
                 SexOrGender = new List<string> { "female" },
                 CountryOfCitizenship = new List<string> { Missing },
                 GivenName = new List<string> { "Lesley" },
@@ -201,11 +222,11 @@ namespace WikidataEditorTests.Services
                 DateOfDeath = new List<string> { "+1997-03-28T00:00:00Z" },
                 PlaceOfDeath = new List<string> { Missing },
                 Occupation = new List<string> { "journalist", "writer", "editor" },
-                UriCollection = new URICollectionDto
+                UriCollection = new UriCollectionDto
                 {
-                    WikidataURI = "https://www.wikidata.org/wiki/" + id,
-                    LibraryOfCongressAuthorityURI = "https://id.loc.gov/authorities/names/n81098631.html",
+                    WikidataUri = "https://www.wikidata.org/wiki/" + id,
                     Wikipedias = new List<string> { "https://en.wikipedia.org/wiki/Lesley_Cunliffe" },
+                    InstanceUris = new List<string> { "https://id.loc.gov/authorities/names/n81098631.html" }
                 }
             };
 
@@ -216,6 +237,9 @@ namespace WikidataEditorTests.Services
             handlerMock
                 .When(urlBase + id)
                 .Respond("application/json", jsonString);
+            handlerMock
+                .When(urlBase + "Q5" + @"/labels")
+                .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
             handlerMock
                 .When(urlBase + "Q6581072" + @"/labels") // https://www.wikidata.org/wiki/Q6581072 : to be used in "sex or gender" (P21)
                 .Respond("application/json", @"{""af"":""vroulik"", ""en"":""female"",""zu"":""isifazane""}");

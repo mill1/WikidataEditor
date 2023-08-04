@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Moq;
+using System.Reflection.Emit;
 using WikidataEditor.Dtos;
 using WikidataEditor.Interfaces;
 using WikidataEditor.Services;
@@ -17,7 +18,7 @@ namespace WikidataEditorTests.Services
 
             var id = Guid.NewGuid().ToString();
 
-            var expected  = new HumanDto { Id = id, Label = $"Label{id}", Description = $"Description of {id}" };
+            var expected  = new WikidataItemHumanDto(new WikidataItemBaseDto { Id  = id });
 
             wikidataRestService.Setup(x => x.GetDataOnHuman(id))
             .Returns(expected);
