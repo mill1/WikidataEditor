@@ -35,8 +35,7 @@ namespace WikidataEditor.Services
             var statements = jObject["statements"].ToObject<dynamic>();
             WikidataItemBaseDto basicData = ResolveBasicData(item, ((JContainer)statements).Count);
             
-            // TODO
-            if (!IsHuman(item.statements.P31))
+            if (!IsHuman(basicData.InstanceOf))
                 return new WikidataItemHumanDto(basicData);
 
             return MapToDto(basicData, item);
@@ -59,6 +58,10 @@ namespace WikidataEditor.Services
         private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
         {
             var values = ResolveValue(instances);
+
+            if(values.First() == Missing)
+                return values;
+
             var ids = instances.Select(i => i.value.content.ToString());
             return values.Zip(ids, (first, second) => first + " (" + second + ")");
         }
@@ -212,14 +215,12 @@ namespace WikidataEditor.Services
             .FirstOrDefault(value => !string.IsNullOrEmpty(value));
         }
 
-        private static bool IsHuman(Statement[] statementsOnInstance)
+        private static bool IsHuman(IEnumerable<string> Instances)
         {
-            const string Human = "Q5";
+            if (Instances.First() == Missing)
+                return false;            
 
-            if (statementsOnInstance == null)
-                return false;
-
-            return statementsOnInstance.Any(prop => prop.value.content.ToString() == Human);
+            return Instances.Any(instance => instance == "human (Q5)");
         }
 
         private static Sitelinks CreateMainSitelinks(Sitelinks sitelinks)
