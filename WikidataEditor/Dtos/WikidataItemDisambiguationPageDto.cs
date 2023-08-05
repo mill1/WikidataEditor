@@ -14,6 +14,11 @@
         public IEnumerable<string> DifferentFrom { get; set; }
 
         /// <summary>
+        /// Property https://www.wikidata.org/wiki/Property:P1382
+        /// </summary>
+        public IEnumerable<string> PartiallyCoincidentWith { get; set; }
+
+        /// <summary>
         /// Property https://www.wikidata.org/wiki/Property:P460
         /// </summary>
         public IEnumerable<string> SaidToBeTheSameAs { get; set; }

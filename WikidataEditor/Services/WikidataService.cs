@@ -13,7 +13,7 @@ namespace WikidataEditor.Services
 
         public IWikidataItemDto GetDataOnHuman(string id)
         {
-            return _wikidataService.GetDataOnHuman(id);
+            return _wikidataService.GetData(id);
         }
     }
 }

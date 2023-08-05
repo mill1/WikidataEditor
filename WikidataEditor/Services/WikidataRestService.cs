@@ -19,50 +19,63 @@ namespace WikidataEditor.Services
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public IWikidataItemDto GetDataOnHuman(string id)
+        public IWikidataItemDto GetData(string id)
         {            
             string Uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id;
             var jsonString = _client.GetStringAsync(Uri).Result;
 
-            var jObject = JObject.Parse(jsonString);
+            JObject jObject = JObject.Parse(jsonString);
 
             var type = (string)((JValue)jObject["type"])?.Value ?? "null";
             if (type != "item")
                 throw new ArgumentException($"Result is not of type item. Encountered type: {type}");
 
             var statements = jObject["statements"].ToObject<dynamic>();
-            var statementInstanceOf = statements["P31"];
+            // TODO check var names
+            var statementInstanceOfTODO = statements["P31"];
             int statementsCount = ((JContainer)statements).Count;            
-            WikidataItemBaseDto basicData = null;
 
-            if (statementInstanceOf == null)
+            if (statementInstanceOfTODO == null)
             {
-                WikidataItemOther item = jObject.ToObject<WikidataItemOther>();               
-                basicData = ResolveBasicData(item, null, statementsCount);
+                WikidataItemOther item = jObject.ToObject<WikidataItemOther>();
+                WikidataItemBaseDto basicData = ResolveBasicData(item, null, statementsCount, null);
                 return new WikidataItemOtherDto(basicData);
             }
             
-            statementInstanceOf = statementInstanceOf.ToObject<Statement[]>();
+            var statementInstanceOf = statementInstanceOfTODO.ToObject<Statement[]>();
 
             if(ContainsInstanceOf(statementInstanceOf, "Q5"))
             {
                 WikidataItemOnHumans item = jObject.ToObject<WikidataItemOnHumans>();
-                basicData = ResolveBasicData(item, statementInstanceOf, statementsCount);
-                basicData.UriCollection.InstanceUris = ResolveInstanceUrisForHumans(item);
+                WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, ResolveInstanceUrisForHumans(item));
                 return MapToHumanDto(basicData, item);
             }
 
             if (ContainsInstanceOf(statementInstanceOf, "Q4167410"))
             {
                 WikidataItemOnDisambiguationPages item = jObject.ToObject<WikidataItemOnDisambiguationPages>();
-                basicData = ResolveBasicData(item, statementInstanceOf, statementsCount);
+                WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, null);
                 return MapToDisambiguationPageDto(basicData, item);
             }
 
             // Other types of items
             WikidataItemOther itemOther = jObject.ToObject<WikidataItemOther>();
-            basicData = ResolveBasicData(itemOther, statementInstanceOf, statementsCount);
-            return new WikidataItemOtherDto(basicData);
+            WikidataItemBaseDto basicDataTODO = ResolveBasicData(itemOther, statementInstanceOf, statementsCount, null);
+            return new WikidataItemOtherDto(basicDataTODO);
+        }
+
+        private WikidataItemBaseDto ResolveBasicData(IWikidataItem item, Statement[] statementInstanceOf, int statementsCount, List<string> instanceUris)
+        {
+            return new WikidataItemBaseDto
+            {
+                Id = item.id,
+                Label = GetTextValue(item.labels),
+                InstanceOf = ResolveInstanceTexts(statementInstanceOf),
+                Description = GetTextValue(item.descriptions),
+                StatementsCount = statementsCount,
+                Aliases = GetAliases(item.aliases),
+                UriCollection = GetUriCollection(item, instanceUris)
+            };
         }
 
         private static bool ContainsInstanceOf(Statement[] statementsOnInstance, string instanceOfId)
@@ -76,20 +89,6 @@ namespace WikidataEditor.Services
             */
 
             return statementsOnInstance.Any(s => s.value.content.ToString() == instanceOfId);
-        }
-
-        private WikidataItemBaseDto ResolveBasicData(IWikidataItem item, Statement[] statementInstanceOf, int statementsCount)
-        {
-            return new WikidataItemBaseDto
-            {
-                Id = item.id,
-                Label = GetTextValue(item.labels),
-                InstanceOf = ResolveInstanceTexts(statementInstanceOf),
-                Description = GetTextValue(item.descriptions),
-                StatementsCount = statementsCount,
-                Aliases = GetAliases(item.aliases),
-                UriCollection = GetBasicUriCollection(item)
-            };
         }
 
         private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
@@ -125,6 +124,7 @@ namespace WikidataEditor.Services
             return new WikidataItemDisambiguationPageDto(basicData)
             {
                 DifferentFrom = ResolveValue(item.statements.P1889),
+                PartiallyCoincidentWith = ResolveValue(item.statements.P1382),
                 SaidToBeTheSameAs = ResolveValue(item.statements.P460),
             };
         }
@@ -193,12 +193,13 @@ namespace WikidataEditor.Services
             return aliases.Aggregate((x, y) => x.Value.Count > y.Value.Count ? x : y).Value;
         }
 
-        private UriCollectionDto GetBasicUriCollection(IWikidataItem item)
+        private UriCollectionDto GetUriCollection(IWikidataItem item, List<string> instanceUris)
         {
             return new UriCollectionDto
             {
                 WikidataUri = "https://www.wikidata.org/wiki/" + item.id,
-                Wikipedias = GetWikipedias(item.sitelinks),                
+                Wikipedias = GetWikipedias(item.sitelinks),  
+                InstanceUris = instanceUris
             };
         }
 

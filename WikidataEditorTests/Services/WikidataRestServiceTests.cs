@@ -30,7 +30,7 @@ namespace WikidataEditorTests.Services
             var service = new WikidataRestService(httpClient);
 
             // Assert
-            service.Invoking(y => y.GetDataOnHuman(id))
+            service.Invoking(y => y.GetData(id))
             .Should().Throw<ArgumentException>()
             .WithMessage("Result is not of type item. Encountered type: someothertype");
         }
@@ -76,7 +76,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient);
 
-            var actual = service.GetDataOnHuman(idNonHuman);
+            var actual = service.GetData(idNonHuman);
 
             actual.Should().BeEquivalentTo(expected);
         }
@@ -133,7 +133,7 @@ namespace WikidataEditorTests.Services
             // Act
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient);
-            var actual = service.GetDataOnHuman(id);
+            var actual = service.GetData(id);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);
@@ -162,7 +162,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient);
 
-            var actual = service.GetDataOnHuman(id);
+            var actual = service.GetData(id);
 
             actual.Label.Should().Be("Dutch label");
         }
@@ -190,7 +190,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient);
 
-            var actual = service.GetDataOnHuman(id);
+            var actual = service.GetData(id);
 
             // Assert
             actual.Label.Should().Be("Afrikaans label");
@@ -263,7 +263,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient);
 
-            var actual = service.GetDataOnHuman(id);
+            var actual = service.GetData(id);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);

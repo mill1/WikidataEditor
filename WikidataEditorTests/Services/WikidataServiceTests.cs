@@ -18,7 +18,7 @@ namespace WikidataEditorTests.Services
 
             var expected  = new WikidataItemHumanDto(new WikidataItemBaseDto { Id  = id });
 
-            wikidataRestService.Setup(x => x.GetDataOnHuman(id))
+            wikidataRestService.Setup(x => x.GetData(id))
             .Returns(expected);
 
             // Act
