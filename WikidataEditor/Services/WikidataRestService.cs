@@ -52,6 +52,13 @@ namespace WikidataEditor.Services
                 return MapToHumanDto(basicData, item);
             }
 
+            if (ContainsInstanceOf(statementInstanceOf, "Q4167410"))
+            {
+                WikidataItemOnDisambiguationPages item = jObject.ToObject<WikidataItemOnDisambiguationPages>();
+                basicData = ResolveBasicData(item, statementInstanceOf, statementsCount);
+                return MapToDisambiguationPageDto(basicData, item);
+            }
+
             // Other types of items
             WikidataItemOther itemOther = jObject.ToObject<WikidataItemOther>();
             basicData = ResolveBasicData(itemOther, statementInstanceOf, statementsCount);
@@ -109,6 +116,16 @@ namespace WikidataEditor.Services
                 DateOfDeath = ResolveTimeValue(item.statements.P570),
                 PlaceOfDeath = ResolveValue(item.statements.P20),
                 Occupation = ResolveValue(item.statements.P106),                
+            };
+        }
+
+        // WikidataItemOnDisambiguationPages
+        private WikidataItemDisambiguationPageDto MapToDisambiguationPageDto(WikidataItemBaseDto basicData, WikidataItemOnDisambiguationPages item)
+        {
+            return new WikidataItemDisambiguationPageDto(basicData)
+            {
+                DifferentFrom = ResolveValue(item.statements.P1889),
+                SaidToBeTheSameAs = ResolveValue(item.statements.P460),
             };
         }
 
