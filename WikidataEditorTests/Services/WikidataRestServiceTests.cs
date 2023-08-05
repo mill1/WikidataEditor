@@ -32,7 +32,7 @@ namespace WikidataEditorTests.Services
             // Assert
             service.Invoking(y => y.GetDataOnHuman(id))
             .Should().Throw<ArgumentException>()
-            .WithMessage("Response is not of type item. Encountered type: someothertype");
+            .WithMessage("Result is not of type item. Encountered type: someothertype");
         }
 
         [TestMethod]
@@ -49,13 +49,13 @@ namespace WikidataEditorTests.Services
             baseData.InstanceOf = new List<string> { "horse (Q726)" };
             baseData.Aliases = new List<string> { "Gestion Bonfire" };
 
-            var expected = new WikidataItemHumanDto(baseData)
+            var expected = new WikidataItemOtherDto(baseData)
             {
                 UriCollection = new UriCollectionDto
                 {
                     WikidataUri = "https://www.wikidata.org/wiki/" + idNonHuman,
                     Wikipedias = new List<string> { "*no values*" },
-                    InstanceUris = new List<string> { "*no values*" }
+                    InstanceUris = null
                 }
             };
 
