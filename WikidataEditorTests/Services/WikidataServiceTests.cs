@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Moq;
 using WikidataEditor.Dtos;
-using WikidataEditor.Interfaces;
 using WikidataEditor.Services;
 
 namespace WikidataEditorTests.Services
@@ -17,7 +16,7 @@ namespace WikidataEditorTests.Services
 
             var id = Guid.NewGuid().ToString();
 
-            var expected = new WikidataItemHumanDto(new WikidataItemBaseDto { Id = id });
+            var expected  = new WikidataItemHumanDto(new WikidataItemBaseDto { Id  = id });
 
             wikidataRestService.Setup(x => x.GetDataOnHuman(id))
             .Returns(expected);

@@ -1,5 +1,4 @@
 ﻿using WikidataEditor.Dtos;
-using WikidataEditor.Interfaces;
 
 namespace WikidataEditor.Services
 {
@@ -12,7 +11,7 @@ namespace WikidataEditor.Services
             _wikidataService = wikidataService;
         }
 
-        public WikidataItemHumanDto GetDataOnHuman(string id)
+        public IWikidataItemDto GetDataOnHuman(string id)
         {
             return _wikidataService.GetDataOnHuman(id);
         }
