@@ -1,13 +1,16 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using WikidataEditor.Dtos;
 using WikidataEditor.Models;
+using WikidataEditor.Models.Instances;
 
 namespace WikidataEditor.Services
 {
     public class WikidataRestService : IWikidataRestService
     {
         private readonly HttpClient _client;
+        private static readonly Regex WikidataIdPattern = new(@"Q\d{2}", RegexOptions.Compiled);
 
         private const string Missing = "*missing*";
 
@@ -36,9 +39,8 @@ namespace WikidataEditor.Services
 
             if (statementInstanceOf == null)
             {
-                WikidataItemOther item = jObject.ToObject<WikidataItemOther>();
-                WikidataItemBaseDto basicData = ResolveBasicData(item, null, statementsCount, null);
-                return new WikidataItemOtherDto(basicData);
+                WikidataItemOther item = jObject.ToObject<WikidataItemOther>();                
+                return new WikidataItemOtherDto(ResolveBasicData(item, null, statementsCount, null));
             }
 
             return ResolveData(statementInstanceOf.ToObject<Statement[]>(), jObject, statementsCount);
@@ -60,10 +62,16 @@ namespace WikidataEditor.Services
                 return MapToDisambiguationPageDto(basicData, item);
             }
 
+            if (ContainsValue(statementInstanceOf, Constants.WikidataIdAstronomicalObjectType))
+            {
+                WikidataItemOnAstronomicalObjectTypes item = jObject.ToObject<WikidataItemOnAstronomicalObjectTypes>();
+                WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, ResolveUrisForAstronomicalObjectTypes(item));
+                return MapToAstronomicalObjectTypeDto(basicData, item);
+            }
+
             // Other types of items
-            WikidataItemOther itemOther = jObject.ToObject<WikidataItemOther>();
-            WikidataItemBaseDto basicDataTODO = ResolveBasicData(itemOther, statementInstanceOf, statementsCount, null);
-            return new WikidataItemOtherDto(basicDataTODO);
+            WikidataItemOther itemOther = jObject.ToObject<WikidataItemOther>();            
+            return new WikidataItemOtherDto(ResolveBasicData(itemOther, statementInstanceOf, statementsCount, null));
         }
 
         private WikidataItemBaseDto ResolveBasicData(IWikidataItem item, Statement[] statementInstanceOf, int statementsCount, List<string> instanceUris)
@@ -115,7 +123,6 @@ namespace WikidataEditor.Services
             };
         }
 
-        // WikidataItemOnDisambiguationPages
         private WikidataItemDisambiguationPageDto MapToDisambiguationPageDto(WikidataItemBaseDto basicData, WikidataItemOnDisambiguationPages item)
         {
             return new WikidataItemDisambiguationPageDto(basicData)
@@ -126,13 +133,39 @@ namespace WikidataEditor.Services
             };
         }
 
-        private IEnumerable<string> ResolveValue(Statement[] statement)
+        private WikidataItemAstronomicalObjectTypeDto MapToAstronomicalObjectTypeDto(WikidataItemBaseDto basicData, WikidataItemOnAstronomicalObjectTypes item)
         {
-            // A 'statement' can consist of multiple values (claims about the statement)
-            if (statement == null)
+            return new WikidataItemAstronomicalObjectTypeDto(basicData)
+            {
+                SubclassOf = ResolveValue(item.statements.P279),
+                PartOf = ResolveValue(item.statements.P361),
+                Image = ResolveValue(item.statements.P18),
+                HasUse = ResolveValue(item.statements.P366),
+                AstronomicSymbolImage = ResolveValue(item.statements.P367),
+                DescribedBySource = ResolveValue(item.statements.P1343),
+            };
+        }
+
+        private IEnumerable<string> ResolveValue(Statement[] statements)
+        {
+            // A 'statement' can consist of multiple statement values (claims about the statement)
+            if (statements == null)
                 return new List<string> { Missing };
 
-            return statement.Select(x => x.value.content == null ? "*no value*" : GetLabel(x.value.content.ToString()));
+            var labelValues = new List<string>();
+
+            foreach (var statement in statements)
+            {
+                if (statement.value == null)
+                    labelValues.Add("*no value*");
+
+                var value = statement.value.content.ToString();
+                Match match = WikidataIdPattern.Match(value);
+
+                labelValues.Add(match.Success ? GetLabel(value) : value);
+            }
+
+            return labelValues;
         }
 
         private IEnumerable<string> ResolveTimeValue(Statement[] statement)
@@ -202,21 +235,39 @@ namespace WikidataEditor.Services
 
         private List<string> ResolveUrisForHumans(WikidataItemOnHumans item)
         {
-            const string uriBaseLoCAuthority = "https://id.loc.gov/authorities/names/";
-            const string uriBaseBNF = "https://data.bnf.fr/en/";
-
             var instanceUris = new List<string>();
+
+            const string uriBaseLoCAuthority = "https://id.loc.gov/authorities/names/";
+
+            ResolveUriForBNF(item.statements, instanceUris);
 
             if (item.statements.P244 != null)
                 instanceUris.Add(uriBaseLoCAuthority + item.statements.P244.First().value.content + ".html");
-
-            if (item.statements.P268 != null)
-                instanceUris.Add(uriBaseBNF + item.statements.P268.First().value.content.ToString().Substring(0, 8));
 
             if (!instanceUris.Any())
                 instanceUris.Add("*no values*");
 
             return instanceUris;
+        }
+
+        private List<string> ResolveUrisForAstronomicalObjectTypes(WikidataItemOnAstronomicalObjectTypes item)
+        {
+            var instanceUris = new List<string>();
+
+            ResolveUriForBNF(item.statements, instanceUris);
+
+            if (!instanceUris.Any())
+                instanceUris.Add("*no values*");
+
+            return instanceUris;
+        }
+
+        private static void ResolveUriForBNF(IUriStatements uriStatements, List<string> instanceUris)
+        {
+            const string uriBaseBNF = "https://data.bnf.fr/en/";
+
+            if (uriStatements.P268 != null)
+                instanceUris.Add(uriBaseBNF + uriStatements.P268.First().value.content.ToString().Substring(0, 8));
         }
 
         private static List<string> GetWikipedias(Sitelinks sitelinks)

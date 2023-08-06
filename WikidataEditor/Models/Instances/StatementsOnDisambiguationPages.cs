@@ -1,4 +1,4 @@
-﻿namespace WikidataEditor.Models
+﻿namespace WikidataEditor.Models.Instances
 {
     public class StatementsOnDisambiguationPages
     {
