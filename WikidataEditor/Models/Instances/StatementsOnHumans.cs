@@ -1,6 +1,6 @@
-﻿namespace WikidataEditor.Models
+﻿namespace WikidataEditor.Models.Instances
 {
-    public class StatementsOnHumans
+    public class StatementsOnHumans : IUriStatements
     {
         /// <summary>
         /// Statements regarding instance (human = 'Q5')

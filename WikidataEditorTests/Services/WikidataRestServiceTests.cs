@@ -1,16 +1,17 @@
 using FluentAssertions;
+using Moq;
 using RichardSzalay.MockHttp;
-using WikidataEditor;
+using WikidataEditor.Common;
 using WikidataEditor.Dtos;
+using WikidataEditor.Models;
+using WikidataEditor.Models.Instances;
 using WikidataEditor.Services;
 
 namespace WikidataEditorTests.Services
 {
     [TestClass]
     public class WikidataRestServiceTests
-    {
-        private const string Missing = "*missing*";
-
+    {       
         [TestMethod]
         public void GetDataOnHuman_ShouldThrowExceptionIfNotTypeItem()
         {
@@ -28,7 +29,7 @@ namespace WikidataEditorTests.Services
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var service = new WikidataRestService(httpClient, null, null);
 
             // Assert
             service.Invoking(y => y.GetData(id))
@@ -44,7 +45,7 @@ namespace WikidataEditorTests.Services
 
             var baseData = new WikidataItemBaseDto();
             baseData.Id = idNonHuman;
-            baseData.Label = "Bonfire";
+            baseData.Label = "horse";
             baseData.Description = "horse";
             baseData.StatementsCount = 1;
             baseData.InstanceOf = new List<string> { "horse (Q726)" };
@@ -60,7 +61,13 @@ namespace WikidataEditorTests.Services
                 }
             };
 
-            string jsonString = @"{""type"":""item"",""labels"":{""en"":""Bonfire"",""nl"":""Vreugdevuur""},""descriptions"":{""en"":""horse"",""nl"":""renpaard""},""aliases"":{""en"":[""Gestion Bonfire""]},""statements"":{""P31"":[{""id"":""Q368481"",""value"":{""type"":""value"",""content"":""Q726""}}]},""sitelinks"":{},""id"":""Q368481""}";
+            var helperMock = new Mock<IWikidataHelper>();
+            helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
+            .Returns("horse");
+            helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
+            .Returns(new List<string> { "horse" });
+
+            string jsonString = @"{""type"":""item"",""labels"":{""en"":""horse"",""nl"":""paard""},""descriptions"":{""en"":""horse"",""nl"":""renpaard""},""aliases"":{""en"":[""Gestion Bonfire""]},""statements"":{""P31"":[{""id"":""Q368481"",""value"":{""type"":""value"",""content"":""Q726""}}]},""sitelinks"":{},""id"":""Q368481""}";
 
             var handlerMock = new MockHttpMessageHandler();
             var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
@@ -74,8 +81,8 @@ namespace WikidataEditorTests.Services
                 .Respond("application/json", @"{""af"":""perd"",""en"":""horse"",""gl"":""Cabalo""}");
 
             // Act
-            var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var httpClient = new HttpClient(handlerMock);            
+            var service = new WikidataRestService(httpClient, null, helperMock.Object);
 
             var actual = service.GetData(idNonHuman);
 
@@ -89,12 +96,12 @@ namespace WikidataEditorTests.Services
 
             var id = "Q99589194";
 
-            var missing = new List<string> { Missing };
+            var missing = new List<string> { Constants.Missing };
 
             var baseData = new WikidataItemBaseDto();
             baseData.Id = id;
-            baseData.Label = Missing;
-            baseData.Description = Missing;
+            baseData.Label = Constants.Missing;
+            baseData.Description = Constants.Missing;
             baseData.StatementsCount = 1;
             baseData.InstanceOf = new List<string> { "human (Q5)" };
             baseData.Aliases = missing;
@@ -118,6 +125,16 @@ namespace WikidataEditorTests.Services
                 }
             };
 
+            var helperMock = new Mock<IWikidataHelper>();
+            helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
+            .Returns("some value");
+            helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
+            .Returns(new List<string> { "Q5" });
+
+            var mappingServiceMock = new Mock<IMappingService>();
+            mappingServiceMock.Setup(x => x.MapToHumanDto(It.IsAny<WikidataItemBaseDto>(), It.IsAny<WikidataItemOnHumans>()))
+                .Returns(expected);
+
             var handlerMock = new MockHttpMessageHandler();
             var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
@@ -126,14 +143,13 @@ namespace WikidataEditorTests.Services
             handlerMock
                 .When(urlBase + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
-
             handlerMock
                 .When(urlBase + id)
                 .Respond("application/json", jsonString);
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
             var actual = service.GetData(id);
 
             // Assert
@@ -145,6 +161,16 @@ namespace WikidataEditorTests.Services
         {
             // Arrange
             const string id = "Q99589194";
+
+            var helperMock = new Mock<IWikidataHelper>();
+            helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
+            .Returns("some value");
+            helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
+            .Returns(new List<string> { "Q5" });
+
+            var mappingServiceMock = new Mock<IMappingService>();
+            mappingServiceMock.Setup(x => x.MapToHumanDto(It.IsAny<WikidataItemBaseDto>(), It.IsAny<WikidataItemOnHumans>()))
+                .Returns(new WikidataItemHumanDto(new WikidataItemBaseDto()) { Label = "Dutch label" });
 
             string jsonString = @"{""type"":""item"",""labels"":{""af"":""Afrikaans label"",""nl"":""Dutch label"",""no"":""Norwegian label""},""descriptions"":{},""aliases"":{},""statements"":{""P31"":[{""id"":""Q99589194"",""value"":{""type"":""value"",""content"":""Q5""}}]},""sitelinks"":{},""id"":""Q99589194""}";
 
@@ -161,7 +187,7 @@ namespace WikidataEditorTests.Services
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
 
             var actual = service.GetData(id);
 
@@ -173,6 +199,16 @@ namespace WikidataEditorTests.Services
         {
             // Arrange
             const string id = "Q99589194";
+
+            var helperMock = new Mock<IWikidataHelper>();
+            helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
+            .Returns("some value");
+            helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
+            .Returns(new List<string> { "Q5" });
+
+            var mappingServiceMock = new Mock<IMappingService>();
+            mappingServiceMock.Setup(x => x.MapToHumanDto(It.IsAny<WikidataItemBaseDto>(), It.IsAny<WikidataItemOnHumans>()))
+                .Returns(new WikidataItemHumanDto(new WikidataItemBaseDto()) { Label = "Afrikaans label" });
 
             string jsonString = @"{""type"":""item"",""labels"":{""af"":""Afrikaans label"",""no"":""Norwegian label""},""descriptions"":{},""aliases"":{},""statements"":{""P31"":[{""id"":""Q99589194"",""value"":{""type"":""value"",""content"":""Q5""}}]},""sitelinks"":{},""id"":""Q99589194""}";
 
@@ -189,7 +225,7 @@ namespace WikidataEditorTests.Services
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
 
             var actual = service.GetData(id);
 
@@ -215,13 +251,13 @@ namespace WikidataEditorTests.Services
             var expected = new WikidataItemHumanDto(baseData)
             {
                 SexOrGender = new List<string> { "female" },
-                CountryOfCitizenship = new List<string> { Missing },
+                CountryOfCitizenship = new List<string> { Constants.Missing },
                 GivenName = new List<string> { "Lesley" },
                 FamilyName = new List<string> { "Cunliffe" },
                 DateOfBirth = new List<string> { "+1945-05-21T00:00:00Z" },
-                PlaceOfBirth = new List<string> { Missing },
+                PlaceOfBirth = new List<string> { Constants.Missing },
                 DateOfDeath = new List<string> { "+1997-03-28T00:00:00Z" },
-                PlaceOfDeath = new List<string> { Missing },
+                PlaceOfDeath = new List<string> { Constants.Missing },
                 Occupation = new List<string> { "journalist", "writer", "editor" },
                 UriCollection = new UriCollectionDto
                 {
@@ -230,6 +266,16 @@ namespace WikidataEditorTests.Services
                     InstanceUris = new List<string> { "https://id.loc.gov/authorities/names/n81098631.html" }
                 }
             };
+
+            var helperMock = new Mock<IWikidataHelper>();
+            helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
+            .Returns( "some value" );
+            helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
+            .Returns(new List<string> { "Q5" });
+
+            var mappingServiceMock = new Mock<IMappingService>();
+            mappingServiceMock.Setup(x => x.MapToHumanDto(It.IsAny<WikidataItemBaseDto>(), It.IsAny<WikidataItemOnHumans>()))
+                .Returns(expected);
 
             var handlerMock = new MockHttpMessageHandler();
             var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
@@ -262,7 +308,7 @@ namespace WikidataEditorTests.Services
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
 
             var actual = service.GetData(id);
 
