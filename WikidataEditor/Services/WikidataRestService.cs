@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using WikidataEditor.Dtos;
-using WikidataEditor.Interfaces;
 using WikidataEditor.Models;
 
 namespace WikidataEditor.Services
@@ -20,38 +19,73 @@ namespace WikidataEditor.Services
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        public WikidataItemHumanDto GetDataOnHuman(string id)
-        {
+        public IWikidataItemDto GetData(string id)
+        {            
             string Uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id;
             var jsonString = _client.GetStringAsync(Uri).Result;
 
-            var jObject = JObject.Parse(jsonString);
-            var item = jObject.ToObject<WikidataItem>();
+            JObject jObject = JObject.Parse(jsonString);
 
-            if (item.type != "item")
-                throw new ArgumentException($"Response is not of type item. Encountered type: {item.type}");
+            var type = (string)((JValue)jObject["type"])?.Value ?? "null";
+            if (type != "item")
+                throw new ArgumentException($"Result is not of type item. Encountered type: {type}");
 
             var statements = jObject["statements"].ToObject<dynamic>();
-            WikidataItemBaseDto basicData = ResolveBasicData(item, ((JContainer)statements).Count);
+            var statementInstanceOf = statements["P31"];
+            int statementsCount = ((JContainer)statements).Count;
 
-            if (!IsHuman(basicData.InstanceOf))
-                return new WikidataItemHumanDto(basicData);
+            if (statementInstanceOf == null)
+            {
+                WikidataItemOther item = jObject.ToObject<WikidataItemOther>();
+                WikidataItemBaseDto basicData = ResolveBasicData(item, null, statementsCount, null);
+                return new WikidataItemOtherDto(basicData);
+            }
 
-            return MapToDto(basicData, item);
+            return ResolveData(statementInstanceOf.ToObject<Statement[]>(), jObject, statementsCount);
         }
 
-        private WikidataItemBaseDto ResolveBasicData(WikidataItem item, int statementsCount)
+        private IWikidataItemDto ResolveData(Statement[] statementInstanceOf, JObject jObject, int statementsCount)
+        {
+            if (ContainsValue(statementInstanceOf, Constants.WikidataIdHuman))
+            {
+                WikidataItemOnHumans item = jObject.ToObject<WikidataItemOnHumans>();
+                WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, ResolveUrisForHumans(item));
+                return MapToHumanDto(basicData, item);
+            }
+
+            if (ContainsValue(statementInstanceOf, Constants.WikidataIdDisambiguationPage))
+            {
+                WikidataItemOnDisambiguationPages item = jObject.ToObject<WikidataItemOnDisambiguationPages>();
+                WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, null);
+                return MapToDisambiguationPageDto(basicData, item);
+            }
+
+            // Other types of items
+            WikidataItemOther itemOther = jObject.ToObject<WikidataItemOther>();
+            WikidataItemBaseDto basicDataTODO = ResolveBasicData(itemOther, statementInstanceOf, statementsCount, null);
+            return new WikidataItemOtherDto(basicDataTODO);
+        }
+
+        private WikidataItemBaseDto ResolveBasicData(IWikidataItem item, Statement[] statementInstanceOf, int statementsCount, List<string> instanceUris)
         {
             return new WikidataItemBaseDto
             {
                 Id = item.id,
                 Label = GetTextValue(item.labels),
-                InstanceOf = ResolveInstanceTexts(item.statements.P31),
+                InstanceOf = ResolveInstanceTexts(statementInstanceOf),
                 Description = GetTextValue(item.descriptions),
                 StatementsCount = statementsCount,
                 Aliases = GetAliases(item.aliases),
-                UriCollection = GetUriCollection(item)
+                UriCollection = GetUriCollection(item, instanceUris)
             };
+        }
+
+        private static bool ContainsValue(Statement[] statements, string value)
+        {
+            if (statements == null)
+                return false;
+
+            return statements.Any(s => s.value.content.ToString() == value);
         }
 
         private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
@@ -65,7 +99,7 @@ namespace WikidataEditor.Services
             return values.Zip(ids, (first, second) => first + " (" + second + ")");
         }
 
-        private WikidataItemHumanDto MapToDto(WikidataItemBaseDto basicData, WikidataItem item)
+        private WikidataItemHumanDto MapToHumanDto(WikidataItemBaseDto basicData, WikidataItemOnHumans item)
         {
             return new WikidataItemHumanDto(basicData)
             {
@@ -77,7 +111,18 @@ namespace WikidataEditor.Services
                 PlaceOfBirth = ResolveValue(item.statements.P19),
                 DateOfDeath = ResolveTimeValue(item.statements.P570),
                 PlaceOfDeath = ResolveValue(item.statements.P20),
-                Occupation = ResolveValue(item.statements.P106),
+                Occupation = ResolveValue(item.statements.P106),                
+            };
+        }
+
+        // WikidataItemOnDisambiguationPages
+        private WikidataItemDisambiguationPageDto MapToDisambiguationPageDto(WikidataItemBaseDto basicData, WikidataItemOnDisambiguationPages item)
+        {
+            return new WikidataItemDisambiguationPageDto(basicData)
+            {
+                DifferentFrom = ResolveValue(item.statements.P1889),
+                PartiallyCoincidentWith = ResolveValue(item.statements.P1382),
+                SaidToBeTheSameAs = ResolveValue(item.statements.P460),
             };
         }
 
@@ -145,17 +190,17 @@ namespace WikidataEditor.Services
             return aliases.Aggregate((x, y) => x.Value.Count > y.Value.Count ? x : y).Value;
         }
 
-        private UriCollectionDto GetUriCollection(WikidataItem item)
+        private UriCollectionDto GetUriCollection(IWikidataItem item, List<string> instanceUris)
         {
             return new UriCollectionDto
             {
                 WikidataUri = "https://www.wikidata.org/wiki/" + item.id,
-                Wikipedias = GetWikipedias(item.sitelinks),
-                InstanceUris = ResolveInstanceUris(item)
+                Wikipedias = GetWikipedias(item.sitelinks),  
+                InstanceUris = instanceUris
             };
         }
 
-        private List<string> ResolveInstanceUris(WikidataItem item)
+        private List<string> ResolveUrisForHumans(WikidataItemOnHumans item)
         {
             const string uriBaseLoCAuthority = "https://id.loc.gov/authorities/names/";
             const string uriBaseBNF = "https://data.bnf.fr/en/";
@@ -222,14 +267,6 @@ namespace WikidataEditor.Services
             .Where(c => c.PropertyType == typeof(string))
             .Select(c => (string)c.GetValue(codes))
             .FirstOrDefault(value => !string.IsNullOrEmpty(value));
-        }
-
-        private static bool IsHuman(IEnumerable<string> Instances)
-        {
-            if (Instances.First() == Missing)
-                return false;
-
-            return Instances.Any(instance => instance == "human (Q5)");
         }
 
         private static Sitelinks CreateMainSitelinks(Sitelinks sitelinks)

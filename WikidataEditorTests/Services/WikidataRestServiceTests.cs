@@ -1,5 +1,6 @@
 using FluentAssertions;
 using RichardSzalay.MockHttp;
+using WikidataEditor;
 using WikidataEditor.Dtos;
 using WikidataEditor.Services;
 
@@ -30,9 +31,9 @@ namespace WikidataEditorTests.Services
             var service = new WikidataRestService(httpClient);
 
             // Assert
-            service.Invoking(y => y.GetDataOnHuman(id))
+            service.Invoking(y => y.GetData(id))
             .Should().Throw<ArgumentException>()
-            .WithMessage("Response is not of type item. Encountered type: someothertype");
+            .WithMessage("Result is not of type item. Encountered type: someothertype");
         }
 
         [TestMethod]
@@ -49,13 +50,13 @@ namespace WikidataEditorTests.Services
             baseData.InstanceOf = new List<string> { "horse (Q726)" };
             baseData.Aliases = new List<string> { "Gestion Bonfire" };
 
-            var expected = new WikidataItemHumanDto(baseData)
+            var expected = new WikidataItemOtherDto(baseData)
             {
                 UriCollection = new UriCollectionDto
                 {
                     WikidataUri = "https://www.wikidata.org/wiki/" + idNonHuman,
                     Wikipedias = new List<string> { "*no values*" },
-                    InstanceUris = new List<string> { "*no values*" }
+                    InstanceUris = null
                 }
             };
 
@@ -76,7 +77,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient);
 
-            var actual = service.GetDataOnHuman(idNonHuman);
+            var actual = service.GetData(idNonHuman);
 
             actual.Should().BeEquivalentTo(expected);
         }
@@ -123,7 +124,7 @@ namespace WikidataEditorTests.Services
             // Setup responses
             string jsonString = @"{""type"":""item"",""labels"":{},""descriptions"":{},""aliases"":{},""statements"":{""P31"":[{""id"":""Q99589194"",""value"":{""type"":""value"",""content"":""Q5""}}]},""sitelinks"":{},""id"":""Q99589194""}";
             handlerMock
-                .When(urlBase + "Q5" + @"/labels")
+                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             handlerMock
@@ -133,7 +134,7 @@ namespace WikidataEditorTests.Services
             // Act
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient);
-            var actual = service.GetDataOnHuman(id);
+            var actual = service.GetData(id);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);
@@ -155,14 +156,14 @@ namespace WikidataEditorTests.Services
                 .When(urlBase + id)
                 .Respond("application/json", jsonString);
             handlerMock
-                .When(urlBase + "Q5" + @"/labels")
+                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient);
 
-            var actual = service.GetDataOnHuman(id);
+            var actual = service.GetData(id);
 
             actual.Label.Should().Be("Dutch label");
         }
@@ -183,14 +184,14 @@ namespace WikidataEditorTests.Services
                 .When(urlBase + id)
                 .Respond("application/json", jsonString);
             handlerMock
-                .When(urlBase + "Q5" + @"/labels")
+                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient);
 
-            var actual = service.GetDataOnHuman(id);
+            var actual = service.GetData(id);
 
             // Assert
             actual.Label.Should().Be("Afrikaans label");
@@ -238,7 +239,7 @@ namespace WikidataEditorTests.Services
                 .When(urlBase + id)
                 .Respond("application/json", jsonString);
             handlerMock
-                .When(urlBase + "Q5" + @"/labels")
+                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
             handlerMock
                 .When(urlBase + "Q6581072" + @"/labels") // https://www.wikidata.org/wiki/Q6581072 : to be used in "sex or gender" (P21)
@@ -263,7 +264,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient);
 
-            var actual = service.GetDataOnHuman(id);
+            var actual = service.GetData(id);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);

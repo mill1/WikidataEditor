@@ -2,7 +2,7 @@
 {
     // https://www.wikidata.org/wiki/Help:Properties
 
-    public class WikidataItemBaseDto
+    public class WikidataItemBaseDto : IWikidataItemDto
     {
         public WikidataItemBaseDto()
         {
@@ -44,6 +44,9 @@
         /// </summary>
         public IEnumerable<string> InstanceOf { get; set; }
 
+        /// <summary>
+        /// The aliases of the wikidata-item        
+        /// </summary>
         public IEnumerable<string> Aliases { get; set; }
 
         /// <summary>

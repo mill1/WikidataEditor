@@ -3,7 +3,6 @@
  * https://doc.wikimedia.org/Wikibase/master/js/rest-api/
  */
 
-using WikidataEditor.Interfaces;
 using WikidataEditor.Middleware;
 using WikidataEditor.Services;
 
