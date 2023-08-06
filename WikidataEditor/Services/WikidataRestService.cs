@@ -31,27 +31,29 @@ namespace WikidataEditor.Services
                 throw new ArgumentException($"Result is not of type item. Encountered type: {type}");
 
             var statements = jObject["statements"].ToObject<dynamic>();
-            // TODO check var names
-            var statementInstanceOfTODO = statements["P31"];
-            int statementsCount = ((JContainer)statements).Count;            
+            var statementInstanceOf = statements["P31"];
+            int statementsCount = ((JContainer)statements).Count;
 
-            if (statementInstanceOfTODO == null)
+            if (statementInstanceOf == null)
             {
                 WikidataItemOther item = jObject.ToObject<WikidataItemOther>();
                 WikidataItemBaseDto basicData = ResolveBasicData(item, null, statementsCount, null);
                 return new WikidataItemOtherDto(basicData);
             }
-            
-            var statementInstanceOf = statementInstanceOfTODO.ToObject<Statement[]>();
 
-            if(ContainsInstanceOf(statementInstanceOf, "Q5"))
+            return ResolveData(statementInstanceOf.ToObject<Statement[]>(), jObject, statementsCount);
+        }
+
+        private IWikidataItemDto ResolveData(Statement[] statementInstanceOf, JObject jObject, int statementsCount)
+        {
+            if (ContainsValue(statementInstanceOf, Constants.WikidataIdHuman))
             {
                 WikidataItemOnHumans item = jObject.ToObject<WikidataItemOnHumans>();
-                WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, ResolveInstanceUrisForHumans(item));
+                WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, ResolveUrisForHumans(item));
                 return MapToHumanDto(basicData, item);
             }
 
-            if (ContainsInstanceOf(statementInstanceOf, "Q4167410"))
+            if (ContainsValue(statementInstanceOf, Constants.WikidataIdDisambiguationPage))
             {
                 WikidataItemOnDisambiguationPages item = jObject.ToObject<WikidataItemOnDisambiguationPages>();
                 WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, null);
@@ -78,17 +80,12 @@ namespace WikidataEditor.Services
             };
         }
 
-        private static bool ContainsInstanceOf(Statement[] statementsOnInstance, string instanceOfId)
+        private static bool ContainsValue(Statement[] statements, string value)
         {
-            if (statementsOnInstance == null)
+            if (statements == null)
                 return false;
 
-            /* Overkill
-            if (!statementsOnInstance.Where(s => s.property.id.ToString() == "P31").Any())
-                throw new ArgumentException("Incorrect statement type array. Expected: P31");            
-            */
-
-            return statementsOnInstance.Any(s => s.value.content.ToString() == instanceOfId);
+            return statements.Any(s => s.value.content.ToString() == value);
         }
 
         private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
@@ -203,7 +200,7 @@ namespace WikidataEditor.Services
             };
         }
 
-        private List<string> ResolveInstanceUrisForHumans(WikidataItemOnHumans item)
+        private List<string> ResolveUrisForHumans(WikidataItemOnHumans item)
         {
             const string uriBaseLoCAuthority = "https://id.loc.gov/authorities/names/";
             const string uriBaseBNF = "https://data.bnf.fr/en/";

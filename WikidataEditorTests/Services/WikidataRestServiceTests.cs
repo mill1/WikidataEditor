@@ -1,5 +1,6 @@
 using FluentAssertions;
 using RichardSzalay.MockHttp;
+using WikidataEditor;
 using WikidataEditor.Dtos;
 using WikidataEditor.Services;
 
@@ -123,7 +124,7 @@ namespace WikidataEditorTests.Services
             // Setup responses
             string jsonString = @"{""type"":""item"",""labels"":{},""descriptions"":{},""aliases"":{},""statements"":{""P31"":[{""id"":""Q99589194"",""value"":{""type"":""value"",""content"":""Q5""}}]},""sitelinks"":{},""id"":""Q99589194""}";
             handlerMock
-                .When(urlBase + "Q5" + @"/labels")
+                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             handlerMock
@@ -155,7 +156,7 @@ namespace WikidataEditorTests.Services
                 .When(urlBase + id)
                 .Respond("application/json", jsonString);
             handlerMock
-                .When(urlBase + "Q5" + @"/labels")
+                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             // Act
@@ -183,7 +184,7 @@ namespace WikidataEditorTests.Services
                 .When(urlBase + id)
                 .Respond("application/json", jsonString);
             handlerMock
-                .When(urlBase + "Q5" + @"/labels")
+                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             // Act
@@ -238,7 +239,7 @@ namespace WikidataEditorTests.Services
                 .When(urlBase + id)
                 .Respond("application/json", jsonString);
             handlerMock
-                .When(urlBase + "Q5" + @"/labels")
+                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
             handlerMock
                 .When(urlBase + "Q6581072" + @"/labels") // https://www.wikidata.org/wiki/Q6581072 : to be used in "sex or gender" (P21)
