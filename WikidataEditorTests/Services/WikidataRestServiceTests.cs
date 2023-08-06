@@ -1,6 +1,6 @@
 using FluentAssertions;
 using RichardSzalay.MockHttp;
-using WikidataEditor;
+using WikidataEditor.Common;
 using WikidataEditor.Dtos;
 using WikidataEditor.Services;
 
@@ -8,9 +8,7 @@ namespace WikidataEditorTests.Services
 {
     [TestClass]
     public class WikidataRestServiceTests
-    {
-        private const string Missing = "*missing*";
-
+    {       
         [TestMethod]
         public void GetDataOnHuman_ShouldThrowExceptionIfNotTypeItem()
         {
@@ -28,7 +26,7 @@ namespace WikidataEditorTests.Services
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var service = new WikidataRestService(httpClient, null, null);
 
             // Assert
             service.Invoking(y => y.GetData(id))
@@ -74,8 +72,8 @@ namespace WikidataEditorTests.Services
                 .Respond("application/json", @"{""af"":""perd"",""en"":""horse"",""gl"":""Cabalo""}");
 
             // Act
-            var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var httpClient = new HttpClient(handlerMock);            
+            var service = new WikidataRestService(httpClient, null, null);
 
             var actual = service.GetData(idNonHuman);
 
@@ -89,12 +87,12 @@ namespace WikidataEditorTests.Services
 
             var id = "Q99589194";
 
-            var missing = new List<string> { Missing };
+            var missing = new List<string> { Constants.Missing };
 
             var baseData = new WikidataItemBaseDto();
             baseData.Id = id;
-            baseData.Label = Missing;
-            baseData.Description = Missing;
+            baseData.Label = Constants.Missing;
+            baseData.Description = Constants.Missing;
             baseData.StatementsCount = 1;
             baseData.InstanceOf = new List<string> { "human (Q5)" };
             baseData.Aliases = missing;
@@ -133,7 +131,7 @@ namespace WikidataEditorTests.Services
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var service = new WikidataRestService(httpClient, null, null);
             var actual = service.GetData(id);
 
             // Assert
@@ -161,7 +159,7 @@ namespace WikidataEditorTests.Services
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var service = new WikidataRestService(httpClient, null, null);
 
             var actual = service.GetData(id);
 
@@ -189,7 +187,7 @@ namespace WikidataEditorTests.Services
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var service = new WikidataRestService(httpClient, null, null);
 
             var actual = service.GetData(id);
 
@@ -215,13 +213,13 @@ namespace WikidataEditorTests.Services
             var expected = new WikidataItemHumanDto(baseData)
             {
                 SexOrGender = new List<string> { "female" },
-                CountryOfCitizenship = new List<string> { Missing },
+                CountryOfCitizenship = new List<string> { Constants.Missing },
                 GivenName = new List<string> { "Lesley" },
                 FamilyName = new List<string> { "Cunliffe" },
                 DateOfBirth = new List<string> { "+1945-05-21T00:00:00Z" },
-                PlaceOfBirth = new List<string> { Missing },
+                PlaceOfBirth = new List<string> { Constants.Missing },
                 DateOfDeath = new List<string> { "+1997-03-28T00:00:00Z" },
-                PlaceOfDeath = new List<string> { Missing },
+                PlaceOfDeath = new List<string> { Constants.Missing },
                 Occupation = new List<string> { "journalist", "writer", "editor" },
                 UriCollection = new UriCollectionDto
                 {
@@ -262,7 +260,7 @@ namespace WikidataEditorTests.Services
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient);
+            var service = new WikidataRestService(httpClient, null, null);
 
             var actual = service.GetData(id);
 
