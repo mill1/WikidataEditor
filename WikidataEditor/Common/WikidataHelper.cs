@@ -4,7 +4,7 @@ using WikidataEditor.Models;
 
 namespace WikidataEditor.Common
 {
-    public class WikidataHelper
+    public class WikidataHelper : IWikidataHelper
     {
         private static readonly Regex WikidataIdPattern = new(@"Q\d{2}", RegexOptions.Compiled);
         private readonly HttpClient _client;
@@ -65,7 +65,6 @@ namespace WikidataEditor.Common
 
                 return value;
             }
-
             return codes.en;
         }
 
@@ -93,7 +92,7 @@ namespace WikidataEditor.Common
 
             return JObject.Parse(jsonString);
         }
-        
+
         private string GetValueOfFirstFilledProperty(LanguageCodes codes)
         {
             // Q114658910

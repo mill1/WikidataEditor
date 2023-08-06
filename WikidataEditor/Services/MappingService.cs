@@ -4,11 +4,11 @@ using WikidataEditor.Models.Instances;
 
 namespace WikidataEditor.Services
 {
-    public class MappingService
+    public class MappingService : IMappingService
     {
-        private readonly WikidataHelper _helper;
+        private readonly IWikidataHelper _helper;
 
-        public MappingService(WikidataHelper wikidataHelper)
+        public MappingService(IWikidataHelper wikidataHelper)
         {
             _helper = wikidataHelper;
         }

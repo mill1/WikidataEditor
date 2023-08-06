@@ -11,10 +11,10 @@ namespace WikidataEditor.Services
     public class WikidataRestService : IWikidataRestService
     {
         private readonly HttpClient _client;
-        private readonly MappingService _mappingService;
-        private readonly WikidataHelper _helper;
+        private readonly IMappingService _mappingService;
+        private readonly IWikidataHelper _helper;
 
-        public WikidataRestService(HttpClient httpClient, MappingService mappingService, WikidataHelper wikidataHelper)
+        public WikidataRestService(HttpClient httpClient, IMappingService mappingService, IWikidataHelper wikidataHelper)
         {
             _client = httpClient;
             _client.DefaultRequestHeaders.Accept.Clear();
