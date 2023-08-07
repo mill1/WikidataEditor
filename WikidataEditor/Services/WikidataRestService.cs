@@ -98,7 +98,7 @@ namespace WikidataEditor.Services
             if (values.First() == Constants.Missing)
                 return values;
 
-            var ids = instances.Select(i => i.value.content.ToString());
+            var ids = instances.Select(id => id.value.content.ToString());
             return values.Zip(ids, (first, second) => first + " (" + second + ")");
         }
 
