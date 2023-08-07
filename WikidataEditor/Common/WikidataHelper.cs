@@ -6,7 +6,7 @@ namespace WikidataEditor.Common
 {
     public class WikidataHelper : IWikidataHelper
     {
-        private static readonly Regex WikidataIdPattern = new(@"Q\d{2}", RegexOptions.Compiled);
+        private static readonly Regex WikidataIdPattern = new(@"Q\d{1}", RegexOptions.Compiled);
         private readonly HttpClient _client;
 
         public WikidataHelper(HttpClient client)

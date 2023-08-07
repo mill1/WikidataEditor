@@ -19,8 +19,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<HttpClient>();
 builder.Services.AddScoped<IWikidataRestService, WikidataRestService>();
 builder.Services.AddScoped<IWikidataService, WikidataService>();
-builder.Services.AddScoped<MappingService>();
-builder.Services.AddScoped<WikidataHelper>();
+builder.Services.AddScoped<IMappingService, MappingService>();
+builder.Services.AddScoped<IWikidataHelper, WikidataHelper>();
 
 var app = builder.Build();
 

@@ -3,7 +3,7 @@
     public class StatementsOnAstronomicalObjectTypes: IUriStatements
     {
         /// <summary>
-        /// Statements regarding instance (human = 'Q5')
+        /// Statements regarding instance
         /// </summary>
         public Statement[] P31 { get; set; }
         /// <summary>
