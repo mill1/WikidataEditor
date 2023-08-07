@@ -48,6 +48,7 @@ namespace WikidataEditor.Services
             return ResolveData(statementInstanceOf.ToObject<Statement[]>(), jObject, statementsCount);
         }
 
+        // TODO: generalize further without using Reflection
         private IWikidataItemDto ResolveData(Statement[] statementInstanceOf, JObject jObject, int statementsCount)
         {
             if (ContainsValue(statementInstanceOf, Constants.WikidataIdHuman))

@@ -1,4 +1,6 @@
-﻿namespace WikidataEditor.Models
+﻿// https://www.mediawiki.org/wiki/Wikibase/DataModel
+
+namespace WikidataEditor.Models
 {
     public class WikidataItemBase : IWikidataItem
     {
