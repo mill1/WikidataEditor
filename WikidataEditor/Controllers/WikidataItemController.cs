@@ -14,13 +14,13 @@ namespace WikidataEditor.Controllers
             _wikidataService = wikidataService;
         }
 
-        [HttpGet("humans/{id}")]
-        public IActionResult GetHumanById(string id)
+        [HttpGet("{id}")]
+        public IActionResult GetId(string id)
         {
             /*
-                small  https://localhost:7085/api/items/humans/Q99589194 (Lesley Cunliffe)
-                medium https://localhost:7085/api/items/humans/Q15429542 (John Fleming)
-                large  https://localhost:7085/api/items/humans/Q8016     (Winston Churchill)
+                human:                   https://localhost:7085/api/items/Q15429542 (John Fleming)
+                disambiguation page:     https://localhost:7085/api/items/Q231486 (Silver)
+                astronomical object type https://localhost:7085/api/items/Q3863 (asteroid)
             */
             return Ok(_wikidataService.GetDataOnHuman(id));
         }
