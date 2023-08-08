@@ -31,6 +31,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseDefaultFiles(new DefaultFilesOptions
+{
+    DefaultFileNames = new List<string> { "index.html" }
+});
+app.UseStaticFiles();
+
 app.UseMiddleware(typeof(ExceptionHandlingMiddleware));
 
 app.UseHttpsRedirection();

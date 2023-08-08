@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link href="styles.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title></title>
+</head>
+<body>
+
+    <h3>Wikidata Editor v1.0</h3>
+
+    <strong>Core data of wikidata item</strong><br />
+    Implemented entities:
+    <a href="https://www.wikidata.org/wiki/Q5" target="_blank">humans</a>,
+    <a href="https://www.wikidata.org/wiki/Q4167410" target="_blank">disambiguation pages</a> and
+    <a href="https://www.wikidata.org/wiki/Q17444909" target="_blank">astronomical object type</a>
+    <form action="/api/coredata/items/" method="get">
+        <label for="itemidcoredata">Wikidata item id:</label><br>
+        <input type="text" id="itemidcoredata" name="id" maxlength="10" size="10" placeholder="Q.."><br>
+        <input type="submit" value="Submit">
+    </form>
+    <hr />
+    <strong>Update item description</strong><br />   
+    <form action="/api/descriptions/" method="get">
+        <label for="itemidupdatedescription">Wikidata item id:</label><br>
+        <input type="text" id="itemidupdatedescription" name="id" maxlength="10" size="10" placeholder="Q.."><br>
+        <label for="itemdescriptionupdatedescription">Wikidata item id:</label><br>
+        <input type="text" id="itemdescriptionupdatedescription" name="description" maxlength="100" size="100" placeholder="New description of item"><br>
+        <input type="submit" value="Submit">
+    </form>
+
+    <p>&nbsp;</p>
+    <p><i>Go back (Chrome: <b>Alt</b>+<b>&#8592</b>) after submitting to return to this page.</i></p>
+</body>
+</html>
