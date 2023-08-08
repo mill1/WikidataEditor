@@ -11,9 +11,9 @@ namespace WikidataEditor.Services
             _wikidataService = wikidataService;
         }
 
-        public IWikidataItemDto GetDataOnHuman(string id)
+        public IWikidataItemDto GetCoreData(string id)
         {
-            return _wikidataService.GetData(id);
+            return _wikidataService.GetCoreData(id);
         }
     }
 }

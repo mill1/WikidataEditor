@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
-using System.Text.RegularExpressions;
 using WikidataEditor.Common;
 using WikidataEditor.Dtos;
 using WikidataEditor.Models;
@@ -24,7 +23,7 @@ namespace WikidataEditor.Services
             _helper = wikidataHelper;
         }
 
-        public IWikidataItemDto GetData(string id)
+        public IWikidataItemDto GetCoreData(string id)
         {            
             string Uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id;
             var jsonString = _client.GetStringAsync(Uri).Result;

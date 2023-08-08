@@ -17,7 +17,7 @@ namespace WikidataEditorTests.Controllers
             var wikidataService = new Mock<IWikidataService>();
             var id = "Q1";
 
-            wikidataService.Setup(x => x.GetDataOnHuman(It.IsAny<string>()))
+            wikidataService.Setup(x => x.GetCoreData(It.IsAny<string>()))
                            .Returns(new WikidataItemHumanDto(new WikidataItemBaseDto { Id = id }));
 
             var controller = new WikidataItemController(wikidataService.Object);

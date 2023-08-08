@@ -32,7 +32,7 @@ namespace WikidataEditorTests.Services
             var service = new WikidataRestService(httpClient, null, null);
 
             // Assert
-            service.Invoking(y => y.GetData(id))
+            service.Invoking(y => y.GetCoreData(id))
             .Should().Throw<ArgumentException>()
             .WithMessage("Result is not of type item. Encountered type: someothertype");
         }
@@ -84,7 +84,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);            
             var service = new WikidataRestService(httpClient, null, helperMock.Object);
 
-            var actual = service.GetData(idNonHuman);
+            var actual = service.GetCoreData(idNonHuman);
 
             actual.Should().BeEquivalentTo(expected);
         }
@@ -150,7 +150,7 @@ namespace WikidataEditorTests.Services
             // Act
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
-            var actual = service.GetData(id);
+            var actual = service.GetCoreData(id);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);
@@ -189,7 +189,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
 
-            var actual = service.GetData(id);
+            var actual = service.GetCoreData(id);
 
             actual.Label.Should().Be("Dutch label");
         }
@@ -227,7 +227,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
 
-            var actual = service.GetData(id);
+            var actual = service.GetCoreData(id);
 
             // Assert
             actual.Label.Should().Be("Afrikaans label");
@@ -310,7 +310,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
 
-            var actual = service.GetData(id);
+            var actual = service.GetCoreData(id);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);
