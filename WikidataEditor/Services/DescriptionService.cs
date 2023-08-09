@@ -5,6 +5,7 @@ using WikidataEditor.Dtos;
 
 namespace WikidataEditor.Services
 {
+    // TODO: interface + tests
     public class DescriptionService
     {
         private readonly IHttpClientFactory _httpClientFactory;
@@ -14,7 +15,7 @@ namespace WikidataEditor.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task UpdateDescription(string id, string description, string languageCode)
+        public async Task UpsertDescription(string id, string description, string languageCode)
         {
             var request = new UpdateDescriptionRequestDto
             {
