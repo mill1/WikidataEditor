@@ -11,7 +11,14 @@ namespace WikidataEditor.Controllers
 
         public WikidataItemController(IWikidataService wikidataService)
         {
+            // human: https://localhost:7085/api/coredata/items/?id=Q99589194 (Lesley Cunliffe)
             _wikidataService = wikidataService;
+        }
+
+        [HttpGet()]
+        public IActionResult Get([FromQuery(Name = "id")] string id)
+        {
+            return Ok(_wikidataService.GetCoreData(id));
         }
 
         [HttpGet("{id}")]

@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using System.Net.Http.Headers;
 using WikidataEditor.Common;
 using WikidataEditor.Dtos;
 using WikidataEditor.Models;
@@ -9,24 +8,22 @@ namespace WikidataEditor.Services
 {
     public class WikidataRestService : IWikidataRestService
     {
-        private readonly HttpClient _client;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMappingService _mappingService;
         private readonly IWikidataHelper _helper;
 
-        public WikidataRestService(HttpClient httpClient, IMappingService mappingService, IWikidataHelper wikidataHelper)
+        public WikidataRestService(IHttpClientFactory httpClientFactory, IMappingService mappingService, IWikidataHelper wikidataHelper)
         {
-            _client = httpClient;
-            _client.DefaultRequestHeaders.Accept.Clear();
-            _client.DefaultRequestHeaders.Add("User-Agent", "C# Application");
-            _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClientFactory = httpClientFactory;
             _mappingService = mappingService;
             _helper = wikidataHelper;
         }
 
         public IWikidataItemDto GetCoreData(string id)
-        {            
-            string Uri = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/" + id;
-            var jsonString = _client.GetStringAsync(Uri).Result;
+        {
+            var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientWikidataRestApi);
+            string Uri = "items/" + id;
+            var jsonString = httpClient.GetStringAsync(Uri).Result;
 
             JObject jObject = JObject.Parse(jsonString);
 
@@ -40,7 +37,7 @@ namespace WikidataEditor.Services
 
             if (statementInstanceOf == null)
             {
-                WikidataItemOther item = jObject.ToObject<WikidataItemOther>();                
+                WikidataItemOther item = jObject.ToObject<WikidataItemOther>();
                 return new WikidataItemOtherDto(ResolveBasicData(item, null, statementsCount, null));
             }
 
@@ -72,7 +69,7 @@ namespace WikidataEditor.Services
             }
 
             // Other types of items
-            WikidataItemOther itemOther = jObject.ToObject<WikidataItemOther>();            
+            WikidataItemOther itemOther = jObject.ToObject<WikidataItemOther>();
             return new WikidataItemOtherDto(ResolveBasicData(itemOther, statementInstanceOf, statementsCount, null));
         }
 
@@ -126,7 +123,7 @@ namespace WikidataEditor.Services
             return new UriCollectionDto
             {
                 WikidataUri = "https://www.wikidata.org/wiki/" + item.id,
-                Wikipedias = GetWikipedias(item.sitelinks),  
+                Wikipedias = GetWikipedias(item.sitelinks),
                 InstanceUris = instanceUris
             };
         }
@@ -192,7 +189,7 @@ namespace WikidataEditor.Services
                 .Where(sl => sl.PropertyType == typeof(Sitelink))
                 .Select(sl => (Sitelink?)sl.GetValue(sitelinks))
                 .Where(x => x != null).ToList();
-        }        
+        }
 
         private static Sitelinks CreateMainSitelinks(Sitelinks sitelinks)
         {

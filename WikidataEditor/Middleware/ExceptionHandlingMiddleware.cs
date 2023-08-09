@@ -32,7 +32,7 @@ namespace WikidataEditor.Middleware
             _logger.LogError(e, $"Exception thrown by API controller method {context.Request.Path}. Error id: {id}", context);
 
             var message = e.Message;
-            var statusCode = ((HttpRequestException?)e?.InnerException)?.StatusCode;
+            var statusCode = ((HttpRequestException?)e?.InnerException)?.StatusCode ?? ((HttpRequestException?)e)?.StatusCode;
 
             if (statusCode == null)
                 statusCode = HttpStatusCode.InternalServerError;

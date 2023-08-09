@@ -22,7 +22,7 @@ namespace WikidataEditorTests.Controllers
 
             var controller = new WikidataItemController(wikidataService.Object);
 
-            var result = controller.GetId("some id");
+            var result = controller.GetCoreData("some id");
 
             result.Should().BeOfType<OkObjectResult>();
             var value = ((ObjectResult)result).Value;

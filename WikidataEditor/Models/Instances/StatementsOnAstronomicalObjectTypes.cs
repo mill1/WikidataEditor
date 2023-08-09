@@ -1,6 +1,6 @@
 ﻿namespace WikidataEditor.Models.Instances
 {
-    public class StatementsOnAstronomicalObjectTypes: IUriStatements
+    public class StatementsOnAstronomicalObjectTypes : IUriStatements
     {
         /// <summary>
         /// Statements regarding instance
