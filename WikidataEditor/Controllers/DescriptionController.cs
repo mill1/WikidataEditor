@@ -15,11 +15,9 @@ namespace WikidataEditor.Controllers
         }
 
         [HttpGet()]
-        public async Task<IActionResult> UpdateDescriptionAsync([FromQuery(Name = "id")] string id, [FromQuery(Name = "description")] string description)
+        public async Task<IActionResult> UpdateDescriptionAsync([FromQuery(Name = "id")] string id, [FromQuery(Name = "description")] string description, [FromQuery(Name = "languagecode")] string languageCode)
         {
-            await service.UpdateDescription(id, description);
-
-
+            await service.UpdateDescription(id, description, languageCode);
 
             return Ok($"https://www.wikidata.org/wiki/{id}");
         }

@@ -16,16 +16,23 @@
     <a href="https://www.wikidata.org/wiki/Q4167410" target="_blank">disambiguation pages</a> and
     <a href="https://www.wikidata.org/wiki/Q17444909" target="_blank">astronomical object types</a>
     <form action="/api/coredata/items/" method="get">
-        <label for="itemidcoredata">Wikidata item id:</label><br>
+        <label for="itemidcoredata">Wikidata item id:</label>
         <input type="text" id="itemidcoredata" name="id" maxlength="10" size="10" placeholder="Q.."><br>
         <input type="submit" value="Submit">
     </form>
     <hr />
     <strong>Update item description</strong><br />   
     <form action="/api/descriptions/" method="get">
-        <label for="itemidupdatedescription">Wikidata item id:</label><br>
+        <label for="itemidupdatedescription">Wikidata item id:</label>
         <input type="text" id="itemidupdatedescription" name="id" maxlength="10" size="10" placeholder="Q.."><br>
-        <label for="itemdescriptionupdatedescription">Wikidata item id:</label><br>
+        <label for="languagecode">Language:</label>
+        <select name="languagecode" id="languagecode">
+            <option value="en">English</option>
+            <option value="nl">Dutch</option>
+            <option value="de">German</option>
+            <option value="fr">French</option>
+        </select><br>
+        <label for="itemdescriptionupdatedescription">Description:</label>
         <input type="text" id="itemdescriptionupdatedescription" name="description" maxlength="100" size="100" placeholder="New description of item"><br>
         <input type="submit" value="Submit">
     </form>
