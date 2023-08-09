@@ -5,9 +5,9 @@ namespace WikidataEditor.Services
 {
     public class LabelService
     {
-        private readonly HttpClientWikidataApi _httpClientWikidataApi;
+        private readonly IHttpClientWikidataApi _httpClientWikidataApi;
 
-        public LabelService(HttpClientWikidataApi httpClientWikidataApi)
+        public LabelService(IHttpClientWikidataApi httpClientWikidataApi)
         {
             _httpClientWikidataApi = httpClientWikidataApi;
         }

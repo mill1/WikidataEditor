@@ -15,7 +15,7 @@
     <a href="https://www.wikidata.org/wiki/Q5" target="_blank">humans</a>,
     <a href="https://www.wikidata.org/wiki/Q4167410" target="_blank">disambiguation pages</a> and
     <a href="https://www.wikidata.org/wiki/Q17444909" target="_blank">astronomical object types</a>
-    <form action="/api/coredata/items/" method="get">
+    <form action="/api/items/coredata/" method="get">
         <label for="itemidcoredata">Wikidata item id:</label>
         <input type="text" id="itemidcoredata" name="id" maxlength="10" size="10" placeholder="Q..."><br>
         <input type="submit" value="Submit">
@@ -23,7 +23,7 @@
 
     <hr />
 
-    <form action="/api/labels/" method="get">
+    <form action="/api/items/label/upsert/" method="get">
         <table>
             <tr>
                 <th colspan="2">Update item label</th>
@@ -71,7 +71,7 @@
 
     <hr />
 
-    <form action="/api/descriptions/" method="get">
+    <form action="/api/items/description/upsert/" method="get">
         <table>
             <tr>
                 <th colspan="2">Update item description</th>

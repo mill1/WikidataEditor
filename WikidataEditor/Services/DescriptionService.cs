@@ -1,18 +1,41 @@
-﻿using WikidataEditor.Common;
+﻿using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
+using WikidataEditor.Common;
 using WikidataEditor.Dtos.Requests;
+using WikidataEditor.Models;
 
 namespace WikidataEditor.Services
 {
     public class DescriptionService
     {
-        private readonly HttpClientWikidataApi _httpClientWikidataApi;
+        private readonly IHttpClientWikidataApi _httpClientWikidataApi;
 
-        public DescriptionService(HttpClientWikidataApi httpClientWikidataApi)
+        public DescriptionService(IHttpClientWikidataApi httpClientWikidataApi)
         {
             _httpClientWikidataApi = httpClientWikidataApi;
         }
 
-        //public IEnumerable
+        public async Task <IEnumerable<EntityTextDto>> Get(string id)
+        {
+            string uri = "items/" + id + "/descriptions";
+            var jsonString = await _httpClientWikidataApi.GetStringAsync(uri);
+            JObject jsonObject = JObject.Parse(jsonString);
+            var codes = jsonObject.ToObject<LanguageCodes>();
+
+            var descriptions = codes.GetType().GetProperties()
+            .Where(c => c.PropertyType == typeof(string))
+            .Select(c =>
+                {
+                    return new EntityTextDto
+                    {
+                        LanguageCode = c.Name,
+                        Value = (string)c.GetValue(codes)
+                    };
+                })
+            .Where(et => !string.IsNullOrEmpty(et.Value));
+
+            return descriptions;
+        }
 
         public async Task UpsertDescription(string id, string description, string languageCode, string comment)
         {
