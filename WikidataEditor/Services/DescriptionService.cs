@@ -21,7 +21,7 @@ namespace WikidataEditor.Services
                 description = description,
                 tags = new string[0],
                 bot = false,
-                comment = "Updated description"
+                comment = "Added/updated description"
             };
 
             string json = JsonConvert.SerializeObject(request);
