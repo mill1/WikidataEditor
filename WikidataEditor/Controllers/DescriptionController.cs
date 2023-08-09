@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Xml.Linq;
-using WikidataEditor.Models;
 using WikidataEditor.Services;
 
 namespace WikidataEditor.Controllers
@@ -22,7 +20,7 @@ namespace WikidataEditor.Controllers
             await service.UpdateDescription(id, description);
 
 
-            
+
             return Ok($"https://www.wikidata.org/wiki/{id}");
         }
     }

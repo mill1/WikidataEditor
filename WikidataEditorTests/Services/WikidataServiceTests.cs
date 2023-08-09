@@ -16,7 +16,7 @@ namespace WikidataEditorTests.Services
 
             var id = Guid.NewGuid().ToString();
 
-            var expected  = new WikidataItemHumanDto(new WikidataItemBaseDto { Id  = id });
+            var expected = new WikidataItemHumanDto(new WikidataItemBaseDto { Id = id });
 
             wikidataRestServiceMock.Setup(x => x.GetCoreData(id))
             .Returns(expected);

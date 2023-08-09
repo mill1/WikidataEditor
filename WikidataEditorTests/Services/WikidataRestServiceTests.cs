@@ -11,25 +11,37 @@ namespace WikidataEditorTests.Services
 {
     [TestClass]
     public class WikidataRestServiceTests
-    {       
+    {
+        private const string BaseAddress = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/";
+
+        Mock<IHttpClientFactory> factoryMock;
+
+        [TestInitialize()]
+        public void TestInitialize()
+        {
+            factoryMock = new Mock<IHttpClientFactory>();
+        }
+
         [TestMethod]
         public void GetDataOnHuman_ShouldThrowExceptionIfNotTypeItem()
         {
             // Arrange
             var id = "Q1";
             var handlerMock = new MockHttpMessageHandler();
-            var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
             // Setup response
             string jsonString = @"{""type"":""someothertype"",""id"":""Q1""}";
 
             handlerMock
-                .When(urlBase + id)
+                .When(BaseAddress + "items/" + id)
                 .Respond("application/json", jsonString);
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient, null, null);
+            httpClient.BaseAddress = new Uri(BaseAddress);
+            factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
+
+            var service = new WikidataRestService(factoryMock.Object, null, null);
 
             // Assert
             service.Invoking(y => y.GetCoreData(id))
@@ -70,19 +82,20 @@ namespace WikidataEditorTests.Services
             string jsonString = @"{""type"":""item"",""labels"":{""en"":""horse"",""nl"":""paard""},""descriptions"":{""en"":""horse"",""nl"":""renpaard""},""aliases"":{""en"":[""Gestion Bonfire""]},""statements"":{""P31"":[{""id"":""Q368481"",""value"":{""type"":""value"",""content"":""Q726""}}]},""sitelinks"":{},""id"":""Q368481""}";
 
             var handlerMock = new MockHttpMessageHandler();
-            var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
             // Setup responses
             handlerMock
-                .When(urlBase + idNonHuman)
+                .When(BaseAddress + "items/" + idNonHuman)
                 .Respond("application/json", jsonString);
             handlerMock
-                .When(urlBase + "Q726" + @"/labels")
+                .When(BaseAddress + "items/Q726" + @"/labels")
                 .Respond("application/json", @"{""af"":""perd"",""en"":""horse"",""gl"":""Cabalo""}");
 
             // Act
-            var httpClient = new HttpClient(handlerMock);            
-            var service = new WikidataRestService(httpClient, null, helperMock.Object);
+            var httpClient = new HttpClient(handlerMock);
+            httpClient.BaseAddress = new Uri(BaseAddress);
+            factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
+            var service = new WikidataRestService(factoryMock.Object, null, helperMock.Object);
 
             var actual = service.GetCoreData(idNonHuman);
 
@@ -136,20 +149,21 @@ namespace WikidataEditorTests.Services
                 .Returns(expected);
 
             var handlerMock = new MockHttpMessageHandler();
-            var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
             // Setup responses
             string jsonString = @"{""type"":""item"",""labels"":{},""descriptions"":{},""aliases"":{},""statements"":{""P31"":[{""id"":""Q99589194"",""value"":{""type"":""value"",""content"":""Q5""}}]},""sitelinks"":{},""id"":""Q99589194""}";
             handlerMock
-                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
+                .When(BaseAddress + "items/" + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
             handlerMock
-                .When(urlBase + id)
+                .When(BaseAddress + "items/" + id)
                 .Respond("application/json", jsonString);
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
+            httpClient.BaseAddress = new Uri(BaseAddress);
+            factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
+            var service = new WikidataRestService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
             var actual = service.GetCoreData(id);
 
             // Assert
@@ -175,19 +189,20 @@ namespace WikidataEditorTests.Services
             string jsonString = @"{""type"":""item"",""labels"":{""af"":""Afrikaans label"",""nl"":""Dutch label"",""no"":""Norwegian label""},""descriptions"":{},""aliases"":{},""statements"":{""P31"":[{""id"":""Q99589194"",""value"":{""type"":""value"",""content"":""Q5""}}]},""sitelinks"":{},""id"":""Q99589194""}";
 
             var handlerMock = new MockHttpMessageHandler();
-            var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
             // Setup responses
             handlerMock
-                .When(urlBase + id)
+                .When(BaseAddress + "items/" + id)
                 .Respond("application/json", jsonString);
             handlerMock
-                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
+                .When(BaseAddress + "items/" + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
+            httpClient.BaseAddress = new Uri(BaseAddress);
+            factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
+            var service = new WikidataRestService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
 
             var actual = service.GetCoreData(id);
 
@@ -213,19 +228,20 @@ namespace WikidataEditorTests.Services
             string jsonString = @"{""type"":""item"",""labels"":{""af"":""Afrikaans label"",""no"":""Norwegian label""},""descriptions"":{},""aliases"":{},""statements"":{""P31"":[{""id"":""Q99589194"",""value"":{""type"":""value"",""content"":""Q5""}}]},""sitelinks"":{},""id"":""Q99589194""}";
 
             var handlerMock = new MockHttpMessageHandler();
-            var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
             // Setup responses
             handlerMock
-                .When(urlBase + id)
+                .When(BaseAddress + "items/" + id)
                 .Respond("application/json", jsonString);
             handlerMock
-                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
+                .When(BaseAddress + "items/" + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
+            httpClient.BaseAddress = new Uri(BaseAddress);
+            factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
+            var service = new WikidataRestService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
 
             var actual = service.GetCoreData(id);
 
@@ -269,7 +285,7 @@ namespace WikidataEditorTests.Services
 
             var helperMock = new Mock<IWikidataHelper>();
             helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
-            .Returns( "some value" );
+            .Returns("some value");
             helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
             .Returns(new List<string> { "Q5" });
 
@@ -278,37 +294,38 @@ namespace WikidataEditorTests.Services
                 .Returns(expected);
 
             var handlerMock = new MockHttpMessageHandler();
-            var urlBase = @"https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
             // Setup various responses
             handlerMock
-                .When(urlBase + id)
+                .When(BaseAddress + "items/" + id)
                 .Respond("application/json", jsonString);
             handlerMock
-                .When(urlBase + Constants.WikidataIdHuman + @"/labels")
+                .When(BaseAddress + "items/" + Constants.WikidataIdHuman + @"/labels")
                 .Respond("application/json", @"{""af"":""mens"",""en"":""human"",""nn"":""menneske""}");
             handlerMock
-                .When(urlBase + "Q6581072" + @"/labels") // https://www.wikidata.org/wiki/Q6581072 : to be used in "sex or gender" (P21)
+                .When(BaseAddress + "items/Q6581072" + @"/labels") // https://www.wikidata.org/wiki/Q6581072 : to be used in "sex or gender" (P21)
                 .Respond("application/json", @"{""af"":""vroulik"", ""en"":""female"",""zu"":""isifazane""}");
             handlerMock
-                .When(urlBase + "Q18658557" + @"/labels")
+                .When(BaseAddress + "items/Q18658557" + @"/labels")
                 .Respond("application/json", @"{""af"":""Lesley"",""en"":""Lesley"",""zu"":""Lesley""}");
             handlerMock
-                .When(urlBase + "Q21493284" + @"/labels")
+                .When(BaseAddress + "items/Q21493284" + @"/labels")
                 .Respond("application/json", @"{""af"":""Cunliffe"",""en"":""Cunliffe"",""zu"":""Cunliffe""}");
             handlerMock
-                .When(urlBase + "Q1930187" + @"/labels")
+                .When(BaseAddress + "items/Q1930187" + @"/labels")
                 .Respond("application/json", @"{""af"":""joernalis"",""en"":""journalist"",""zu"":""intatheli""}");
             handlerMock
-                .When(urlBase + "Q36180" + @"/labels")
+                .When(BaseAddress + "items/Q36180" + @"/labels")
                 .Respond("application/json", @"{""af"":""skrywer"",""en"":""writer"",""zu"":""umbhali""}");
             handlerMock
-                .When(urlBase + "Q1607826" + @"/labels")
+                .When(BaseAddress + "items/Q1607826" + @"/labels")
                 .Respond("application/json", @"{""ak"":""Samufo"",""en"":""editor"", ""zh-tw"":""\u7de8\u8f2f""}");
 
             // Act
             var httpClient = new HttpClient(handlerMock);
-            var service = new WikidataRestService(httpClient, mappingServiceMock.Object, helperMock.Object);
+            httpClient.BaseAddress = new Uri(BaseAddress);
+            factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
+            var service = new WikidataRestService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
 
             var actual = service.GetCoreData(id);
 
