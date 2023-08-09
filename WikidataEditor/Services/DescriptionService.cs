@@ -1,17 +1,15 @@
-﻿using Newtonsoft.Json;
-using System.Text;
-using WikidataEditor.Common;
+﻿using WikidataEditor.Common;
 using WikidataEditor.Dtos.Requests;
 
 namespace WikidataEditor.Services
 {
     public class DescriptionService
     {
-        private readonly HttpClientHelper _httpClientHelper;
+        private readonly HttpClientWikidataApi _httpClientWikidataApi;
 
-        public DescriptionService(HttpClientHelper httpClientHelper)
+        public DescriptionService(HttpClientWikidataApi httpClientWikidataApi)
         {
-            _httpClientHelper = httpClientHelper;
+            _httpClientWikidataApi = httpClientWikidataApi;
         }
 
         public async Task UpsertDescription(string id, string description, string languageCode, string comment)
@@ -25,7 +23,7 @@ namespace WikidataEditor.Services
             };
 
             string uri = $"items/{id}/descriptions/{languageCode}";
-            await _httpClientHelper.PutAsync(uri, request);            
+            await _httpClientWikidataApi.PutAsync(uri, request);            
         }
     }
 }

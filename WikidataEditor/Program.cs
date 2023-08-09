@@ -3,6 +3,11 @@
  * https://doc.wikimedia.org/Wikibase/master/js/rest-api/
  */
 
+// TODO: Add statement(s):
+// https://en.wikipedia.org/wiki/Thomas_Taylor,_Baron_Taylor_of_Gryfe
+// https://www.wikidata.org/wiki/Q7794369
+// https://www.theguardian.com/news/2001/jul/30/guardianobituaries1
+
 using Microsoft.Net.Http.Headers;
 using WikidataEditor.Common;
 using WikidataEditor.Middleware;
@@ -27,7 +32,7 @@ builder.Services.AddHttpClient(Constants.HttpClientWikidataRestApi, httpClient =
 builder.Services.AddScoped<ICoreDataService, CoreDataService>();
 builder.Services.AddScoped<IMappingService, MappingService>();
 builder.Services.AddScoped<IWikidataHelper, WikidataHelper>();
-builder.Services.AddScoped<HttpClientHelper>();
+builder.Services.AddScoped<IHttpClientWikidataApi, HttpClientWikidataApi>();
 builder.Services.AddScoped<LabelService>();
 builder.Services.AddScoped<DescriptionService>();
 

@@ -7,11 +7,11 @@ namespace WikidataEditor.Common
     public class WikidataHelper : IWikidataHelper
     {
         private static readonly Regex WikidataIdPattern = new(@"Q\d{1}", RegexOptions.Compiled);
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientWikidataApi _httpClientWikidataApi;
 
-        public WikidataHelper(IHttpClientFactory httpClientFactory)
+        public WikidataHelper(IHttpClientWikidataApi httpClientWikidataApi)
         {
-            _httpClientFactory = httpClientFactory;
+            _httpClientWikidataApi = httpClientWikidataApi;
         }
 
         public IEnumerable<string> ResolveValue(Statement[] statements)
@@ -87,9 +87,8 @@ namespace WikidataEditor.Common
 
         private JObject GetEntityData(string itemId, string wikidataTypeOfData)
         {
-            var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientWikidataRestApi);
             string uri = "items/" + itemId + "/" + wikidataTypeOfData;
-            var jsonString = httpClient.GetStringAsync(uri).Result;
+            var jsonString = _httpClientWikidataApi.GetStringAsync(uri).Result;
 
             return JObject.Parse(jsonString);
         }

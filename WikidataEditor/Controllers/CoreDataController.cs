@@ -9,10 +9,10 @@ namespace WikidataEditor.Controllers
     {
         private readonly ICoreDataService _coreDataService;
 
-        public CoreDataController(ICoreDataService wikidataService)
+        public CoreDataController(ICoreDataService coreDataService)
         {
             // human: https://localhost:7085/api/coredata/items/?id=Q99589194 (Lesley Cunliffe)
-            _coreDataService = wikidataService;
+            _coreDataService = coreDataService;
         }
 
         [HttpGet()]

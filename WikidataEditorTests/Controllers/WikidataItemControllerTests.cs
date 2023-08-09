@@ -14,13 +14,13 @@ namespace WikidataEditorTests.Controllers
         public void GetHumanById_ShouldReturnOkResult()
         {
             // Arrange
-            var wikidataService = new Mock<IWikidataService>();
+            var coreDataService = new Mock<ICoreDataService>();
             var id = "Q1";
 
-            wikidataService.Setup(x => x.GetCoreData(It.IsAny<string>()))
+            coreDataService.Setup(x => x.Get(It.IsAny<string>()))
                            .Returns(new WikidataItemHumanDto(new WikidataItemBaseDto { Id = id }));
 
-            var controller = new CoreDataController(wikidataService.Object);
+            var controller = new CoreDataController(coreDataService.Object);
 
             var result = controller.Get("some id");
 
