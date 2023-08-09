@@ -6,6 +6,7 @@ using WikidataEditor.Dtos;
 namespace WikidataEditor.Services
 {
     // TODO: interface + tests
+    // TODO: LabelService https://www.wikidata.org/wiki/Q114282849
     public class DescriptionService
     {
         private readonly IHttpClientFactory _httpClientFactory;
