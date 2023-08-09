@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WikidataEditor.Models;
 using WikidataEditor.Services;
 
 namespace WikidataEditor.Controllers
@@ -15,10 +16,18 @@ namespace WikidataEditor.Controllers
         }
 
         [HttpGet("{id}/descriptions")]
-        public IActionResult Get(string id)
+        public async Task<IActionResult> Get(string id)
         {
             // John Fleming: https://localhost:7085/api/items/Q15429542/descriptions
-            return Ok(service.Get(id));
+            return Ok(await service.Get(id));
+        }
+
+        [HttpGet("{id}/descriptions/languagecode/{languageCode}")]
+        public async Task<IActionResult> GetByLanguageCode(string id, string languageCode)
+        {
+            // John Fleming: https://localhost:7085/api/items/Q15429542/descriptions/languagecode/en
+            // TODO
+            throw new NotImplementedException();
         }
 
         [HttpGet("description/upsert")]
