@@ -24,10 +24,11 @@ builder.Services.AddHttpClient(Constants.HttpClientWikidataRestApi, httpClient =
     httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Wikidata Editor application");
 });
 
-builder.Services.AddScoped<IWikidataRestService, WikidataRestService>();
-builder.Services.AddScoped<IWikidataService, WikidataService>();
+builder.Services.AddScoped<ICoreDataService, CoreDataService>();
 builder.Services.AddScoped<IMappingService, MappingService>();
 builder.Services.AddScoped<IWikidataHelper, WikidataHelper>();
+builder.Services.AddScoped<HttpClientHelper>();
+builder.Services.AddScoped<LabelService>();
 builder.Services.AddScoped<DescriptionService>();
 
 var app = builder.Build();

@@ -10,7 +10,7 @@ using WikidataEditor.Services;
 namespace WikidataEditorTests.Services
 {
     [TestClass]
-    public class WikidataRestServiceTests
+    public class CoreDataServiceTests
     {
         private const string BaseAddress = "https://www.wikidata.org/w/rest.php/wikibase/v0/entities/";
 
@@ -41,10 +41,10 @@ namespace WikidataEditorTests.Services
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
-            var service = new WikidataRestService(factoryMock.Object, null, null);
+            var service = new CoreDataService(factoryMock.Object, null, null);
 
             // Assert
-            service.Invoking(y => y.GetCoreData(id))
+            service.Invoking(y => y.Get(id))
             .Should().Throw<ArgumentException>()
             .WithMessage("Result is not of type item. Encountered type: someothertype");
         }
@@ -95,9 +95,9 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
-            var service = new WikidataRestService(factoryMock.Object, null, helperMock.Object);
+            var service = new CoreDataService(factoryMock.Object, null, helperMock.Object);
 
-            var actual = service.GetCoreData(idNonHuman);
+            var actual = service.Get(idNonHuman);
 
             actual.Should().BeEquivalentTo(expected);
         }
@@ -163,8 +163,8 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
-            var service = new WikidataRestService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
-            var actual = service.GetCoreData(id);
+            var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
+            var actual = service.Get(id);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);
@@ -202,9 +202,9 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
-            var service = new WikidataRestService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
+            var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
 
-            var actual = service.GetCoreData(id);
+            var actual = service.Get(id);
 
             actual.Label.Should().Be("Dutch label");
         }
@@ -241,9 +241,9 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
-            var service = new WikidataRestService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
+            var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
 
-            var actual = service.GetCoreData(id);
+            var actual = service.Get(id);
 
             // Assert
             actual.Label.Should().Be("Afrikaans label");
@@ -325,9 +325,9 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
-            var service = new WikidataRestService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
+            var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
 
-            var actual = service.GetCoreData(id);
+            var actual = service.Get(id);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);

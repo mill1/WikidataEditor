@@ -20,9 +20,9 @@ namespace WikidataEditorTests.Controllers
             wikidataService.Setup(x => x.GetCoreData(It.IsAny<string>()))
                            .Returns(new WikidataItemHumanDto(new WikidataItemBaseDto { Id = id }));
 
-            var controller = new WikidataItemController(wikidataService.Object);
+            var controller = new CoreDataController(wikidataService.Object);
 
-            var result = controller.GetCoreData("some id");
+            var result = controller.Get("some id");
 
             result.Should().BeOfType<OkObjectResult>();
             var value = ((ObjectResult)result).Value;

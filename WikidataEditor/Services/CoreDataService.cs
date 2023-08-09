@@ -6,24 +6,23 @@ using WikidataEditor.Models.Instances;
 
 namespace WikidataEditor.Services
 {
-    public class WikidataRestService : IWikidataRestService
+    public class CoreDataService : ICoreDataService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMappingService _mappingService;
         private readonly IWikidataHelper _helper;
 
-        public WikidataRestService(IHttpClientFactory httpClientFactory, IMappingService mappingService, IWikidataHelper wikidataHelper)
+        public CoreDataService(IHttpClientFactory httpClientFactory, IMappingService mappingService, IWikidataHelper wikidataHelper)
         {
             _httpClientFactory = httpClientFactory;
             _mappingService = mappingService;
             _helper = wikidataHelper;
         }
 
-        public IWikidataItemDto GetCoreData(string id)
+        public IWikidataItemDto Get(string id)
         {
             var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientWikidataRestApi);
-            string Uri = "items/" + id;
-            var jsonString = httpClient.GetStringAsync(Uri).Result;
+            var jsonString = httpClient.GetStringAsync("items/" + id).Result;
 
             JObject jObject = JObject.Parse(jsonString);
 
