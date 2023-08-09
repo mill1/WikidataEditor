@@ -22,8 +22,7 @@ namespace WikidataEditor.Services
         public IWikidataItemDto Get(string id)
         {
             var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientWikidataRestApi);
-            string Uri = "items/" + id;
-            var jsonString = httpClient.GetStringAsync(Uri).Result;
+            var jsonString = httpClient.GetStringAsync("items/" + id).Result;
 
             JObject jObject = JObject.Parse(jsonString);
 

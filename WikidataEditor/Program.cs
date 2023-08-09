@@ -25,9 +25,10 @@ builder.Services.AddHttpClient(Constants.HttpClientWikidataRestApi, httpClient =
 });
 
 builder.Services.AddScoped<ICoreDataService, CoreDataService>();
-builder.Services.AddScoped<IWikidataService, WikidataService>();
 builder.Services.AddScoped<IMappingService, MappingService>();
 builder.Services.AddScoped<IWikidataHelper, WikidataHelper>();
+builder.Services.AddScoped<HttpClientHelper>();
+builder.Services.AddScoped<LabelService>();
 builder.Services.AddScoped<DescriptionService>();
 
 var app = builder.Build();

@@ -7,18 +7,18 @@ namespace WikidataEditor.Controllers
     [Route("api/coredata/items")]
     public class CoreDataController : ControllerBase
     {
-        private readonly IWikidataService _wikidataService;
+        private readonly ICoreDataService _coreDataService;
 
-        public CoreDataController(IWikidataService wikidataService)
+        public CoreDataController(ICoreDataService wikidataService)
         {
             // human: https://localhost:7085/api/coredata/items/?id=Q99589194 (Lesley Cunliffe)
-            _wikidataService = wikidataService;
+            _coreDataService = wikidataService;
         }
 
         [HttpGet()]
         public IActionResult Get([FromQuery(Name = "id")] string id)
         {
-            return Ok(_wikidataService.GetCoreData(id));
+            return Ok(_coreDataService.Get(id));
         }
 
         [HttpGet("{id}")]
@@ -29,7 +29,7 @@ namespace WikidataEditor.Controllers
                 disambiguation page:     https://localhost:7085/api/coredata/items/Q231486 (Silver)
                 astronomical object type https://localhost:7085/api/coredata/items/Q3863 (asteroid)
             */
-            return Ok(_wikidataService.GetCoreData(id));
+            return Ok(_coreDataService.Get(id));
         }
     }
 }

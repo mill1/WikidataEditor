@@ -88,8 +88,8 @@ namespace WikidataEditor.Common
         private JObject GetEntityData(string itemId, string wikidataTypeOfData)
         {
             var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientWikidataRestApi);
-            string Uri = "items/" + itemId + "/" + wikidataTypeOfData;
-            var jsonString = httpClient.GetStringAsync(Uri).Result;
+            string uri = "items/" + itemId + "/" + wikidataTypeOfData;
+            var jsonString = httpClient.GetStringAsync(uri).Result;
 
             return JObject.Parse(jsonString);
         }
