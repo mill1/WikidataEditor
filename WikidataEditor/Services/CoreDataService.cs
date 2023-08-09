@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using WikidataEditor.Common;
-using WikidataEditor.Dtos;
+using WikidataEditor.Dtos.CoreData;
 using WikidataEditor.Models;
 using WikidataEditor.Models.Instances;
 

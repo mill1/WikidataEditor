@@ -12,6 +12,8 @@ namespace WikidataEditor.Services
             _httpClientWikidataApi = httpClientWikidataApi;
         }
 
+        //public IEnumerable
+
         public async Task UpsertDescription(string id, string description, string languageCode, string comment)
         {
             var request = new UpdateDescriptionRequestDto

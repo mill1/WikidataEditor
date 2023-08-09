@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using WikidataEditor.Controllers;
-using WikidataEditor.Dtos;
+using WikidataEditor.Dtos.CoreData;
 using WikidataEditor.Services;
 
 namespace WikidataEditorTests.Controllers

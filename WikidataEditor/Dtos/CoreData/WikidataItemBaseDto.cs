@@ -1,4 +1,4 @@
-﻿namespace WikidataEditor.Dtos
+﻿namespace WikidataEditor.Dtos.CoreData
 {
     // https://www.wikidata.org/wiki/Help:Properties
 

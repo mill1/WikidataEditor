@@ -1,4 +1,4 @@
-﻿namespace WikidataEditor.Dtos
+﻿namespace WikidataEditor.Dtos.CoreData
 {
     public class UriCollectionDto
     {

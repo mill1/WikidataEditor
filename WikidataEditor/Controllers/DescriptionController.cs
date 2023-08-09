@@ -15,6 +15,13 @@ namespace WikidataEditor.Controllers
         }
 
         [HttpGet()]
+        public IActionResult Get()
+        {
+            // TODO
+            return Ok();
+        }
+
+        [HttpGet()]
         public async Task<IActionResult> UpsertDescriptionAsync([FromQuery(Name = "id")] string id, [FromQuery(Name = "description")] string description, [FromQuery(Name = "languagecode")] string languageCode)
         {
             await service.UpsertDescription(id, description, languageCode, $"Added/updated {languageCode} description");
