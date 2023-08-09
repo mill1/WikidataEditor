@@ -9,12 +9,21 @@ namespace WikidataEditor.Controllers
     [Route("api/descriptions")]
     public class DescriptionController : ControllerBase
     {
-        [HttpGet()]
-        public IActionResult UpdateDescription([FromQuery(Name = "id")] string id, [FromQuery(Name = "description")] string description)
-        {
-            var url = $"https://www.wikidata.org/wiki/{id}";
+        private readonly DescriptionService service;
 
-            return Ok(url);
+        public DescriptionController(DescriptionService descriptionService)
+        {
+            service = descriptionService;
+        }
+
+        [HttpGet()]
+        public async Task<IActionResult> UpdateDescriptionAsync([FromQuery(Name = "id")] string id, [FromQuery(Name = "description")] string description)
+        {
+            await service.UpdateDescription(id, description);
+
+
+            
+            return Ok($"https://www.wikidata.org/wiki/{id}");
         }
     }
 }

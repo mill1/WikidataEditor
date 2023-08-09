@@ -21,6 +21,7 @@ builder.Services.AddScoped<IWikidataRestService, WikidataRestService>();
 builder.Services.AddScoped<IWikidataService, WikidataService>();
 builder.Services.AddScoped<IMappingService, MappingService>();
 builder.Services.AddScoped<IWikidataHelper, WikidataHelper>();
+builder.Services.AddScoped<DescriptionService>();
 
 var app = builder.Build();
 
