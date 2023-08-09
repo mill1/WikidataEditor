@@ -5,11 +5,11 @@ namespace WikidataEditor.Controllers
 {
     [ApiController]
     [Route("api/coredata/items")]
-    public class WikidataItemController : ControllerBase
+    public class CoreDataController : ControllerBase
     {
         private readonly IWikidataService _wikidataService;
 
-        public WikidataItemController(IWikidataService wikidataService)
+        public CoreDataController(IWikidataService wikidataService)
         {
             // human: https://localhost:7085/api/coredata/items/?id=Q99589194 (Lesley Cunliffe)
             _wikidataService = wikidataService;

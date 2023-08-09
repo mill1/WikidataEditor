@@ -2,7 +2,7 @@
 
 namespace WikidataEditor.Services
 {
-    public interface IWikidataRestService
+    public interface ICoreDataService
     {
         IWikidataItemDto GetCoreData(string id);
     }
