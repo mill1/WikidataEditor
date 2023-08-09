@@ -12,17 +12,17 @@ namespace WikidataEditorTests.Services
         public void GetDataOnHuman_ShouldReturnDto()
         {
             // Arrange
-            var wikidataRestServiceMock = new Mock<IWikidataRestService>();
+            var coreDataServiceMock = new Mock<ICoreDataService>();
 
             var id = Guid.NewGuid().ToString();
 
             var expected = new WikidataItemHumanDto(new WikidataItemBaseDto { Id = id });
 
-            wikidataRestServiceMock.Setup(x => x.GetCoreData(id))
+            coreDataServiceMock.Setup(x => x.GetCoreData(id))
             .Returns(expected);
 
             // Act
-            var service = new WikidataService(wikidataRestServiceMock.Object);
+            var service = new WikidataService(coreDataServiceMock.Object);
             var actual = service.GetCoreData(id);
 
             // Assert

@@ -4,9 +4,9 @@ namespace WikidataEditor.Services
 {
     public class WikidataService : IWikidataService
     {
-        private readonly IWikidataRestService _wikidataService;
+        private readonly ICoreDataService _wikidataService;
 
-        public WikidataService(IWikidataRestService wikidataService)
+        public WikidataService(ICoreDataService wikidataService)
         {
             _wikidataService = wikidataService;
         }
