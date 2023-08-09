@@ -44,7 +44,7 @@ namespace WikidataEditorTests.Services
             var service = new CoreDataService(factoryMock.Object, null, null);
 
             // Assert
-            service.Invoking(y => y.GetCoreData(id))
+            service.Invoking(y => y.Get(id))
             .Should().Throw<ArgumentException>()
             .WithMessage("Result is not of type item. Encountered type: someothertype");
         }
@@ -97,7 +97,7 @@ namespace WikidataEditorTests.Services
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
             var service = new CoreDataService(factoryMock.Object, null, helperMock.Object);
 
-            var actual = service.GetCoreData(idNonHuman);
+            var actual = service.Get(idNonHuman);
 
             actual.Should().BeEquivalentTo(expected);
         }
@@ -164,7 +164,7 @@ namespace WikidataEditorTests.Services
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
             var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
-            var actual = service.GetCoreData(id);
+            var actual = service.Get(id);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);
@@ -204,7 +204,7 @@ namespace WikidataEditorTests.Services
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
             var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
 
-            var actual = service.GetCoreData(id);
+            var actual = service.Get(id);
 
             actual.Label.Should().Be("Dutch label");
         }
@@ -243,7 +243,7 @@ namespace WikidataEditorTests.Services
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
             var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
 
-            var actual = service.GetCoreData(id);
+            var actual = service.Get(id);
 
             // Assert
             actual.Label.Should().Be("Afrikaans label");
@@ -327,7 +327,7 @@ namespace WikidataEditorTests.Services
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
             var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
 
-            var actual = service.GetCoreData(id);
+            var actual = service.Get(id);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);

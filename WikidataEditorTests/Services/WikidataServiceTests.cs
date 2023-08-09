@@ -18,7 +18,7 @@ namespace WikidataEditorTests.Services
 
             var expected = new WikidataItemHumanDto(new WikidataItemBaseDto { Id = id });
 
-            coreDataServiceMock.Setup(x => x.GetCoreData(id))
+            coreDataServiceMock.Setup(x => x.Get(id))
             .Returns(expected);
 
             // Act

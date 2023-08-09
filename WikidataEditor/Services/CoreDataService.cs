@@ -19,7 +19,7 @@ namespace WikidataEditor.Services
             _helper = wikidataHelper;
         }
 
-        public IWikidataItemDto GetCoreData(string id)
+        public IWikidataItemDto Get(string id)
         {
             var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientWikidataRestApi);
             string Uri = "items/" + id;

@@ -22,7 +22,7 @@ namespace WikidataEditor.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetCoreData(string id)
+        public IActionResult GetById(string id)
         {
             /*
                 human:                   https://localhost:7085/api/coredata/items/Q15429542 (John Fleming)

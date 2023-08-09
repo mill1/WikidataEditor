@@ -4,16 +4,16 @@ namespace WikidataEditor.Services
 {
     public class WikidataService : IWikidataService
     {
-        private readonly ICoreDataService _wikidataService;
+        private readonly ICoreDataService _coreDataService;
 
-        public WikidataService(ICoreDataService wikidataService)
+        public WikidataService(ICoreDataService coreDataService)
         {
-            _wikidataService = wikidataService;
+            _coreDataService = coreDataService;
         }
 
         public IWikidataItemDto GetCoreData(string id)
         {
-            return _wikidataService.GetCoreData(id);
+            return _coreDataService.Get(id);
         }
     }
 }
