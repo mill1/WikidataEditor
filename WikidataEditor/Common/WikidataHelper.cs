@@ -1,5 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using WikidataEditor.Dtos.Requests;
 using WikidataEditor.Models;
 
 namespace WikidataEditor.Common
@@ -12,6 +15,38 @@ namespace WikidataEditor.Common
         public WikidataHelper(IHttpClientWikidataApi httpClientWikidataApi)
         {
             _httpClientWikidataApi = httpClientWikidataApi;
+        }
+
+        public async Task<IEnumerable<EntityTextDto>> GetEntityTexts(string id, string entityType)
+        {
+            var descriptions = new List<EntityTextDto>();
+
+            JObject jsonObject = await GetEntityData(id, entityType);
+
+            foreach (var lc in jsonObject.ToObject<dynamic>())
+            {
+                descriptions.Add(new EntityTextDto
+                {
+                    LanguageCode = ((JProperty)lc).Name,
+                    Value = (string)((JProperty)lc).Value
+                });
+            }
+            return descriptions;
+        }
+
+        public async Task<IEnumerable<EntityTextDto>> GetEntityText(string id, string languageCode, string entityType)
+        {
+            string uri = "items/" + id + "/" + entityType + "/" + languageCode;
+            var result = await _httpClientWikidataApi.GetStringAsync(uri);
+
+            return new List<EntityTextDto>
+            {
+                new EntityTextDto
+                {
+                    LanguageCode = languageCode,
+                    Value = JsonConvert.DeserializeObject<string>(result)
+                }
+            };
         }
 
         public IEnumerable<string> ResolveValue(Statement[] statements)
@@ -70,7 +105,7 @@ namespace WikidataEditor.Common
 
         private string GetLabel(string id)
         {
-            JObject jsonObject = GetEntityData(id, "labels");
+            JObject jsonObject = GetEntityData(id, "labels").Result;
 
             var codes = jsonObject.ToObject<LanguageCodes>();
 
@@ -85,17 +120,16 @@ namespace WikidataEditor.Common
             return jsonObject.Count == 0 ? Constants.Missing : ((JValue)((JProperty)jsonObject.First).Value).Value.ToString();
         }
 
-        private JObject GetEntityData(string itemId, string wikidataTypeOfData)
+        private async Task<JObject> GetEntityData(string id, string entityType)
         {
-            string uri = "items/" + itemId + "/" + wikidataTypeOfData;
-            var jsonString = _httpClientWikidataApi.GetStringAsync(uri).Result;
-
-            return JObject.Parse(jsonString);
+            string uri = "items/" + id + "/" + entityType;
+            var jsonString = await _httpClientWikidataApi.GetStringAsync(uri);
+            JObject jsonObject = JObject.Parse(jsonString);
+            return jsonObject;
         }
 
         private string GetValueOfFirstFilledProperty(LanguageCodes codes)
         {
-            // Q114658910
             return codes.GetType().GetProperties()
             .Where(c => c.PropertyType == typeof(string))
             .Select(c => (string)c.GetValue(codes))

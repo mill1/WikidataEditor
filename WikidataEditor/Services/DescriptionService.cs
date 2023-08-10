@@ -10,44 +10,22 @@ namespace WikidataEditor.Services
     public class DescriptionService
     {
         private readonly IHttpClientWikidataApi _httpClientWikidataApi;
+        private readonly IWikidataHelper _wikidataHelper;
 
-        public DescriptionService(IHttpClientWikidataApi httpClientWikidataApi)
+        public DescriptionService(IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
         {
             _httpClientWikidataApi = httpClientWikidataApi;
+            _wikidataHelper = wikidataHelper;
         }
 
         public async Task<IEnumerable<EntityTextDto>> Get(string id)
         {
-            string uri = "items/" + id + "/descriptions";
-            var jsonString = await _httpClientWikidataApi.GetStringAsync(uri);
-            JObject jsonObject = JObject.Parse(jsonString);
-
-            var descriptions = new List<EntityTextDto>();
-
-            foreach (var lc in jsonObject.ToObject<dynamic>())
-            {
-                descriptions.Add(new EntityTextDto
-                {
-                    LanguageCode = ((JProperty)lc).Name,
-                    Value = (string)((JProperty)lc).Value
-                });
-            }
-            return descriptions;
+            return await _wikidataHelper.GetEntityTexts(id, "descriptions");
         }
 
         public async Task<IEnumerable<EntityTextDto>> Get(string id, string languageCode)
         {
-            string uri = "items/" + id + "/descriptions/" + languageCode;
-            var result = await _httpClientWikidataApi.GetStringAsync(uri);
-
-            return new List<EntityTextDto>
-            {
-                new EntityTextDto
-                {
-                    LanguageCode = languageCode,
-                    Value = JsonConvert.DeserializeObject<string>(result)
-                }
-            };
+            return await _wikidataHelper.GetEntityText(id, languageCode, "descriptions");
         }
 
         public async Task UpsertDescription(string id, string description, string languageCode, string comment)
