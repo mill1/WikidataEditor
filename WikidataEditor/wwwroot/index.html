@@ -10,12 +10,18 @@
 
     <h3>Wikidata Editor v1.0</h3>
 
+    <!--
+        ####################################################################################################################
+        C O R E  D A T A
+        ####################################################################################################################
+     -->
+
     <strong>Core data of wikidata item</strong><br />
     Implemented entities:
     <a href="https://www.wikidata.org/wiki/Q5" target="_blank">humans</a>,
     <a href="https://www.wikidata.org/wiki/Q4167410" target="_blank">disambiguation pages</a> and
     <a href="https://www.wikidata.org/wiki/Q17444909" target="_blank">astronomical object types</a>
-    <form action="/api/items/coredata/" method="get">
+    <form action="/api/items/coredata" method="get">
         <label for="itemidcoredata">Wikidata item id:</label>
         <input type="text" id="itemidcoredata" name="id" maxlength="10" size="10" placeholder="Q..."><br>
         <input type="submit" value="Submit">
@@ -23,7 +29,13 @@
 
     <hr />
 
-    <form action="/api/items/label/upsert/" method="get">
+    <!--
+        ####################################################################################################################
+        L A B E L S
+        ####################################################################################################################
+     -->
+
+    <form action="/api/items/label/upsert" method="get">
         <table>
             <tr>
                 <th colspan="2">Update item label</th>
@@ -36,7 +48,7 @@
                 <tr>
                     <td><label for="languagecode">Language:</label></td>
                     <td>
-                        <select name="languagecode" id="languagecode" style="width: 115px;">
+                        <select id="languagecode" name="languagecode" style="width: 115px;">
                             <option value="en">English</option>
                             <option value="nl">Dutch</option>
                             <option value="de">German</option>
@@ -71,7 +83,53 @@
 
     <hr />
 
-    <form action="/api/items/description/upsert/" method="get">
+    <!--
+        ####################################################################################################################
+        D E S C R I P T I O N S
+        ####################################################################################################################
+     -->
+    <form action="/api/items/descriptions" method="get">
+        <table>
+            <tr>
+                <th colspan="2">Item description</th>
+            </tr>
+            <tbody>
+                <tr>
+                    <td><label for="itemidgetdescription">Wikidata item id:</label></td>
+                    <td><input type="text" id="itemidgetdescription" name="id" maxlength="10" size="10" placeholder="Q..."></td>
+                </tr>
+                <tr>
+                    <td><label for="languagecodex">Language:</label></td>
+                    <td>
+                        <select id="languagecodex" name="languagecode" style="width: 115px;">
+                            <option value="*">*</option>
+                            <option value="en">English</option>
+                            <option value="nl">Dutch</option>
+                            <option value="de">German</option>
+                            <option value="fr">French</option>
+                            <option value="es">Spanish</option>
+                            <option value="it">Italian</option>
+                            <option value="id">Indonesian</option>
+                            <option value="tr">Turkish</option>
+                            <option value="zu">Chinese</option>
+                            <option value="ru">Russian</option>
+                            <option value="ja">Japanese</option>
+                            <option value="ko">Korean</option>
+                            <option value="hi">Hindi</option>
+                            <option value="mr">Marathi</option>
+                            <option value="te">Telugu</option>
+                            <option value="ar">Arabic</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2"><input type="submit" value="Submit"></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <form action="/api/items/description/upsert" method="get">
         <table>
             <tr>
                 <th colspan="2">Update item description</th>
@@ -84,7 +142,7 @@
                 <tr>
                     <td><label for="languagecode">Language:</label></td>
                     <td>
-                        <select name="languagecode" id="languagecode" style="width: 115px;">
+                        <select id="languagecode" name="languagecode" style="width: 115px;">
                             <option value="en">English</option>
                             <option value="nl">Dutch</option>
                             <option value="de">German</option>
@@ -116,6 +174,8 @@
             </tbody>
         </table>
     </form>
+
+    <hr />
 
     <p>&nbsp;</p>
     <p><i>Go back (Chrome: <b>Alt</b>+<b>&#8592</b>) after submitting to return to this page.</i></p>

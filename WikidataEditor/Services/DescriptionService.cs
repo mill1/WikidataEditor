@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text.Json.Nodes;
 using WikidataEditor.Common;
 using WikidataEditor.Dtos.Requests;
@@ -34,15 +35,18 @@ namespace WikidataEditor.Services
             return descriptions;
         }
 
-        public async Task<EntityTextDto> Get(string id, string languageCode)
+        public async Task<IEnumerable<EntityTextDto>> Get(string id, string languageCode)
         {
             string uri = "items/" + id + "/descriptions/" + languageCode;
             var result = await _httpClientWikidataApi.GetStringAsync(uri);
 
-            return new EntityTextDto
+            return new List<EntityTextDto>
             {
-                LanguageCode = languageCode,
-                Value = result.Substring(0, result.Length - 1).Substring(1)
+                new EntityTextDto
+                {
+                    LanguageCode = languageCode,
+                    Value = JsonConvert.DeserializeObject<string>(result)
+                }
             };
         }
 

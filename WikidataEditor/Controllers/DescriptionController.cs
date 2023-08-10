@@ -17,8 +17,7 @@ namespace WikidataEditor.Controllers
 
         [HttpGet("{id}/descriptions")]
         public async Task<IActionResult> Get(string id)
-        {
-            // TODO html
+        {            
             // John Fleming: https://localhost:7085/api/items/Q15429542/descriptions
             return Ok(await service.Get(id));
         }
@@ -27,9 +26,15 @@ namespace WikidataEditor.Controllers
         public async Task<IActionResult> Get(string id, string languageCode)
         {
             // John Fleming: https://localhost:7085/api/items/Q15429542/descriptions/languagecodes/en
-            // TODO html
             return Ok(await service.Get(id, languageCode));
-            //throw new NotImplementedException();
+        }
+
+        [HttpGet("descriptions")]
+        public async Task<IActionResult> GetByQueryParameters([FromQuery(Name = "id")] string id, [FromQuery(Name = "languagecode")] string languageCode)
+        {
+            // Lesley Cunliffe: https://localhost:7085/api/items/descriptions?id=Q99589194&languagecode=en
+            var result = languageCode == "*" ? await service.Get(id) : await service.Get(id, languageCode);
+            return Ok(await service.Get(id, languageCode));
         }
 
         [HttpGet("description/upsert")]
