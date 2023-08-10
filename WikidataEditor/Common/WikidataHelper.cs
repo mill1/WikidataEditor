@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using WikidataEditor.Dtos.Requests;
 using WikidataEditor.Models;
 
 namespace WikidataEditor.Common
@@ -12,6 +14,40 @@ namespace WikidataEditor.Common
         public WikidataHelper(IHttpClientWikidataApi httpClientWikidataApi)
         {
             _httpClientWikidataApi = httpClientWikidataApi;
+        }
+
+        public async Task<IEnumerable<EntityTextDto>> GetEntityTexts(string id, string entityType)
+        {
+            string uri = "items/" + id + "/" + entityType;
+            var jsonString = await _httpClientWikidataApi.GetStringAsync(uri);
+            JObject jsonObject = JObject.Parse(jsonString);
+
+            var descriptions = new List<EntityTextDto>();
+
+            foreach (var lc in jsonObject.ToObject<dynamic>())
+            {
+                descriptions.Add(new EntityTextDto
+                {
+                    LanguageCode = ((JProperty)lc).Name,
+                    Value = (string)((JProperty)lc).Value
+                });
+            }
+            return descriptions;
+        }
+
+        public async Task<IEnumerable<EntityTextDto>> GetEntityText(string id, string languageCode, string entityType)
+        {
+            string uri = "items/" + id + "/" + entityType + "/" + languageCode;
+            var result = await _httpClientWikidataApi.GetStringAsync(uri);
+
+            return new List<EntityTextDto>
+            {
+                new EntityTextDto
+                {
+                    LanguageCode = languageCode,
+                    Value = JsonConvert.DeserializeObject<string>(result)
+                }
+            };
         }
 
         public IEnumerable<string> ResolveValue(Statement[] statements)
