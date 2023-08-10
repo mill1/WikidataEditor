@@ -18,16 +18,18 @@ namespace WikidataEditor.Controllers
         [HttpGet("{id}/descriptions")]
         public async Task<IActionResult> Get(string id)
         {
+            // TODO html
             // John Fleming: https://localhost:7085/api/items/Q15429542/descriptions
             return Ok(await service.Get(id));
         }
 
-        [HttpGet("{id}/descriptions/languagecode/{languageCode}")]
-        public async Task<IActionResult> GetByLanguageCode(string id, string languageCode)
+        [HttpGet("{id}/descriptions/languagecodes/{languageCode}")]
+        public async Task<IActionResult> Get(string id, string languageCode)
         {
-            // John Fleming: https://localhost:7085/api/items/Q15429542/descriptions/languagecode/en
-            // TODO
-            throw new NotImplementedException();
+            // John Fleming: https://localhost:7085/api/items/Q15429542/descriptions/languagecodes/en
+            // TODO html
+            return Ok(await service.Get(id, languageCode));
+            //throw new NotImplementedException();
         }
 
         [HttpGet("description/upsert")]

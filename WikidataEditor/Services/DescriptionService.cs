@@ -15,26 +15,35 @@ namespace WikidataEditor.Services
             _httpClientWikidataApi = httpClientWikidataApi;
         }
 
-        public async Task <IEnumerable<EntityTextDto>> Get(string id)
+        public async Task<IEnumerable<EntityTextDto>> Get(string id)
         {
             string uri = "items/" + id + "/descriptions";
             var jsonString = await _httpClientWikidataApi.GetStringAsync(uri);
             JObject jsonObject = JObject.Parse(jsonString);
-            var codes = jsonObject.ToObject<LanguageCodes>();
 
-            var descriptions = codes.GetType().GetProperties()
-            .Where(c => c.PropertyType == typeof(string))
-            .Select(c =>
+            var descriptions = new List<EntityTextDto>();
+
+            foreach (var lc in jsonObject.ToObject<dynamic>())
+            {
+                descriptions.Add(new EntityTextDto
                 {
-                    return new EntityTextDto
-                    {
-                        LanguageCode = c.Name,
-                        Value = (string)c.GetValue(codes)
-                    };
-                })
-            .Where(et => !string.IsNullOrEmpty(et.Value));
-
+                    LanguageCode = ((JProperty)lc).Name,
+                    Value = (string)((JProperty)lc).Value
+                });
+            }
             return descriptions;
+        }
+
+        public async Task<EntityTextDto> Get(string id, string languageCode)
+        {
+            string uri = "items/" + id + "/descriptions/" + languageCode;
+            var result = await _httpClientWikidataApi.GetStringAsync(uri);
+
+            return new EntityTextDto
+            {
+                LanguageCode = languageCode,
+                Value = result.Substring(0, result.Length - 1).Substring(1)
+            };
         }
 
         public async Task UpsertDescription(string id, string description, string languageCode, string comment)
