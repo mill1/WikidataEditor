@@ -2,7 +2,7 @@ using FluentAssertions;
 using Moq;
 using RichardSzalay.MockHttp;
 using WikidataEditor.Common;
-using WikidataEditor.Dtos;
+using WikidataEditor.Dtos.CoreData;
 using WikidataEditor.Models;
 using WikidataEditor.Models.Instances;
 using WikidataEditor.Services;
@@ -41,7 +41,7 @@ namespace WikidataEditorTests.Services
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
-            var service = new CoreDataService(factoryMock.Object, null, null);
+            var service = new CoreDataService(new HttpClientWikidataApi(factoryMock.Object), null, null);
 
             // Assert
             service.Invoking(y => y.Get(id))
@@ -95,7 +95,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
-            var service = new CoreDataService(factoryMock.Object, null, helperMock.Object);
+            var service = new CoreDataService(new HttpClientWikidataApi(factoryMock.Object), null, helperMock.Object);
 
             var actual = service.Get(idNonHuman);
 
@@ -163,7 +163,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
-            var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
+            var service = new CoreDataService(new HttpClientWikidataApi(factoryMock.Object), mappingServiceMock.Object, helperMock.Object);
             var actual = service.Get(id);
 
             // Assert
@@ -202,7 +202,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
-            var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
+            var service = new CoreDataService(new HttpClientWikidataApi(factoryMock.Object), mappingServiceMock.Object, helperMock.Object);
 
             var actual = service.Get(id);
 
@@ -241,7 +241,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
-            var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
+            var service = new CoreDataService(new HttpClientWikidataApi(factoryMock.Object), mappingServiceMock.Object, helperMock.Object);
 
             var actual = service.Get(id);
 
@@ -325,7 +325,7 @@ namespace WikidataEditorTests.Services
             var httpClient = new HttpClient(handlerMock);
             httpClient.BaseAddress = new Uri(BaseAddress);
             factoryMock.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
-            var service = new CoreDataService(factoryMock.Object, mappingServiceMock.Object, helperMock.Object);
+            var service = new CoreDataService(new HttpClientWikidataApi(factoryMock.Object), mappingServiceMock.Object, helperMock.Object);
 
             var actual = service.Get(id);
 

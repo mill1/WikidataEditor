@@ -1,19 +1,15 @@
-﻿using Newtonsoft.Json;
-using System.Text;
-using WikidataEditor.Common;
+﻿using WikidataEditor.Common;
 using WikidataEditor.Dtos.Requests;
 
 namespace WikidataEditor.Services
 {
-    // TODO: interface + tests
-    // TODO: LabelService https://www.wikidata.org/wiki/Q114282849
     public class LabelService
     {
-        private readonly HttpClientHelper _httpClientHelper;
+        private readonly IHttpClientWikidataApi _httpClientWikidataApi;
 
-        public LabelService(HttpClientHelper httpClientHelper)
+        public LabelService(IHttpClientWikidataApi httpClientWikidataApi)
         {
-            _httpClientHelper = httpClientHelper;
+            _httpClientWikidataApi = httpClientWikidataApi;
         }
 
         public async Task UpsertLabel(string id, string label, string languageCode, string comment)
@@ -27,7 +23,7 @@ namespace WikidataEditor.Services
             };
 
             string uri = $"items/{id}/labels/{languageCode}";
-            await _httpClientHelper.PutAsync(uri, request);            
+            await _httpClientWikidataApi.PutAsync(uri, request);            
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using WikidataEditor.Dtos;
+﻿using WikidataEditor.Dtos.CoreData;
 
 namespace WikidataEditor.Services
 {

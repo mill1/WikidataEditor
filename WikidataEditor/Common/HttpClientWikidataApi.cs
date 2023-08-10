@@ -1,25 +1,30 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
-using WikidataEditor.Models;
 
 namespace WikidataEditor.Common
 {
-    public class HttpClientHelper
+    public class HttpClientWikidataApi : IHttpClientWikidataApi
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private HttpClient _httpClient;
 
-        public HttpClientHelper(IHttpClientFactory httpClientFactory)
+        public HttpClientWikidataApi(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
+            _httpClient = _httpClientFactory.CreateClient(Constants.HttpClientWikidataRestApi);
+        }
+
+        public async Task<string> GetStringAsync(string uri)
+        {
+            return await _httpClient.GetStringAsync(uri);
         }
 
         public async Task PutAsync(string uri, object request)
         {
             string json = JsonConvert.SerializeObject(request);
             var requestContent = new StringContent(json, Encoding.UTF8, "application/json");
-            var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientWikidataRestApi);
 
-            var response =  await httpClient.PutAsync(uri, requestContent);
+            var response = await _httpClient.PutAsync(uri, requestContent);
             response.EnsureSuccessStatusCode();
         }
     }

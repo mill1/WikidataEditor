@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using WikidataEditor.Common;
-using WikidataEditor.Dtos;
+using WikidataEditor.Dtos.CoreData;
 using WikidataEditor.Models;
 using WikidataEditor.Models.Instances;
 
@@ -8,21 +8,20 @@ namespace WikidataEditor.Services
 {
     public class CoreDataService : ICoreDataService
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientWikidataApi _httpClientWikidataApi;
         private readonly IMappingService _mappingService;
         private readonly IWikidataHelper _helper;
 
-        public CoreDataService(IHttpClientFactory httpClientFactory, IMappingService mappingService, IWikidataHelper wikidataHelper)
+        public CoreDataService(IHttpClientWikidataApi httpClientWikidataApi, IMappingService mappingService, IWikidataHelper wikidataHelper)
         {
-            _httpClientFactory = httpClientFactory;
+            _httpClientWikidataApi = httpClientWikidataApi;
             _mappingService = mappingService;
             _helper = wikidataHelper;
         }
 
         public IWikidataItemDto Get(string id)
         {
-            var httpClient = _httpClientFactory.CreateClient(Constants.HttpClientWikidataRestApi);
-            var jsonString = httpClient.GetStringAsync("items/" + id).Result;
+            var jsonString = _httpClientWikidataApi.GetStringAsync("items/" + id).Result;
 
             JObject jObject = JObject.Parse(jsonString);
 
