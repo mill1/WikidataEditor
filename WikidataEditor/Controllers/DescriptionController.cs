@@ -34,7 +34,7 @@ namespace WikidataEditor.Controllers
         {
             // Lesley Cunliffe: https://localhost:7085/api/items/descriptions?id=Q99589194&languagecode=en
             var result = languageCode == "*" ? await service.Get(id) : await service.Get(id, languageCode);
-            return Ok(await service.Get(id, languageCode));
+            return Ok(result);
         }
 
         [HttpGet("description/upsert")]
