@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WikidataEditor.Dtos.Requests;
 using WikidataEditor.Models;
+using WikidataEditor.Models.Instances;
 
 namespace WikidataEditor.Common
 {
@@ -19,32 +20,48 @@ namespace WikidataEditor.Common
 
         public async Task<IEnumerable<EntityTextDto>> GetEntityTexts(string id, string entityType)
         {
-            var descriptions = new List<EntityTextDto>();
+            var entityTexts = new List<EntityTextDto>();
 
             JObject jsonObject = await GetEntityData(id, entityType);
 
             foreach (var lc in jsonObject.ToObject<dynamic>())
             {
-                descriptions.Add(new EntityTextDto
+                entityTexts.Add(new EntityTextDto
                 {
                     LanguageCode = ((JProperty)lc).Name,
                     Value = (string)((JProperty)lc).Value
                 });
             }
-            return descriptions;
+            return entityTexts;
+        }
+
+        public async Task<IEnumerable<EntityTextDto>> GetAliases(string id)
+        {
+            JObject jsonObject = await GetEntityData(id, "aliases");
+            var aliasesDictionary = jsonObject.ToObject<Dictionary<string, List<string>>>();
+
+            return aliasesDictionary.Select( a =>
+                new EntityTextDto
+                {
+                    LanguageCode = a.Key,
+                    Value = a.Value,
+                }
+            );
         }
 
         public async Task<IEnumerable<EntityTextDto>> GetEntityText(string id, string languageCode, string entityType)
         {
             string uri = "items/" + id + "/" + entityType + "/" + languageCode;
-            var result = await _httpClientWikidataApi.GetStringAsync(uri);
+            var jsonString = await _httpClientWikidataApi.GetStringAsync(uri);
+
+            object value = entityType == "aliases" ? JsonConvert.DeserializeObject<List<string>>(jsonString) : JsonConvert.DeserializeObject<string>(jsonString);
 
             return new List<EntityTextDto>
             {
                 new EntityTextDto
                 {
                     LanguageCode = languageCode,
-                    Value = JsonConvert.DeserializeObject<string>(result)
+                    Value = value
                 }
             };
         }
@@ -124,8 +141,7 @@ namespace WikidataEditor.Common
         {
             string uri = "items/" + id + "/" + entityType;
             var jsonString = await _httpClientWikidataApi.GetStringAsync(uri);
-            JObject jsonObject = JObject.Parse(jsonString);
-            return jsonObject;
+            return JObject.Parse(jsonString);            
         }
 
         private string GetValueOfFirstFilledProperty(LanguageCodes codes)
