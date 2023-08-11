@@ -20,7 +20,8 @@ namespace WikidataEditor.Services
 
         public async Task<IEnumerable<EntityTextDto>> Get(string id)
         {
-            return await _wikidataHelper.GetEntityTexts(id, "descriptions");
+            return await _wikidataHelper.GetAliases(id);
+            //return await _wikidataHelper.GetEntityTexts(id, "descriptions");
         }
 
         public async Task<IEnumerable<EntityTextDto>> Get(string id, string languageCode)
