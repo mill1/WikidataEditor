@@ -37,18 +37,16 @@ namespace WikidataEditor.Common
 
         public async Task<IEnumerable<EntityTextDto>> GetAliases(string id)
         {
-            var entityTexts = new List<EntityTextDto>();
-
             JObject jsonObject = await GetEntityData(id, "aliases");
             var aliasesDictionary = jsonObject.ToObject<Dictionary<string, List<string>>>();
 
             return aliasesDictionary.Select( a =>
-                    new EntityTextDto
-                    {
-                        LanguageCode = a.Key,
-                        Value = a.Value,
-                    }
-                );
+                new EntityTextDto
+                {
+                    LanguageCode = a.Key,
+                    Value = a.Value,
+                }
+            );
         }
 
         public async Task<IEnumerable<EntityTextDto>> GetEntityText(string id, string languageCode, string entityType)

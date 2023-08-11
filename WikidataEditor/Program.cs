@@ -35,6 +35,7 @@ builder.Services.AddScoped<IMappingService, MappingService>();
 builder.Services.AddScoped<IWikidataHelper, WikidataHelper>();
 builder.Services.AddScoped<LabelService>();
 builder.Services.AddScoped<DescriptionService>();
+builder.Services.AddScoped<AliasesService>();
 
 var app = builder.Build();
 
