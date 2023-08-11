@@ -30,6 +30,37 @@
     <hr />
 
     <!--
+       ####################################################################################################################
+       S T A T E M E N T S
+       ####################################################################################################################
+    -->
+    <form action="/api/items/statements" method="get">
+        <table>
+            <tr>
+                <th colspan="2">Item statement(s)</th>
+            </tr>
+            <tbody>
+                <tr>
+                    <td><label for="itemidgetstatement">Wikidata item id:</label></td>
+                    <td><input type="text" id="itemidgetstatement" name="id" maxlength="10" size="10" placeholder="Q..."></td>
+                </tr>
+                <tr>
+                    <td><label for="propertyid">Property:</label></td>
+                    <td>
+                        <input type="text" id="propertyid" name="property" maxlength="10" size="10" placeholder="P31 (or *)" 
+                               title="Enter a property id to fetch a single statement. For all statements on the Wikidata item enter '*' (without the quotes)."><br>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2"><input type="submit" value="fetch"></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <hr />
+
+    <!--
         ####################################################################################################################
         L A B E L S
         ####################################################################################################################

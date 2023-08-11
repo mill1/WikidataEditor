@@ -36,6 +36,7 @@ builder.Services.AddScoped<IWikidataHelper, WikidataHelper>();
 builder.Services.AddScoped<LabelService>();
 builder.Services.AddScoped<DescriptionService>();
 builder.Services.AddScoped<AliasesService>();
+builder.Services.AddScoped<StatementService>();
 
 var app = builder.Build();
 
