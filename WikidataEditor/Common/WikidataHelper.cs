@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using WikidataEditor.Dtos;
 using WikidataEditor.Dtos.Requests;
 using WikidataEditor.Models;
 using WikidataEditor.Models.Instances;
@@ -33,6 +34,71 @@ namespace WikidataEditor.Common
                 });
             }
             return entityTexts;
+        }
+
+        public async Task<IEnumerable<StatementsDto>> GetStatement(string id, string property)
+        {
+            JObject jsonObject = await GetEntityData(id, "statements");
+            var statementsObject = jsonObject.ToObject<dynamic>();
+
+            foreach (var statementObject in statementsObject)
+            {
+                string propertyName = ((JProperty)statementObject).Name;
+
+                if (propertyName== property)
+                {
+                    var jArray = ((JProperty)statementObject).Value;
+
+                    return new List<StatementsDto>
+                    {
+                        new StatementsDto
+                        {
+                            Property = property,
+                            Statement = jArray.ToObject<Statement[]>()
+                        }
+                    };
+                }
+            }
+
+            throw new HttpRequestException($"Property {property} not found in statements on {id}{ResolveOnLabel(id)}", null, System.Net.HttpStatusCode.NotFound);
+        }
+
+        private string ResolveOnLabel(string id)
+        {
+            string label;
+            try
+            {
+                label = GetLabel(id);
+            }
+            catch (Exception)
+            {
+                label = null;
+            }
+            return label == null ? string.Empty : $" ({label})";
+        }
+
+        public async Task<IEnumerable<StatementsDto>> GetStatements(string id)
+        {
+            JObject jsonObject = await GetEntityData(id, "statements");
+            var statementsObject = jsonObject.ToObject<dynamic>();
+
+            var statements = new List<StatementsDto>();
+
+            foreach (var statementObject in statementsObject)
+            {
+                var property = ((JProperty)statementObject).Name;
+                var jArray = ((JProperty)statementObject).Value;
+                var array = jArray.ToObject<Statement[]>();
+
+                statements.Add(
+                    new StatementsDto
+                    {
+                        Property = property,
+                        Statement = array
+                    }
+                );
+            }
+            return statements;
         }
 
         public async Task<IEnumerable<EntityTextDto>> GetAliases(string id)
