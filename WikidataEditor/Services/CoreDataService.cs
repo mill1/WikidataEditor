@@ -81,29 +81,34 @@ namespace WikidataEditor.Services
             // TODO refactoren uiteraard
 
             // TODO label P31 tweemaal opgehaald
-            
-            var properties = new Dictionary<string, string>();
+                       
 
             if (instanceOfValue == Constants.WikidataIdHuman) // TODO: andere twee
             {
-                properties.Add("P21", "sex or gender");
-                properties.Add("P27", "country of citizenship");
-                properties.Add("P735", "given name");
-                properties.Add("P734", "family name");
-                properties.Add("P569", "date of birth");
-                properties.Add("P19", "place of birth");
-                properties.Add("P570", "date of death");
-                properties.Add("P20", "place of death");
-                properties.Add("P106", "occupation");
+                return GetPropertiesOfHuman();
             }
             else
             {
                 // TODO in maxNumberOfCoreDataProperties appsetting
                 int maxNumberOfCoreDataProperties = 5;
-                properties = _helper.GetProperties(statementsObject, maxNumberOfCoreDataProperties);
+                return _helper.GetProperties(statementsObject, maxNumberOfCoreDataProperties);
             }
+        }
 
-            return properties;
+        private static Dictionary<string, string> GetPropertiesOfHuman()
+        {
+            return new Dictionary<string, string>
+            {
+                { "P21", "sex or gender" },
+                { "P27", "country of citizenship" },
+                { "P735", "given name" },
+                { "P734", "family name" },
+                { "P569", "date of birth" },
+                { "P19", "place of birth" },
+                { "P570", "date of death" },
+                { "P20", "place of death" },
+                { "P106", "occupation" }
+            };
         }
 
         // TODO verwijderen

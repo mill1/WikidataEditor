@@ -52,9 +52,6 @@ namespace WikidataEditor.Common
             {
                 string propertyName = ((JProperty)statementObject).Name;
 
-                if (propertyName == Constants.WikidataPropertyIdInstanceOf) // already displayed
-                    continue;
-
                 properties.Add(propertyName, propertyName);
 
                 count++;
