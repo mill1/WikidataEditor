@@ -41,16 +41,16 @@ namespace WikidataEditor.Common
             return statements;
         }
 
-        public Dictionary<string, string> GetProperties(dynamic statementsObject, int maxNumberOfProperties)
+        public IEnumerable<string> GetProperties(dynamic statementsObject, int maxNumberOfProperties)
         {
-            var properties = new Dictionary<string, string>();
+            var properties = new List<string>();
             int count = 0;
 
             foreach (var statementObject in statementsObject)
             {
                 string propertyName = ((JProperty)statementObject).Name;
 
-                properties.Add(propertyName, propertyName);
+                properties.Add(propertyName);
 
                 count++;
 
@@ -85,19 +85,19 @@ namespace WikidataEditor.Common
             };
         }       
 
-        public List<FlatStatementDto> GetStatementsValues(dynamic statementsObject, Dictionary<string, string> properties)
+        public List<FlatStatementDto> GetStatementsValues(dynamic statementsObject, IEnumerable<string> properties)
         {
             var flatStatements = new List<FlatStatementDto>();
 
-            foreach ( var property in properties)
+            foreach (var property in properties)
             {
-                var statements = (IEnumerable<StatementsDto>)GetStatement(statementsObject, property.Key).Result;
+                var statements = (IEnumerable<StatementsDto>)GetStatement(statementsObject, property).Result;
                 var statement = statements.Select(x => x.Statement).First();
 
                 flatStatements.Add(
                     new FlatStatementDto
                     {
-                        Property = ResolveProperty(property),
+                        Property = ResolvePropertyDescription(property),
                         Values = ResolveValues(statement)
                     }
                 );
@@ -105,12 +105,16 @@ namespace WikidataEditor.Common
             return flatStatements;
         }
 
-        private static string ResolveProperty(KeyValuePair<string, string> property)
+        private static string ResolvePropertyDescription(string property)
         {
-            if (property.Key == property.Value)
-                return $"https://www.wikidata.org/wiki/Property:{property.Key}";
+            string description;
 
-            return $"{property.Value} ({property.Key})";
+            if (WikidataProperties.Descriptions.TryGetValue(property, out description))
+            {
+                return $"{description} ({property})";
+            }
+
+            return $"https://www.wikidata.org/wiki/Property:{property}"; ;
         }
 
         private static List<StatementsDto> CreateStatement(string property, string content)
@@ -196,10 +200,8 @@ namespace WikidataEditor.Common
                     values.Add("*no value*");
                     continue;
                 }
-
                 ResolveValue(values, statement);
             }
-
             return values;
         }
 
@@ -247,8 +249,7 @@ namespace WikidataEditor.Common
             if (value != null)
                 return value;
 
-            // TODO .ToObject<type> gebruiken
-            return jsonObject.Count == 0 ? Constants.Missing : ((JValue)((JProperty)jsonObject.First).Value).Value.ToString();
+            return Constants.Missing;
         }
 
         public string GetTextValue(LanguageCodes codes)

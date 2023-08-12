@@ -44,7 +44,7 @@ namespace WikidataEditor.Services
             flatWikidataItemDto.Id = id;
             flatWikidataItemDto.Label = _helper.GetTextValue(itemBase.labels);
             flatWikidataItemDto.Description = _helper.GetTextValue(itemBase.descriptions);
-            flatWikidataItemDto.TotalNumberOfStatements = (statementsObject).Count; ;            
+            flatWikidataItemDto.TotalNumberOfStatements = (statementsObject).Count;           
             flatWikidataItemDto.Aliases = GetAliases(itemBase.aliases);
             flatWikidataItemDto.UriCollection = GetUriCollection(id, itemBase.sitelinks);
             return flatWikidataItemDto;
@@ -61,10 +61,9 @@ namespace WikidataEditor.Services
             return instances[0].value.content.ToString();
         }
 
-        private Dictionary<string, string> ResolveProperties(string instanceOfValue, JObject statementsObject)
+        private IEnumerable<string> ResolveProperties(string instanceOfValue, JObject statementsObject)
         {
-            // TODO vullen vanuit appsettings 
-            // TODO : property name : https://www.wikidata.org/wiki/Wikidata:Database_reports/List_of_properties/all
+            // TODO vullen vanuit appsettings             
 
             switch (instanceOfValue)
             {
@@ -82,48 +81,48 @@ namespace WikidataEditor.Services
 
         }
 
-        private static Dictionary<string, string> GetPropertiesOfHuman()
+        private static IEnumerable<string> GetPropertiesOfHuman()
         {
-            // human = 'Q5'
-            return new Dictionary<string, string>
+
+            return new List<string>
             {
-                { "P31", "instance of" },
-                { "P21", "sex or gender" },
-                { "P27", "country of citizenship" },
-                { "P735", "given name" },
-                { "P734", "family name" },
-                { "P569", "date of birth" },
-                { "P19", "place of birth" },
-                { "P570", "date of death" },
-                { "P20", "place of death" },
-                { "P106", "occupation" }
+                 "P31",   // "instance of" 
+                 "P21",   // "sex or gender" 
+                 "P27",   // "country of citizenship" 
+                 "P735",  // "given name" 
+                 "P734",  // "family name" 
+                 "P569",  // "date of birth" 
+                 "P19",   // "place of birth" 
+                 "P570",  // "date of death" 
+                 "P20",   // "place of death" 
+                 "P106"   // "occupation"
             };
         }
 
-        private static Dictionary<string, string> GetPropertiesOfDisambiguationPage()
+        private static IEnumerable<string> GetPropertiesOfDisambiguationPage()
         {
             // wikimedia disambiguation page = 'Q4167410'
-            return new Dictionary<string, string>
+            return new List<string>
             {
-                { "P31", "instance of" },
-                { "P1889", "different from" },
-                { "P1382", "partially coincident with" },
-                { "P460", "said to be the same as" },
+                 "P31",   // "instance of" 
+                 "P1889", // "different from" 
+                 "P1382", // "partially coincident with",
+                 "P460"   // "said to be the same as" 
             };
         }
 
-        private static Dictionary<string, string> GetPropertiesOfAstronomicalObjectType()
+        private static IEnumerable<string> GetPropertiesOfAstronomicalObjectType()
         {
             // astronomical object type = 'Q17444909'
-            return new Dictionary<string, string>
+            return new List<string>
             {
-                { "P31", "instance of" },
-                { "P279", "subclass of" },
-                { "P361", "part of" },
-                { "P18", "image" },
-                { "P366", "has use" },
-                { "P367", "astronomic symbol image" },
-                { "P1343", "described by source" },
+                 "P31",  // "instance of" 
+                 "P279", // "subclass of" 
+                 "P361", // "part of" 
+                 "P18",  // "image"
+                 "P366", // "has use" 
+                 "P367", // "astronomic symbol image" 
+                 "P1343" // "described by source" 
             };
         }
 
