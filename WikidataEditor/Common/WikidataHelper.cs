@@ -109,7 +109,7 @@ namespace WikidataEditor.Common
         {
             string description;
 
-            if (WikidataProperties.Descriptions.TryGetValue(property, out description))
+            if (WikidataProperties.Labels.TryGetValue(property, out description))
             {
                 return $"{description} ({property})";
             }
@@ -237,6 +237,7 @@ namespace WikidataEditor.Common
 
         private string GetLabel(string id)
         {
+            // TODO bugfix: https://localhost:7085/api/items/Q99999/coredata
             JObject jsonObject = GetEntityData(id, "labels").Result;
 
             var codes = jsonObject.ToObject<LanguageCodes>();
