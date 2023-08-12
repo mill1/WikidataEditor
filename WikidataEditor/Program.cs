@@ -1,9 +1,12 @@
 /*
  * Wikibase REST API  0.1  OAS3
  * https://doc.wikimedia.org/Wikibase/master/js/rest-api/
+ * 
+ * Datamodel:
+ * https://www.mediawiki.org/wiki/Wikibase/DataModel
  */
 
-// TODO: Add statement(s):
+// TODO: Add statement(s)!:
 // https://en.wikipedia.org/wiki/Thomas_Taylor,_Baron_Taylor_of_Gryfe
 // https://www.wikidata.org/wiki/Q7794369
 // https://www.theguardian.com/news/2001/jul/30/guardianobituaries1
@@ -31,7 +34,6 @@ builder.Services.AddHttpClient(Constants.HttpClientWikidataRestApi, httpClient =
 
 builder.Services.AddScoped<IHttpClientWikidataApi, HttpClientWikidataApi>();
 builder.Services.AddScoped<ICoreDataService, CoreDataService>();
-builder.Services.AddScoped<IMappingService, MappingService>();
 builder.Services.AddScoped<IWikidataHelper, WikidataHelper>();
 builder.Services.AddScoped<LabelService>();
 builder.Services.AddScoped<DescriptionService>();

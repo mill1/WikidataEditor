@@ -1,11 +1,9 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WikidataEditor.Dtos;
 using WikidataEditor.Dtos.Requests;
 using WikidataEditor.Models;
-using WikidataEditor.Models.Instances;
 
 namespace WikidataEditor.Common
 {
@@ -100,7 +98,7 @@ namespace WikidataEditor.Common
                     new FlatStatementDto
                     {
                         Property = ResolveProperty(property),
-                        Value = ResolveValues(statement)
+                        Values = ResolveValues(statement)
                     }
                 );
             }
@@ -253,25 +251,6 @@ namespace WikidataEditor.Common
             return jsonObject.Count == 0 ? Constants.Missing : ((JValue)((JProperty)jsonObject.First).Value).Value.ToString();
         }
 
-        // TODO obsolete?
-        public IEnumerable<string> ResolveTimeValue(Statement[] statement)
-        {
-            if (statement == null)
-                return new List<string> { Constants.Missing };
-
-            return statement.Select(x => GetTimeValue(x.value.content));
-        }
-
-        private string GetTimeValue(object content)
-        {
-            var timeProperty = ((JContainer)content).Where(p => ((JProperty)p).Name == "time").FirstOrDefault();
-
-            if (timeProperty == null)
-                return Constants.Missing;
-
-            return ((JValue)((JProperty)timeProperty).Value).Value.ToString();
-        }
-
         public string GetTextValue(LanguageCodes codes)
         {
             if (codes.en == null)
@@ -299,6 +278,14 @@ namespace WikidataEditor.Common
             .Where(c => c.PropertyType == typeof(string))
             .Select(c => (string)c.GetValue(codes))
             .FirstOrDefault(value => !string.IsNullOrEmpty(value));
+        }
+
+        // Cannot part from it
+        private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
+        {
+            var values = ResolveValues(instances);
+            var ids = instances.Select(id => id.value.content.ToString());
+            return values.Zip(ids, (first, second) => first + " (" + second + ")");
         }
     }
 }

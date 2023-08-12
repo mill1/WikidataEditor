@@ -1,13 +1,10 @@
-﻿// https://www.mediawiki.org/wiki/Wikibase/DataModel
-
+﻿
 namespace WikidataEditor.Models
 {
-    // TODO IWikidataItem verwijderen hier
-    
     /// <summary>
     /// Model of a Wikidata item excluding the statements
     /// </summary>
-    public class WikidataItemBase : IWikidataItem
+    public class WikidataItemBase
     {
         public string type { get; set; }
         public LanguageCodes labels { get; set; }
