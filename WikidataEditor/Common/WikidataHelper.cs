@@ -1,11 +1,9 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using WikidataEditor.Dtos;
 using WikidataEditor.Dtos.Requests;
 using WikidataEditor.Models;
-using WikidataEditor.Models.Instances;
 
 namespace WikidataEditor.Common
 {
@@ -17,64 +15,6 @@ namespace WikidataEditor.Common
         public WikidataHelper(IHttpClientWikidataApi httpClientWikidataApi)
         {
             _httpClientWikidataApi = httpClientWikidataApi;
-        }
-
-        public async Task<IEnumerable<EntityTextDto>> GetEntityTexts(string id, string entityType)
-        {
-            var entityTexts = new List<EntityTextDto>();
-
-            JObject jsonObject = await GetEntityData(id, entityType);
-
-            foreach (var lc in jsonObject.ToObject<dynamic>())
-            {
-                entityTexts.Add(new EntityTextDto
-                {
-                    LanguageCode = ((JProperty)lc).Name,
-                    Value = (string)((JProperty)lc).Value
-                });
-            }
-            return entityTexts;
-        }
-
-        public async Task<IEnumerable<StatementsDto>> GetStatement(string id, string property)
-        {
-            JObject jsonObject = await GetEntityData(id, "statements");
-            var statementsObject = jsonObject.ToObject<dynamic>();
-
-            foreach (var statementObject in statementsObject)
-            {
-                string propertyName = ((JProperty)statementObject).Name;
-
-                if (propertyName== property)
-                {
-                    var jArray = ((JProperty)statementObject).Value;
-
-                    return new List<StatementsDto>
-                    {
-                        new StatementsDto
-                        {
-                            Property = property,
-                            Statement = jArray.ToObject<Statement[]>()
-                        }
-                    };
-                }
-            }
-
-            throw new HttpRequestException($"Property {property} not found in statements on {id}{ResolveOnLabel(id)}", null, System.Net.HttpStatusCode.NotFound);
-        }
-
-        private string ResolveOnLabel(string id)
-        {
-            string label;
-            try
-            {
-                label = GetLabel(id);
-            }
-            catch (Exception)
-            {
-                label = null;
-            }
-            return label == null ? string.Empty : $" ({label})";
         }
 
         public async Task<IEnumerable<StatementsDto>> GetStatements(string id)
@@ -101,6 +41,102 @@ namespace WikidataEditor.Common
             return statements;
         }
 
+        public IEnumerable<string> GetProperties(dynamic statementsObject, int maxNumberOfProperties)
+        {
+            var properties = new List<string>();
+            int count = 0;
+
+            foreach (var statementObject in statementsObject)
+            {
+                string propertyName = ((JProperty)statementObject).Name;
+
+                properties.Add(propertyName);
+
+                count++;
+
+                if(count > maxNumberOfProperties)
+                    return properties;
+            }
+            return properties;
+        }
+
+        public async Task<IEnumerable<StatementsDto>> GetStatement(string id, string property)
+        {
+            JObject jsonObject = await GetEntityData(id, "statements");
+            var statementsObject = jsonObject.ToObject<dynamic>();
+
+            return await GetStatement(statementsObject, property);
+        }
+
+        public async Task<IEnumerable<StatementsDto>> GetStatement(JObject statementsObject, string property)
+        {
+            var statement = statementsObject[property];
+
+            if (statement == null)
+                return CreateStatement(property, $"Property {property} not found in statements");
+
+            return new List<StatementsDto>
+            {
+                new StatementsDto
+                {
+                    Property = property,
+                    Statement = statement.ToObject<Statement[]>()
+                }
+            };
+        }       
+
+        public List<FlatStatementDto> GetStatementsValues(dynamic statementsObject, IEnumerable<string> properties)
+        {
+            var flatStatements = new List<FlatStatementDto>();
+
+            foreach (var property in properties)
+            {
+                var statements = (IEnumerable<StatementsDto>)GetStatement(statementsObject, property).Result;
+                var statement = statements.Select(x => x.Statement).First();
+
+                flatStatements.Add(
+                    new FlatStatementDto
+                    {
+                        Property = ResolvePropertyDescription(property),
+                        Values = ResolveValues(statement)
+                    }
+                );
+            }
+            return flatStatements;
+        }
+
+        private static string ResolvePropertyDescription(string property)
+        {
+            string description;
+
+            if (WikidataProperties.Descriptions.TryGetValue(property, out description))
+            {
+                return $"{description} ({property})";
+            }
+
+            return $"https://www.wikidata.org/wiki/Property:{property}"; ;
+        }
+
+        private static List<StatementsDto> CreateStatement(string property, string content)
+        {
+            return new List<StatementsDto>
+                {
+                   new StatementsDto
+                   {
+                       Property = property,
+                       Statement = new List<Statement>
+                       { new Statement
+                       {
+                           value = new Value
+                           {
+                               content = content
+                           }
+                       }
+                       }.ToArray()
+                    }
+                };
+        }
+
         public async Task<IEnumerable<EntityTextDto>> GetAliases(string id)
         {
             JObject jsonObject = await GetEntityData(id, "aliases");
@@ -113,6 +149,23 @@ namespace WikidataEditor.Common
                     Value = a.Value,
                 }
             );
+        }
+
+        public async Task<IEnumerable<EntityTextDto>> GetEntityTexts(string id, string entityType)
+        {
+            var entityTexts = new List<EntityTextDto>();
+
+            JObject jsonObject = await GetEntityData(id, entityType);
+
+            foreach (var lc in jsonObject.ToObject<dynamic>())
+            {
+                entityTexts.Add(new EntityTextDto
+                {
+                    LanguageCode = ((JProperty)lc).Name,
+                    Value = (string)((JProperty)lc).Value
+                });
+            }
+            return entityTexts;
         }
 
         public async Task<IEnumerable<EntityTextDto>> GetEntityText(string id, string languageCode, string entityType)
@@ -132,58 +185,54 @@ namespace WikidataEditor.Common
             };
         }
 
-        public IEnumerable<string> ResolveValue(Statement[] statements)
+        public IEnumerable<string> ResolveValues(Statement[] statements)
         {
             // A 'statement' can consist of multiple statement values (claims about the statement)
             if (statements == null)
                 return new List<string> { Constants.Missing };
 
-            var labelValues = new List<string>();
+            var values = new List<string>();
 
             foreach (var statement in statements)
             {
                 if (statement.value == null)
-                    labelValues.Add("*no value*");
-
-                var value = statement.value.content.ToString();
-                Match match = WikidataIdPattern.Match(value);
-
-                labelValues.Add(match.Success ? GetLabel(value) : value);
+                {
+                    values.Add("*no value*");
+                    continue;
+                }
+                ResolveValue(values, statement);
             }
-
-            return labelValues;
+            return values;
         }
 
-        public IEnumerable<string> ResolveTimeValue(Statement[] statement)
+        private void ResolveValue(List<string> values, Statement statement)
         {
-            if (statement == null)
-                return new List<string> { Constants.Missing };
+            var value = statement.value.content.ToString();
+            Match match = WikidataIdPattern.Match(value);
 
-            return statement.Select(x => GetTimeValue(x.value.content));
-        }
-
-        private string GetTimeValue(object content)
-        {
-            var timeProperty = ((JContainer)content).Where(p => ((JProperty)p).Name == "time").FirstOrDefault();
-
-            if (timeProperty == null)
-                return Constants.Missing;
-
-            return ((JValue)((JProperty)timeProperty).Value).Value.ToString();
-        }
-
-        public string GetTextValue(LanguageCodes codes)
-        {
-            if (codes.en == null)
+            if (match.Success)
             {
-                var value = GetValueOfFirstFilledProperty(codes);
+                TimeContent timeContent = TryGetTimeContent(value);
 
-                if (value == null)
-                    return Constants.Missing;
-
-                return value;
+                if (timeContent != null)
+                    values.Add(timeContent.time);
+                else
+                    values.Add(GetLabel(value));
             }
-            return codes.en;
+            else
+                values.Add(value);
+        }
+
+        private TimeContent TryGetTimeContent(string value)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<TimeContent>(value);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         private string GetLabel(string id)
@@ -200,7 +249,21 @@ namespace WikidataEditor.Common
             if (value != null)
                 return value;
 
-            return jsonObject.Count == 0 ? Constants.Missing : ((JValue)((JProperty)jsonObject.First).Value).Value.ToString();
+            return Constants.Missing;
+        }
+
+        public string GetTextValue(LanguageCodes codes)
+        {
+            if (codes.en == null)
+            {
+                var value = GetValueOfFirstFilledProperty(codes);
+
+                if (value == null)
+                    return Constants.Missing;
+
+                return value;
+            }
+            return codes.en;
         }
 
         private async Task<JObject> GetEntityData(string id, string entityType)
@@ -216,6 +279,14 @@ namespace WikidataEditor.Common
             .Where(c => c.PropertyType == typeof(string))
             .Select(c => (string)c.GetValue(codes))
             .FirstOrDefault(value => !string.IsNullOrEmpty(value));
+        }
+
+        // Cannot part from it
+        private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
+        {
+            var values = ResolveValues(instances);
+            var ids = instances.Select(id => id.value.content.ToString());
+            return values.Zip(ids, (first, second) => first + " (" + second + ")");
         }
     }
 }

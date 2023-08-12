@@ -18,7 +18,7 @@ namespace WikidataEditorTests.Controllers
             var id = "Q1";
 
             coreDataService.Setup(x => x.Get(It.IsAny<string>()))
-                           .Returns(new WikidataItemHumanDto(new WikidataItemBaseDto { Id = id }));
+                           .Returns(new FlatWikidataItemDto { Id = id});
 
             var controller = new CoreDataController(coreDataService.Object);
 
@@ -26,8 +26,8 @@ namespace WikidataEditorTests.Controllers
 
             result.Should().BeOfType<OkObjectResult>();
             var value = ((ObjectResult)result).Value;
-            value.Should().BeOfType<WikidataItemHumanDto>();
-            ((WikidataItemHumanDto)value).Id.Should().Be(id);
+            value.Should().BeOfType<FlatWikidataItemDto>();
+            ((FlatWikidataItemDto)value).Id.Should().Be(id);
         }
     }
 }

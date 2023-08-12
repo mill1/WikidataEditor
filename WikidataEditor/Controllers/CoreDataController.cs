@@ -18,9 +18,10 @@ namespace WikidataEditor.Controllers
         public IActionResult Get(string id)
         {
             /*
-                human:                   https://localhost:7085/api/items/Q15429542/coredata (John Fleming)
-                disambiguation page:     https://localhost:7085/api/items/Q231486/coredata   (Silver)
-                astronomical object type https://localhost:7085/api/items/Q3863/coredata     (asteroid)
+                human:                    https://localhost:7085/api/items/Q15429542/coredata (John Fleming)
+                disambiguation page:      https://localhost:7085/api/items/Q231486/coredata   (Silver)
+                astronomical object type: https://localhost:7085/api/items/Q3863/coredata     (asteroid)
+                other:                    https://localhost:7085/api/items/Q368481/coredata   (Bonfire (horse))
             */
             return Ok(_coreDataService.Get(id));
         }

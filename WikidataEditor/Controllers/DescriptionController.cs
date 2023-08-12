@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WikidataEditor.Models;
 using WikidataEditor.Services;
 
 namespace WikidataEditor.Controllers

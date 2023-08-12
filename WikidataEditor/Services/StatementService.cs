@@ -1,6 +1,5 @@
 ﻿using WikidataEditor.Common;
 using WikidataEditor.Dtos;
-using WikidataEditor.Dtos.Requests;
 
 namespace WikidataEditor.Services
 {

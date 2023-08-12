@@ -1,8 +1,10 @@
-﻿// https://www.mediawiki.org/wiki/Wikibase/DataModel
-
+﻿
 namespace WikidataEditor.Models
 {
-    public class WikidataItemBase : IWikidataItem
+    /// <summary>
+    /// Model of a Wikidata item excluding the statements
+    /// </summary>
+    public class WikidataItemBase
     {
         public string type { get; set; }
         public LanguageCodes labels { get; set; }

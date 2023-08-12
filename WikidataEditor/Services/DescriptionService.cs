@@ -1,9 +1,5 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Text.Json.Nodes;
-using WikidataEditor.Common;
+﻿using WikidataEditor.Common;
 using WikidataEditor.Dtos.Requests;
-using WikidataEditor.Models;
 
 namespace WikidataEditor.Services
 {

@@ -2,23 +2,8 @@
 {
     // https://www.wikidata.org/wiki/Help:Properties
 
-    public class WikidataItemBaseDto : IWikidataItemDto
+    public class FlatWikidataItemDto 
     {
-        public WikidataItemBaseDto()
-        {
-        }
-
-        public WikidataItemBaseDto(WikidataItemBaseDto wikidataItemBase)
-        {
-            Id = wikidataItemBase.Id;
-            Label = wikidataItemBase.Label;
-            Description = wikidataItemBase.Description;
-            StatementsCount = wikidataItemBase.StatementsCount;
-            InstanceOf = wikidataItemBase.InstanceOf;
-            Aliases = wikidataItemBase.Aliases;
-            UriCollection = wikidataItemBase.UriCollection;
-        }
-
         /// <summary>
         /// The unique identifier of the wikidata-item        
         /// </summary>
@@ -37,12 +22,12 @@
         /// <summary>
         /// Number of top level statements on the wikidata-item 
         /// </summary>
-        public int StatementsCount { get; set; }
+        public int TotalNumberOfStatements { get; set; }
 
         /// <summary>
-        /// The top level type of instance of the wikidata-item        
+        /// The flattened statements on the wikidata-item 
         /// </summary>
-        public IEnumerable<string> InstanceOf { get; set; }
+        public IEnumerable<FlatStatementDto> Statements { get; set; }
 
         /// <summary>
         /// The aliases of the wikidata-item        
