@@ -48,6 +48,12 @@ namespace WikidataEditor.Common
             JObject jsonObject = await GetEntityData(id, "statements");
             var statementsObject = jsonObject.ToObject<dynamic>();
 
+            return await GetStatement(statementsObject, property);
+
+            // TODO alleen mbt item type other
+            // anders: var statementInstanceOf = statementsObject["P31"];
+
+            /*
             foreach (var statementObject in statementsObject)
             {
                 string propertyName = ((JProperty)statementObject).Name;
@@ -66,22 +72,86 @@ namespace WikidataEditor.Common
                     };
                 }
             }
-
-            throw new HttpRequestException($"Property {property} not found in statements on {id}{ResolveOnLabel(id)}", null, System.Net.HttpStatusCode.NotFound);
+            */
         }
 
-        private string ResolveOnLabel(string id)
+        public async Task<IEnumerable<StatementsDto>> GetStatement(JObject statementsObject, string property)
         {
-            string label;
-            try
+            var statement = statementsObject[property];
+
+            if (statement == null)
+                return CreateStatement(property, $"Property {property} not found in statements");
+
+            return new List<StatementsDto>
             {
-                label = GetLabel(id);
-            }
-            catch (Exception)
+                new StatementsDto
+                {
+                    Property = property,
+                    Statement = statement.ToObject<Statement[]>()
+                }
+            };
+        }       
+
+        public List<FlatStatementDto> GetStatementsValues(dynamic statementsObject, Dictionary<string, string> properties)
+        {
+            var flatStatements = new List<FlatStatementDto>();
+
+            foreach ( var property in properties)
             {
-                label = null;
+                var statements = (IEnumerable<StatementsDto>)GetStatement(statementsObject, property.Key).Result;
+                var statement = statements.Select(x => x.Statement).First();
+
+                flatStatements.Add(
+                    new FlatStatementDto
+                    {
+                        Property = property.Key == property.Value ? property.Value : $"{property.Value} ({property.Key})",
+                        Value = ResolveValues(statement)
+                    }
+                );
             }
-            return label == null ? string.Empty : $" ({label})";
+            return flatStatements;
+        }
+
+        // TODO weg
+        public List<FlatStatementDto> GetStatementsValuesOrig(dynamic statementsObject)
+        {
+            var statements = new List<FlatStatementDto>();
+
+            foreach (var statementObject in statementsObject)
+            {
+                var property = ((JProperty)statementObject).Name;
+                var jArray = ((JProperty)statementObject).Value;
+                var array = jArray.ToObject<Statement[]>();
+
+                statements.Add(
+                    new FlatStatementDto
+                    {
+                        Property = property, // TODO werkt niet: P != Q _helper.GetLabel(property),
+                        Value = ResolveValues(array)
+                    }
+                );
+            }
+            return statements;
+        }
+
+        private static List<StatementsDto> CreateStatement(string property, string content)
+        {
+            return new List<StatementsDto>
+                {
+                   new StatementsDto
+                   {
+                       Property = property,
+                       Statement = new List<Statement>
+                       { new Statement
+                       {
+                           value = new Value
+                           {
+                               content = content
+                           }
+                       }
+                       }.ToArray()
+                    }
+                };
         }
 
         public async Task<IEnumerable<EntityTextDto>> GetAliases(string id)
@@ -148,23 +218,28 @@ namespace WikidataEditor.Common
                     continue;
                 }
 
-                var value = statement.value.content.ToString();
-                Match match = WikidataIdPattern.Match(value);
-
-                if (match.Success)
-                {
-                    TimeContent timeContent = TryGetTimeContent(value);
-
-                    if (timeContent != null) 
-                        values.Add(timeContent.time);
-                    else
-                        values.Add(GetLabel(value));
-                }
-                else
-                    values.Add(value);
+                ResolveValue(values, statement);
             }
 
             return values;
+        }
+
+        private void ResolveValue(List<string> values, Statement statement)
+        {
+            var value = statement.value.content.ToString();
+            Match match = WikidataIdPattern.Match(value);
+
+            if (match.Success)
+            {
+                TimeContent timeContent = TryGetTimeContent(value);
+
+                if (timeContent != null)
+                    values.Add(timeContent.time);
+                else
+                    values.Add(GetLabel(value));
+            }
+            else
+                values.Add(value);
         }
 
         private TimeContent TryGetTimeContent(string value)
@@ -177,6 +252,24 @@ namespace WikidataEditor.Common
             {
                 return null;
             }
+        }
+
+        private string GetLabel(string id)
+        {
+            JObject jsonObject = GetEntityData(id, "labels").Result;
+
+            var codes = jsonObject.ToObject<LanguageCodes>();
+
+            if (codes.en != null)
+                return codes.en;
+
+            var value = GetValueOfFirstFilledProperty(codes);
+
+            if (value != null)
+                return value;
+
+            // TODO .ToObject<type> gebruiken
+            return jsonObject.Count == 0 ? Constants.Missing : ((JValue)((JProperty)jsonObject.First).Value).Value.ToString();
         }
 
         // TODO obsolete?
@@ -210,24 +303,6 @@ namespace WikidataEditor.Common
                 return value;
             }
             return codes.en;
-        }
-
-        private string GetLabel(string id)
-        {
-            JObject jsonObject = GetEntityData(id, "labels").Result;
-
-            var codes = jsonObject.ToObject<LanguageCodes>();
-
-            if (codes.en != null)
-                return codes.en;
-
-            var value = GetValueOfFirstFilledProperty(codes);
-
-            if (value != null)
-                return value;
-
-            // TODO .ToObject<type> gebruiken
-            return jsonObject.Count == 0 ? Constants.Missing : ((JValue)((JProperty)jsonObject.First).Value).Value.ToString();
         }
 
         private async Task<JObject> GetEntityData(string id, string entityType)

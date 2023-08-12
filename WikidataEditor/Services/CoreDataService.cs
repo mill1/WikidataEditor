@@ -21,7 +21,7 @@ namespace WikidataEditor.Services
             _helper = wikidataHelper;
         }
 
-        public IWikidataItemDto Get(string id)
+        public FlatWikidataItemDto Get(string id)
         {
             var jsonString = _httpClientWikidataApi.GetStringAsync("items/" + id).Result;
 
@@ -32,69 +32,113 @@ namespace WikidataEditor.Services
                 throw new ArgumentException($"Result is not of type item. Encountered type: {type}");
 
             var statementsObject = jObject["statements"].ToObject<dynamic>();
-            var statementInstanceOf = statementsObject["P31"];
             int statementsCount = ((JContainer)statementsObject).Count;
 
-            if (statementInstanceOf == null)
-            {
-                WikidataItemOther item = jObject.ToObject<WikidataItemOther>();
-                return new WikidataItemOtherDto(ResolveBasicData(item, null, statementsCount, null));
-            }
+            var properties = ResolveProperties(ResolveInstanceOfValue(statementsObject));
 
-            // Other types of items
-            WikidataItemOther itemOther = jObject.ToObject<WikidataItemOther>();
-            itemOther.FlatStatements = GetStatementsValues(statementsObject);
+            WikidataItemBase itemBase = jObject.ToObject<WikidataItemBase>();
 
-            var y = ResolveBasicData(itemOther, statementInstanceOf, statementsCount, null);
-            var x = new WikidataItemOtherDto(y);
+            FlatWikidataItemDto flatWikidataItemDto = new FlatWikidataItemDto();
 
-            return x;
-
+            flatWikidataItemDto.Id = id;
+            flatWikidataItemDto.Label = _helper.GetTextValue(itemBase.labels);
+            flatWikidataItemDto.InstanceOf = ResolveInstanceTexts(statementsObject);
+            flatWikidataItemDto.Description = _helper.GetTextValue(itemBase.descriptions);
+            flatWikidataItemDto.StatementsCount = statementsCount;
+            flatWikidataItemDto.Statements = _helper.GetStatementsValues(statementsObject, properties);
+            flatWikidataItemDto.Aliases = GetAliases(itemBase.aliases);
+            flatWikidataItemDto.UriCollection = null; // TODO GetUriCollection(itemBase, instanceUris);
+           
+            return flatWikidataItemDto;
 
             //return ResolveData(statementInstanceOf.ToObject<Statement[]>(), jObject, statementsCount);
         }
 
-
-        public List<FlatStatementDto> GetStatementsValues(dynamic statementsObject)
+        private string ResolveInstanceOfValue(JObject statementsObject)
         {
-            var statements = new List<FlatStatementDto>();
+            // TODO implementeren. Zie ook ResolveInstanceTexts
+            return Constants.WikidataIdHuman;
+        }
 
-            foreach (var statementObject in statementsObject)
+        private Dictionary<string, string> ResolveProperties(string instanceOfValue)
+        {
+            // TODO vullen vanuit appsettings 
+            // TODO refactoren uiteraard
+            
+            var properties = new Dictionary<string, string>();
+
+            if (instanceOfValue == Constants.WikidataIdHuman) // TODO: andere twee
             {
-                var property = ((JProperty)statementObject).Name;
-                var jArray = ((JProperty)statementObject).Value;
-                var array = jArray.ToObject<Statement[]>();
-
-                statements.Add(
-                    new FlatStatementDto
-                    {
-                        Property = property, // _helper.GetLabel(property),
-                        Statement = _helper.ResolveValues(array)
-                    }
-                );
+                properties.Add("P21", "sex or gender");
+                properties.Add("P27", "country of citizenship");
+                properties.Add("P735", "given name");
+                properties.Add("P734", "family name");
+                properties.Add("P569", "date of birth");
+                properties.Add("P19", "place of birth");
+                properties.Add("P570", "date of death");
+                properties.Add("P20", "place of death");
+                properties.Add("P106", "occupation");
+            }
+            else
+            {
+                // TODO if other: eerste (max) 5 P's toevoegen
+                properties.Add("P31", "TODO");
             }
 
-            return statements;
+            return properties;
+        }
+
+        // TODO
+        private static bool ContainsValue(Statement[] statements, string value)
+        {
+            if (statements == null)
+                return false;
+
+            return statements.Any(s => s.value.content.ToString() == value);
+        }
+
+        private IEnumerable<string> ResolveInstanceTexts(JObject statementsObject)
+        {
+            var statements = _helper.GetStatement(statementsObject, Constants.WikidataPropertyIdInstanceOf).Result;
+            var instances = statements.Select(x => x.Statement).FirstOrDefault();
+            var values = _helper.ResolveValues(instances);
+            var ids = instances.Select(id => id.value.content.ToString());
+            return values.Zip(ids, (first, second) => first + " (" + second + ")");
+        }
+
+        // TODO verwijderen
+        private WikidataItemBaseDto ResolveBasicData(IWikidataItem item, Statement[] statementInstanceOf, int statementsCount, List<string> instanceUris)
+        {
+            return new WikidataItemBaseDto
+            {
+                Id = item.id,
+                Label = _helper.GetTextValue(item.labels),
+                //InstanceOf = ResolveInstanceTexts(statementInstanceOf),
+                Description = _helper.GetTextValue(item.descriptions),
+                StatementsCount = statementsCount,
+                Aliases = GetAliases(item.aliases),
+                UriCollection = GetUriCollection(item, instanceUris)
+            };
         }
 
         // TODO: generalize further without using Reflection
         private IWikidataItemDto ResolveData(Statement[] statementInstanceOf, JObject jObject, int statementsCount)
         {
-            if (ContainsValue(statementInstanceOf, Constants.WikidataIdHuman))
+            if (ContainsValue2(statementInstanceOf, Constants.WikidataIdHuman))
             {
                 WikidataItemOnHumans item = jObject.ToObject<WikidataItemOnHumans>();
                 WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, ResolveUrisForHumans(item));
                 return _mappingService.MapToHumanDto(basicData, item);
             }
 
-            if (ContainsValue(statementInstanceOf, Constants.WikidataIdDisambiguationPage))
+            if (ContainsValue2(statementInstanceOf, Constants.WikidataIdDisambiguationPage))
             {
                 WikidataItemOnDisambiguationPages item = jObject.ToObject<WikidataItemOnDisambiguationPages>();
                 WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, null);
                 return _mappingService.MapToDisambiguationPageDto(basicData, item);
             }
 
-            if (ContainsValue(statementInstanceOf, Constants.WikidataIdAstronomicalObjectType))
+            if (ContainsValue2(statementInstanceOf, Constants.WikidataIdAstronomicalObjectType))
             {
                 WikidataItemOnAstronomicalObjectTypes item = jObject.ToObject<WikidataItemOnAstronomicalObjectTypes>();
                 WikidataItemBaseDto basicData = ResolveBasicData(item, statementInstanceOf, statementsCount, ResolveUrisForAstronomicalObjectTypes(item));
@@ -106,32 +150,7 @@ namespace WikidataEditor.Services
             return new WikidataItemOtherDto(ResolveBasicData(itemOther, statementInstanceOf, statementsCount, null));
         }
 
-        private WikidataItemBaseDto ResolveBasicData(IWikidataItem item, Statement[] statementInstanceOf, int statementsCount, List<string> instanceUris)
-        {
-            return new WikidataItemBaseDto
-            {
-                Id = item.id,
-                Label = _helper.GetTextValue(item.labels),
-                InstanceOf = ResolveInstanceTexts(statementInstanceOf),
-                Description = _helper.GetTextValue(item.descriptions),
-                StatementsCount = statementsCount,
-                Aliases = GetAliases(item.aliases),
-                UriCollection = GetUriCollection(item, instanceUris)
-            };
-        }
-
-        private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
-        {
-            var values = _helper.ResolveValues(instances);
-
-            if (values.First() == Constants.Missing)
-                return values;
-
-            var ids = instances.Select(id => id.value.content.ToString());
-            return values.Zip(ids, (first, second) => first + " (" + second + ")");
-        }
-
-        private static bool ContainsValue(Statement[] statements, string value)
+        private static bool ContainsValue2(Statement[] statements, string value)
         {
             if (statements == null)
                 return false;

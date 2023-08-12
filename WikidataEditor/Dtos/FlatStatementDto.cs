@@ -3,6 +3,6 @@
     public class FlatStatementDto
     {
         public string Property { get; set; }
-        public IEnumerable<string> Statement { get; set; }
+        public IEnumerable<string> Value { get; set; }
     }
 }

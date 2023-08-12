@@ -2,6 +2,11 @@
 
 namespace WikidataEditor.Models
 {
+    // TODO IWikidataItem verwijderen hier
+    
+    /// <summary>
+    /// Model of a Wikidata item excluding the statements
+    /// </summary>
     public class WikidataItemBase : IWikidataItem
     {
         public string type { get; set; }
