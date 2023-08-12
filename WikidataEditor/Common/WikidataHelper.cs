@@ -109,7 +109,7 @@ namespace WikidataEditor.Common
         {
             string description;
 
-            if (WikidataProperties.Descriptions.TryGetValue(property, out description))
+            if (WikidataProperties.Labels.TryGetValue(property, out description))
             {
                 return $"{description} ({property})";
             }
