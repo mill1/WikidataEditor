@@ -43,36 +43,34 @@ namespace WikidataEditor.Common
             return statements;
         }
 
+        public Dictionary<string, string> GetProperties(dynamic statementsObject, int maxNumberOfProperties)
+        {
+            var properties = new Dictionary<string, string>();
+            int count = 0;
+
+            foreach (var statementObject in statementsObject)
+            {
+                string propertyName = ((JProperty)statementObject).Name;
+
+                if (propertyName == Constants.WikidataPropertyIdInstanceOf) // already displayed
+                    continue;
+
+                properties.Add(propertyName, propertyName);
+
+                count++;
+
+                if(count > maxNumberOfProperties)
+                    return properties;
+            }
+            return properties;
+        }
+
         public async Task<IEnumerable<StatementsDto>> GetStatement(string id, string property)
         {
             JObject jsonObject = await GetEntityData(id, "statements");
             var statementsObject = jsonObject.ToObject<dynamic>();
 
             return await GetStatement(statementsObject, property);
-
-            // TODO alleen mbt item type other
-            // anders: var statementInstanceOf = statementsObject["P31"];
-
-            /*
-            foreach (var statementObject in statementsObject)
-            {
-                string propertyName = ((JProperty)statementObject).Name;
-
-                if (propertyName == property)
-                {
-                    var jArray = ((JProperty)statementObject).Value;
-
-                    return new List<StatementsDto>
-                    {
-                        new StatementsDto
-                        {
-                            Property = property,
-                            Statement = jArray.ToObject<Statement[]>()
-                        }
-                    };
-                }
-            }
-            */
         }
 
         public async Task<IEnumerable<StatementsDto>> GetStatement(JObject statementsObject, string property)
@@ -104,7 +102,7 @@ namespace WikidataEditor.Common
                 flatStatements.Add(
                     new FlatStatementDto
                     {
-                        Property = property.Key == property.Value ? property.Value : $"{property.Value} ({property.Key})",
+                        Property = ResolveProperty(property),
                         Value = ResolveValues(statement)
                     }
                 );
@@ -112,26 +110,12 @@ namespace WikidataEditor.Common
             return flatStatements;
         }
 
-        // TODO weg
-        public List<FlatStatementDto> GetStatementsValuesOrig(dynamic statementsObject)
+        private static string ResolveProperty(KeyValuePair<string, string> property)
         {
-            var statements = new List<FlatStatementDto>();
+            if (property.Key == property.Value)
+                return $"https://www.wikidata.org/wiki/Property:{property.Key}";
 
-            foreach (var statementObject in statementsObject)
-            {
-                var property = ((JProperty)statementObject).Name;
-                var jArray = ((JProperty)statementObject).Value;
-                var array = jArray.ToObject<Statement[]>();
-
-                statements.Add(
-                    new FlatStatementDto
-                    {
-                        Property = property, // TODO werkt niet: P != Q _helper.GetLabel(property),
-                        Value = ResolveValues(array)
-                    }
-                );
-            }
-            return statements;
+            return $"{property.Value} ({property.Key})";
         }
 
         private static List<StatementsDto> CreateStatement(string property, string content)

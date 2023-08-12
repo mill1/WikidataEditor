@@ -31,10 +31,16 @@ namespace WikidataEditor.Services
             if (type != "item")
                 throw new ArgumentException($"Result is not of type item. Encountered type: {type}");
 
-            var statementsObject = jObject["statements"].ToObject<dynamic>();
+            JObject statementsObject = jObject["statements"].ToObject<dynamic>();
             int statementsCount = ((JContainer)statementsObject).Count;
 
-            var properties = ResolveProperties(ResolveInstanceOfValue(statementsObject));
+            var statements = _helper.GetStatement(statementsObject, Constants.WikidataPropertyIdInstanceOf).Result;
+            var instances = statements.Select(x => x.Statement).FirstOrDefault();
+
+            var x = ResolveValueInstanceOf(instances);
+            // TODO if x
+
+            var properties = ResolveProperties(x, statementsObject);
 
             WikidataItemBase itemBase = jObject.ToObject<WikidataItemBase>();
 
@@ -42,7 +48,7 @@ namespace WikidataEditor.Services
 
             flatWikidataItemDto.Id = id;
             flatWikidataItemDto.Label = _helper.GetTextValue(itemBase.labels);
-            flatWikidataItemDto.InstanceOf = ResolveInstanceTexts(statementsObject);
+            flatWikidataItemDto.InstanceOf = ResolveInstanceTexts(instances);
             flatWikidataItemDto.Description = _helper.GetTextValue(itemBase.descriptions);
             flatWikidataItemDto.StatementsCount = statementsCount;
             flatWikidataItemDto.Statements = _helper.GetStatementsValues(statementsObject, properties);
@@ -54,16 +60,27 @@ namespace WikidataEditor.Services
             //return ResolveData(statementInstanceOf.ToObject<Statement[]>(), jObject, statementsCount);
         }
 
-        private string ResolveInstanceOfValue(JObject statementsObject)
+        private string ResolveValueInstanceOf(Statement[] instances)
         {
             // TODO implementeren. Zie ook ResolveInstanceTexts
-            return Constants.WikidataIdHuman;
+            return instances[0].value.content.ToString();
+//
+         //   return Constants.WikidataIdHuman;
         }
 
-        private Dictionary<string, string> ResolveProperties(string instanceOfValue)
+        private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
+        {
+            var values = _helper.ResolveValues(instances);
+            var ids = instances.Select(id => id.value.content.ToString());
+            return values.Zip(ids, (first, second) => first + " (" + second + ")");
+        }
+
+        private Dictionary<string, string> ResolveProperties(string instanceOfValue, JObject statementsObject)
         {
             // TODO vullen vanuit appsettings 
             // TODO refactoren uiteraard
+
+            // TODO label P31 tweemaal opgehaald
             
             var properties = new Dictionary<string, string>();
 
@@ -81,29 +98,12 @@ namespace WikidataEditor.Services
             }
             else
             {
-                // TODO if other: eerste (max) 5 P's toevoegen
-                properties.Add("P31", "TODO");
+                // TODO in maxNumberOfCoreDataProperties appsetting
+                int maxNumberOfCoreDataProperties = 5;
+                properties = _helper.GetProperties(statementsObject, maxNumberOfCoreDataProperties);
             }
 
             return properties;
-        }
-
-        // TODO
-        private static bool ContainsValue(Statement[] statements, string value)
-        {
-            if (statements == null)
-                return false;
-
-            return statements.Any(s => s.value.content.ToString() == value);
-        }
-
-        private IEnumerable<string> ResolveInstanceTexts(JObject statementsObject)
-        {
-            var statements = _helper.GetStatement(statementsObject, Constants.WikidataPropertyIdInstanceOf).Result;
-            var instances = statements.Select(x => x.Statement).FirstOrDefault();
-            var values = _helper.ResolveValues(instances);
-            var ids = instances.Select(id => id.value.content.ToString());
-            return values.Zip(ids, (first, second) => first + " (" + second + ")");
         }
 
         // TODO verwijderen
