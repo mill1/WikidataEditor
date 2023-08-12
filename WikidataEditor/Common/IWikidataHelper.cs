@@ -13,6 +13,6 @@ namespace WikidataEditor.Common
         Task<IEnumerable<EntityTextDto>> GetAliases(string id);
         string GetTextValue(LanguageCodes codes);
         IEnumerable<string> ResolveTimeValue(Statement[] statement);
-        IEnumerable<string> ResolveValue(Statement[] statements);
+        IEnumerable<string> ResolveValues(Statement[] statements);
     }
 }

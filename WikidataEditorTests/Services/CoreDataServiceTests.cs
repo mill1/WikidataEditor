@@ -76,7 +76,7 @@ namespace WikidataEditorTests.Services
             var helperMock = new Mock<IWikidataHelper>();
             helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
             .Returns("horse");
-            helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
+            helperMock.Setup(x => x.ResolveValues(It.IsAny<Statement[]>()))
             .Returns(new List<string> { "horse" });
 
             string jsonString = @"{""type"":""item"",""labels"":{""en"":""horse"",""nl"":""paard""},""descriptions"":{""en"":""horse"",""nl"":""renpaard""},""aliases"":{""en"":[""Gestion Bonfire""]},""statements"":{""P31"":[{""id"":""Q368481"",""value"":{""type"":""value"",""content"":""Q726""}}]},""sitelinks"":{},""id"":""Q368481""}";
@@ -141,7 +141,7 @@ namespace WikidataEditorTests.Services
             var helperMock = new Mock<IWikidataHelper>();
             helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
             .Returns("some value");
-            helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
+            helperMock.Setup(x => x.ResolveValues(It.IsAny<Statement[]>()))
             .Returns(new List<string> { "Q5" });
 
             var mappingServiceMock = new Mock<IMappingService>();
@@ -179,7 +179,7 @@ namespace WikidataEditorTests.Services
             var helperMock = new Mock<IWikidataHelper>();
             helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
             .Returns("some value");
-            helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
+            helperMock.Setup(x => x.ResolveValues(It.IsAny<Statement[]>()))
             .Returns(new List<string> { "Q5" });
 
             var mappingServiceMock = new Mock<IMappingService>();
@@ -218,7 +218,7 @@ namespace WikidataEditorTests.Services
             var helperMock = new Mock<IWikidataHelper>();
             helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
             .Returns("some value");
-            helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
+            helperMock.Setup(x => x.ResolveValues(It.IsAny<Statement[]>()))
             .Returns(new List<string> { "Q5" });
 
             var mappingServiceMock = new Mock<IMappingService>();
@@ -286,7 +286,7 @@ namespace WikidataEditorTests.Services
             var helperMock = new Mock<IWikidataHelper>();
             helperMock.Setup(x => x.GetTextValue(It.IsAny<LanguageCodes>()))
             .Returns("some value");
-            helperMock.Setup(x => x.ResolveValue(It.IsAny<Statement[]>()))
+            helperMock.Setup(x => x.ResolveValues(It.IsAny<Statement[]>()))
             .Returns(new List<string> { "Q5" });
 
             var mappingServiceMock = new Mock<IMappingService>();

@@ -17,15 +17,15 @@ namespace WikidataEditor.Services
         {
             return new WikidataItemHumanDto(basicData)
             {
-                SexOrGender = _helper.ResolveValue(item.statements.P21),
-                CountryOfCitizenship = _helper.ResolveValue(item.statements.P27),
-                GivenName = _helper.ResolveValue(item.statements.P735),
-                FamilyName = _helper.ResolveValue(item.statements.P734),
+                SexOrGender = _helper.ResolveValues(item.statements.P21),
+                CountryOfCitizenship = _helper.ResolveValues(item.statements.P27),
+                GivenName = _helper.ResolveValues(item.statements.P735),
+                FamilyName = _helper.ResolveValues(item.statements.P734),
                 DateOfBirth = _helper.ResolveTimeValue(item.statements.P569),
-                PlaceOfBirth = _helper.ResolveValue(item.statements.P19),
+                PlaceOfBirth = _helper.ResolveValues(item.statements.P19),
                 DateOfDeath = _helper.ResolveTimeValue(item.statements.P570),
-                PlaceOfDeath = _helper.ResolveValue(item.statements.P20),
-                Occupation = _helper.ResolveValue(item.statements.P106),
+                PlaceOfDeath = _helper.ResolveValues(item.statements.P20),
+                Occupation = _helper.ResolveValues(item.statements.P106),
             };
         }
 
@@ -33,9 +33,9 @@ namespace WikidataEditor.Services
         {
             return new WikidataItemDisambiguationPageDto(basicData)
             {
-                DifferentFrom = _helper.ResolveValue(item.statements.P1889),
-                PartiallyCoincidentWith = _helper.ResolveValue(item.statements.P1382),
-                SaidToBeTheSameAs = _helper.ResolveValue(item.statements.P460),
+                DifferentFrom = _helper.ResolveValues(item.statements.P1889),
+                PartiallyCoincidentWith = _helper.ResolveValues(item.statements.P1382),
+                SaidToBeTheSameAs = _helper.ResolveValues(item.statements.P460),
             };
         }
 
@@ -43,12 +43,12 @@ namespace WikidataEditor.Services
         {
             return new WikidataItemAstronomicalObjectTypeDto(basicData)
             {
-                SubclassOf = _helper.ResolveValue(item.statements.P279),
-                PartOf = _helper.ResolveValue(item.statements.P361),
-                Image = _helper.ResolveValue(item.statements.P18),
-                HasUse = _helper.ResolveValue(item.statements.P366),
-                AstronomicSymbolImage = _helper.ResolveValue(item.statements.P367),
-                DescribedBySource = _helper.ResolveValue(item.statements.P1343),
+                SubclassOf = _helper.ResolveValues(item.statements.P279),
+                PartOf = _helper.ResolveValues(item.statements.P361),
+                Image = _helper.ResolveValues(item.statements.P18),
+                HasUse = _helper.ResolveValues(item.statements.P366),
+                AstronomicSymbolImage = _helper.ResolveValues(item.statements.P367),
+                DescribedBySource = _helper.ResolveValues(item.statements.P1343),
             };
         }
     }

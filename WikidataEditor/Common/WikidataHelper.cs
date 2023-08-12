@@ -19,21 +19,28 @@ namespace WikidataEditor.Common
             _httpClientWikidataApi = httpClientWikidataApi;
         }
 
-        public async Task<IEnumerable<EntityTextDto>> GetEntityTexts(string id, string entityType)
+        public async Task<IEnumerable<StatementsDto>> GetStatements(string id)
         {
-            var entityTexts = new List<EntityTextDto>();
+            JObject jsonObject = await GetEntityData(id, "statements");
+            var statementsObject = jsonObject.ToObject<dynamic>();
 
-            JObject jsonObject = await GetEntityData(id, entityType);
+            var statements = new List<StatementsDto>();
 
-            foreach (var lc in jsonObject.ToObject<dynamic>())
+            foreach (var statementObject in statementsObject)
             {
-                entityTexts.Add(new EntityTextDto
-                {
-                    LanguageCode = ((JProperty)lc).Name,
-                    Value = (string)((JProperty)lc).Value
-                });
+                var property = ((JProperty)statementObject).Name;
+                var jArray = ((JProperty)statementObject).Value;
+                var array = jArray.ToObject<Statement[]>();
+
+                statements.Add(
+                    new StatementsDto
+                    {
+                        Property = property,
+                        Statement = array
+                    }
+                );
             }
-            return entityTexts;
+            return statements;
         }
 
         public async Task<IEnumerable<StatementsDto>> GetStatement(string id, string property)
@@ -45,7 +52,7 @@ namespace WikidataEditor.Common
             {
                 string propertyName = ((JProperty)statementObject).Name;
 
-                if (propertyName== property)
+                if (propertyName == property)
                 {
                     var jArray = ((JProperty)statementObject).Value;
 
@@ -77,30 +84,6 @@ namespace WikidataEditor.Common
             return label == null ? string.Empty : $" ({label})";
         }
 
-        public async Task<IEnumerable<StatementsDto>> GetStatements(string id)
-        {
-            JObject jsonObject = await GetEntityData(id, "statements");
-            var statementsObject = jsonObject.ToObject<dynamic>();
-
-            var statements = new List<StatementsDto>();
-
-            foreach (var statementObject in statementsObject)
-            {
-                var property = ((JProperty)statementObject).Name;
-                var jArray = ((JProperty)statementObject).Value;
-                var array = jArray.ToObject<Statement[]>();
-
-                statements.Add(
-                    new StatementsDto
-                    {
-                        Property = property,
-                        Statement = array
-                    }
-                );
-            }
-            return statements;
-        }
-
         public async Task<IEnumerable<EntityTextDto>> GetAliases(string id)
         {
             JObject jsonObject = await GetEntityData(id, "aliases");
@@ -113,6 +96,23 @@ namespace WikidataEditor.Common
                     Value = a.Value,
                 }
             );
+        }
+
+        public async Task<IEnumerable<EntityTextDto>> GetEntityTexts(string id, string entityType)
+        {
+            var entityTexts = new List<EntityTextDto>();
+
+            JObject jsonObject = await GetEntityData(id, entityType);
+
+            foreach (var lc in jsonObject.ToObject<dynamic>())
+            {
+                entityTexts.Add(new EntityTextDto
+                {
+                    LanguageCode = ((JProperty)lc).Name,
+                    Value = (string)((JProperty)lc).Value
+                });
+            }
+            return entityTexts;
         }
 
         public async Task<IEnumerable<EntityTextDto>> GetEntityText(string id, string languageCode, string entityType)
@@ -132,28 +132,54 @@ namespace WikidataEditor.Common
             };
         }
 
-        public IEnumerable<string> ResolveValue(Statement[] statements)
+        public IEnumerable<string> ResolveValues(Statement[] statements)
         {
             // A 'statement' can consist of multiple statement values (claims about the statement)
             if (statements == null)
                 return new List<string> { Constants.Missing };
 
-            var labelValues = new List<string>();
+            var values = new List<string>();
 
             foreach (var statement in statements)
             {
                 if (statement.value == null)
-                    labelValues.Add("*no value*");
+                {
+                    values.Add("*no value*");
+                    continue;
+                }
 
                 var value = statement.value.content.ToString();
                 Match match = WikidataIdPattern.Match(value);
 
-                labelValues.Add(match.Success ? GetLabel(value) : value);
+                if (match.Success)
+                {
+                    TimeContent timeContent = TryGetTimeContent(value);
+
+                    if (timeContent != null) 
+                        values.Add(timeContent.time);
+                    else
+                        values.Add(GetLabel(value));
+                }
+                else
+                    values.Add(value);
             }
 
-            return labelValues;
+            return values;
         }
 
+        private TimeContent TryGetTimeContent(string value)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<TimeContent>(value);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        // TODO obsolete?
         public IEnumerable<string> ResolveTimeValue(Statement[] statement)
         {
             if (statement == null)
@@ -200,6 +226,7 @@ namespace WikidataEditor.Common
             if (value != null)
                 return value;
 
+            // TODO .ToObject<type> gebruiken
             return jsonObject.Count == 0 ? Constants.Missing : ((JValue)((JProperty)jsonObject.First).Value).Value.ToString();
         }
 

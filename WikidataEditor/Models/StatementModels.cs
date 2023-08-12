@@ -12,6 +12,13 @@
         public object content { get; set; }
     }
 
+    public class TimeContent
+    {
+        public string time { get; set; }
+        public int precision { get; set; }
+        public string calendarmodel { get; set; }
+    }
+
     public class Reference
     {
         public string hash { get; set; }

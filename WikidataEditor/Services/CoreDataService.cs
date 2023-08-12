@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Reflection;
 using WikidataEditor.Common;
+using WikidataEditor.Dtos;
 using WikidataEditor.Dtos.CoreData;
 using WikidataEditor.Models;
 using WikidataEditor.Models.Instances;
@@ -29,9 +31,9 @@ namespace WikidataEditor.Services
             if (type != "item")
                 throw new ArgumentException($"Result is not of type item. Encountered type: {type}");
 
-            var statements = jObject["statements"].ToObject<dynamic>();
-            var statementInstanceOf = statements["P31"];
-            int statementsCount = ((JContainer)statements).Count;
+            var statementsObject = jObject["statements"].ToObject<dynamic>();
+            var statementInstanceOf = statementsObject["P31"];
+            int statementsCount = ((JContainer)statementsObject).Count;
 
             if (statementInstanceOf == null)
             {
@@ -39,7 +41,40 @@ namespace WikidataEditor.Services
                 return new WikidataItemOtherDto(ResolveBasicData(item, null, statementsCount, null));
             }
 
-            return ResolveData(statementInstanceOf.ToObject<Statement[]>(), jObject, statementsCount);
+            // Other types of items
+            WikidataItemOther itemOther = jObject.ToObject<WikidataItemOther>();
+            itemOther.FlatStatements = GetStatementsValues(statementsObject);
+
+            var y = ResolveBasicData(itemOther, statementInstanceOf, statementsCount, null);
+            var x = new WikidataItemOtherDto(y);
+
+            return x;
+
+
+            //return ResolveData(statementInstanceOf.ToObject<Statement[]>(), jObject, statementsCount);
+        }
+
+
+        public List<FlatStatementDto> GetStatementsValues(dynamic statementsObject)
+        {
+            var statements = new List<FlatStatementDto>();
+
+            foreach (var statementObject in statementsObject)
+            {
+                var property = ((JProperty)statementObject).Name;
+                var jArray = ((JProperty)statementObject).Value;
+                var array = jArray.ToObject<Statement[]>();
+
+                statements.Add(
+                    new FlatStatementDto
+                    {
+                        Property = property, // _helper.GetLabel(property),
+                        Statement = _helper.ResolveValues(array)
+                    }
+                );
+            }
+
+            return statements;
         }
 
         // TODO: generalize further without using Reflection
@@ -87,7 +122,7 @@ namespace WikidataEditor.Services
 
         private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
         {
-            var values = _helper.ResolveValue(instances);
+            var values = _helper.ResolveValues(instances);
 
             if (values.First() == Constants.Missing)
                 return values;
