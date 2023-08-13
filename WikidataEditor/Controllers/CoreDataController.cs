@@ -10,7 +10,7 @@ namespace WikidataEditor.Controllers
         private readonly ICoreDataService _coreDataService;
 
         public CoreDataController(ICoreDataService coreDataService)
-        {            
+        {
             _coreDataService = coreDataService;
         }
 

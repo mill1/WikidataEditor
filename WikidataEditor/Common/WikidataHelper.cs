@@ -49,12 +49,10 @@ namespace WikidataEditor.Common
             foreach (var statementObject in statementsObject)
             {
                 string property = ((JProperty)statementObject).Name;
-
                 properties.Add(property);
-
                 count++;
 
-                if(count > maxNumberOfProperties)
+                if (count > maxNumberOfProperties)
                     return properties;
             }
             return properties;
@@ -83,7 +81,7 @@ namespace WikidataEditor.Common
                     Statement = statement.ToObject<Statement[]>()
                 }
             };
-        }       
+        }
 
         public List<FlatStatementDto> GetStatementsValues(dynamic statementsObject, IEnumerable<string> properties)
         {
@@ -97,7 +95,7 @@ namespace WikidataEditor.Common
                 flatStatements.Add(
                     new FlatStatementDto
                     {
-                        Property = ResolvePropertyDescription(property),
+                        Property = ResolvePropertyLabel(property),
                         Values = ResolveValues(statement)
                     }
                 );
@@ -105,7 +103,7 @@ namespace WikidataEditor.Common
             return flatStatements;
         }
 
-        private static string ResolvePropertyDescription(string property)
+        private static string ResolvePropertyLabel(string property)
         {
             string description;
 
@@ -142,7 +140,7 @@ namespace WikidataEditor.Common
             JObject jsonObject = await GetEntityData(id, "aliases");
             var aliasesDictionary = jsonObject.ToObject<Dictionary<string, List<string>>>();
 
-            return aliasesDictionary.Select( a =>
+            return aliasesDictionary.Select(a =>
                 new EntityTextDto
                 {
                     LanguageCode = a.Key,
@@ -235,7 +233,7 @@ namespace WikidataEditor.Common
                 }
 
                 values.Add(value);
-            }                
+            }
         }
 
         private TimeContent TryGetTimeContent(string value)
@@ -263,7 +261,7 @@ namespace WikidataEditor.Common
         }
 
         private string GetLabel(string id)
-        {            
+        {
             JObject jsonObject = GetEntityData(id, "labels").Result;
 
             var codes = jsonObject.ToObject<LanguageCodes>();
@@ -297,7 +295,7 @@ namespace WikidataEditor.Common
         {
             string uri = "items/" + id + "/" + entityType;
             var jsonString = await _httpClientWikidataApi.GetStringAsync(uri);
-            return JObject.Parse(jsonString);            
+            return JObject.Parse(jsonString);
         }
 
         private string GetValueOfFirstFilledProperty(LanguageCodes codes)

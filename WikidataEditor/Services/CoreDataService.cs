@@ -10,7 +10,7 @@ namespace WikidataEditor.Services
         private readonly IHttpClientWikidataApi _httpClientWikidataApi;
         private readonly IWikidataHelper _helper;
 
-        public CoreDataService(IHttpClientWikidataApi httpClientWikidataApi,IWikidataHelper wikidataHelper)
+        public CoreDataService(IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
         {
             _httpClientWikidataApi = httpClientWikidataApi;
             _helper = wikidataHelper;
@@ -37,14 +37,14 @@ namespace WikidataEditor.Services
             return flatWikidataItemDto;
         }
 
-        private FlatWikidataItemDto ResolveBaseData(string id, JObject statementsObject,  WikidataItemBase itemBase)
+        private FlatWikidataItemDto ResolveBaseData(string id, JObject statementsObject, WikidataItemBase itemBase)
         {
             FlatWikidataItemDto flatWikidataItemDto = new FlatWikidataItemDto();
 
             flatWikidataItemDto.Id = id;
             flatWikidataItemDto.Label = _helper.GetTextValue(itemBase.labels);
             flatWikidataItemDto.Description = _helper.GetTextValue(itemBase.descriptions);
-            flatWikidataItemDto.TotalNumberOfStatements = (statementsObject).Count;           
+            flatWikidataItemDto.TotalNumberOfStatements = (statementsObject).Count;
             flatWikidataItemDto.Aliases = GetAliases(itemBase.aliases);
             flatWikidataItemDto.UriCollection = GetUriCollection(id, itemBase.sitelinks);
             return flatWikidataItemDto;
@@ -63,7 +63,7 @@ namespace WikidataEditor.Services
 
         private IEnumerable<string> ResolveProperties(string instanceOfValue, JObject statementsObject)
         {
-            // TODO vullen vanuit appsettings             
+            // TODO vullen vanuit appsettings, ook Contants  
 
             switch (instanceOfValue)
             {
@@ -71,7 +71,7 @@ namespace WikidataEditor.Services
                     return GetPropertiesOfHuman();
                 case Constants.WikidataIdDisambiguationPage:
                     return GetPropertiesOfDisambiguationPage();
-                case Constants.WikidataIdAstronomicalObjectType: 
+                case Constants.WikidataIdAstronomicalObjectType:
                     return GetPropertiesOfAstronomicalObjectType();
                 default:
                     // TODO in maxNumberOfCoreDataProperties appsetting

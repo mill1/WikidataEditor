@@ -21,7 +21,7 @@
 
     public class GlobeCoordinateContent
     {
-        public decimal latitude  { get; set; }
+        public decimal latitude { get; set; }
         public decimal longitude { get; set; }
         public decimal altitude { get; set; }
         public decimal precision { get; set; }

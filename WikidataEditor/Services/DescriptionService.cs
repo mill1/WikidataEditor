@@ -15,7 +15,7 @@ namespace WikidataEditor.Services
         }
 
         public async Task<IEnumerable<EntityTextDto>> Get(string id)
-        {            
+        {
             return await _wikidataHelper.GetEntityTexts(id, "descriptions");
         }
 
@@ -35,7 +35,7 @@ namespace WikidataEditor.Services
             };
 
             string uri = $"items/{id}/descriptions/{languageCode}";
-            await _httpClientWikidataApi.PutAsync(uri, request);            
+            await _httpClientWikidataApi.PutAsync(uri, request);
         }
     }
 }

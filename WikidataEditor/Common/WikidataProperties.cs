@@ -2,7 +2,9 @@
 {
     public static class WikidataProperties
     {
-        // Source: https://www.wikidata.org/wiki/Wikidata:Database_reports/List_of_properties/all
+        // Source (Aug. 12, 2023): https://www.wikidata.org/wiki/Wikidata:Database_reports/List_of_properties/all
+        // Excel formala: =CONCATENATE("{ """;A4;""",";""""; B4; """ },")     ;)
+
         public static readonly Dictionary<string, string> Labels = new Dictionary<string, string>
         {
             { "P10","video" },
