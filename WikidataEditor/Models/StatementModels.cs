@@ -19,6 +19,15 @@
         public string calendarmodel { get; set; }
     }
 
+    public class GlobeCoordinateContent
+    {
+        public decimal latitude  { get; set; }
+        public decimal longitude { get; set; }
+        public decimal altitude { get; set; }
+        public decimal precision { get; set; }
+        public string globe { get; set; }
+    }
+
     public class Reference
     {
         public string hash { get; set; }

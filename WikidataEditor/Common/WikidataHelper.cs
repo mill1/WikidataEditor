@@ -48,9 +48,9 @@ namespace WikidataEditor.Common
 
             foreach (var statementObject in statementsObject)
             {
-                string propertyName = ((JProperty)statementObject).Name;
+                string property = ((JProperty)statementObject).Name;
 
-                properties.Add(propertyName);
+                properties.Add(property);
 
                 count++;
 
@@ -212,15 +212,30 @@ namespace WikidataEditor.Common
 
             if (match.Success)
             {
+                values.Add(GetLabel(value));
+            }
+            else
+            {
                 TimeContent timeContent = TryGetTimeContent(value);
 
                 if (timeContent != null)
+                {
                     values.Add(timeContent.time);
-                else
-                    values.Add(GetLabel(value));
-            }
-            else
+                    return;
+                }
+
+                GlobeCoordinateContent gcContent = TryGetGlobeCoordinateContent(value);
+
+                if (gcContent != null)
+                {
+                    string altitude = gcContent.altitude == 0 ? "" : $" Altitude: {gcContent.altitude}";
+
+                    values.Add($"Latitude: {gcContent.latitude} Longitude: {gcContent.longitude}{altitude}");
+                    return;
+                }
+
                 values.Add(value);
+            }                
         }
 
         private TimeContent TryGetTimeContent(string value)
@@ -228,6 +243,18 @@ namespace WikidataEditor.Common
             try
             {
                 return JsonConvert.DeserializeObject<TimeContent>(value);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private GlobeCoordinateContent TryGetGlobeCoordinateContent(string value)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<GlobeCoordinateContent>(value);
             }
             catch (Exception)
             {
