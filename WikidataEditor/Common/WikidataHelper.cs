@@ -263,8 +263,7 @@ namespace WikidataEditor.Common
         }
 
         private string GetLabel(string id)
-        {
-            // TODO bugfix: https://localhost:7085/api/items/Q99999/coredata
+        {            
             JObject jsonObject = GetEntityData(id, "labels").Result;
 
             var codes = jsonObject.ToObject<LanguageCodes>();

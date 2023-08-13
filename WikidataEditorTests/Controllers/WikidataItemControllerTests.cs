@@ -11,7 +11,7 @@ namespace WikidataEditorTests.Controllers
     public class WikidataItemControllerTests
     {
         [TestMethod]
-        public void GetHumanById_ShouldReturnOkResult()
+        public void Get_ShouldReturnOkResult()
         {
             // Arrange
             var coreDataService = new Mock<ICoreDataService>();

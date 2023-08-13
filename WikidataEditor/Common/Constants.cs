@@ -3,7 +3,6 @@
     public static class Constants
     {
         public const string HttpClientWikidataRestApi = "WikidataRestApi";
-        // TODO Missing nog wel nodig?
         public const string Missing = "*missing*";
         public const string WikidataPropertyIdInstanceOf = "P31";
         public const string WikidataIdHuman = "Q5";
