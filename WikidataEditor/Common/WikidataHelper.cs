@@ -9,7 +9,7 @@ namespace WikidataEditor.Common
 {
     public class WikidataHelper : IWikidataHelper
     {
-        private static readonly Regex WikidataIdPattern = new(@"Q\d{1}", RegexOptions.Compiled);
+        private static readonly Regex WikidataIdPattern = new(@"^Q\d{1}", RegexOptions.Compiled);
         private readonly IHttpClientWikidataApi _httpClientWikidataApi;
 
         public WikidataHelper(IHttpClientWikidataApi httpClientWikidataApi)
