@@ -82,7 +82,6 @@ namespace WikidataEditor.Services
             if (!aliases.Any())
                 return new List<string> { Constants.Missing };
 
-
             if (aliases.Any(a => a.Key == "en"))
                 if (aliases["en"].Count > 0)
                     return aliases["en"];
