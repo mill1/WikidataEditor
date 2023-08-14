@@ -52,7 +52,7 @@ namespace WikidataEditor.Common
                 properties.Add(property);
                 count++;
 
-                if (count > maxNumberOfProperties)
+                if (count >= maxNumberOfProperties)
                     return properties;
             }
             return properties;

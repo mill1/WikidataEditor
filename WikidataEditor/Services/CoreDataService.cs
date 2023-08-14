@@ -8,18 +8,17 @@ namespace WikidataEditor.Services
 {
     public class CoreDataService : ICoreDataService
     {
-        private readonly IConfiguration _configuration;
         private readonly IHttpClientWikidataApi _httpClientWikidataApi;
         private readonly IWikidataHelper _helper;
+        private readonly CoreDataOptions? _coreDataOptions;
 
         public CoreDataService(IConfiguration configuration, IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
         {
-            _configuration = configuration;
             _httpClientWikidataApi = httpClientWikidataApi;
             _helper = wikidataHelper;
 
-            var positionOptions = new PositionOptions();
-            _configuration.GetSection(PositionOptions.Position).Bind(positionOptions);
+            _coreDataOptions = new CoreDataOptions();
+            configuration.GetSection(CoreDataOptions.CoreData).Bind(_coreDataOptions);
         }
 
         public FlatWikidataItemDto Get(string id)
@@ -53,6 +52,7 @@ namespace WikidataEditor.Services
             flatWikidataItemDto.TotalNumberOfStatements = (statementsObject).Count;
             flatWikidataItemDto.Aliases = GetAliases(itemBase.aliases);
             flatWikidataItemDto.UriCollection = GetUriCollection(id, itemBase.sitelinks);
+
             return flatWikidataItemDto;
         }
 
@@ -69,73 +69,19 @@ namespace WikidataEditor.Services
 
         private IEnumerable<string> ResolveProperties(string instanceOfValue, JObject statementsObject)
         {
-            // TODO vullen vanuit appsettings, ook Contants  
+            var configuredItem = _coreDataOptions.WikidataItems.Where(item => item.WikidataItemId == instanceOfValue).FirstOrDefault();
 
-            switch (instanceOfValue)
-            {
-                case Constants.WikidataIdHuman:
-                    return GetPropertiesOfHuman();
-                case Constants.WikidataIdDisambiguationPage:
-                    return GetPropertiesOfDisambiguationPage();
-                case Constants.WikidataIdAstronomicalObjectType:
-                    return GetPropertiesOfAstronomicalObjectType();
-                default:
-                    // TODO in maxNumberOfCoreDataProperties appsetting
-                    int maxNumberOfProperties = 5;
-                    return _helper.GetProperties(statementsObject, maxNumberOfProperties);
-            }
+            if (configuredItem != null)
+                return configuredItem.Properties;
 
-        }
-
-        private static IEnumerable<string> GetPropertiesOfHuman()
-        {
-
-            return new List<string>
-            {
-                 "P31",   // "instance of" 
-                 "P21",   // "sex or gender" 
-                 "P27",   // "country of citizenship" 
-                 "P735",  // "given name" 
-                 "P734",  // "family name" 
-                 "P569",  // "date of birth" 
-                 "P19",   // "place of birth" 
-                 "P570",  // "date of death" 
-                 "P20",   // "place of death" 
-                 "P106"   // "occupation"
-            };
-        }
-
-        private static IEnumerable<string> GetPropertiesOfDisambiguationPage()
-        {
-            // wikimedia disambiguation page = 'Q4167410'
-            return new List<string>
-            {
-                 "P31",   // "instance of" 
-                 "P1889", // "different from" 
-                 "P1382", // "partially coincident with",
-                 "P460"   // "said to be the same as" 
-            };
-        }
-
-        private static IEnumerable<string> GetPropertiesOfAstronomicalObjectType()
-        {
-            // astronomical object type = 'Q17444909'
-            return new List<string>
-            {
-                 "P31",  // "instance of" 
-                 "P279", // "subclass of" 
-                 "P361", // "part of" 
-                 "P18",  // "image"
-                 "P366", // "has use" 
-                 "P367", // "astronomic symbol image" 
-                 "P1343" // "described by source" 
-            };
+            return _helper.GetProperties(statementsObject, _coreDataOptions.MaxNumberOfProperties);
         }
 
         private List<string> GetAliases(Dictionary<string, List<string>> aliases)
         {
             if (!aliases.Any())
                 return new List<string> { Constants.Missing };
+
 
             if (aliases.Any(a => a.Key == "en"))
                 if (aliases["en"].Count > 0)

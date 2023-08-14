@@ -1,7 +1,5 @@
 ﻿namespace WikidataEditor.Dtos.CoreData
-{
-    // https://www.wikidata.org/wiki/Help:Properties
-
+{  
     public class FlatWikidataItemDto
     {
         /// <summary>

@@ -30,8 +30,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-7.0
-builder.Services.Configure<PositionOptions>(
-    builder.Configuration.GetSection(PositionOptions.Position));
+builder.Services.Configure<CoreDataOptions>(
+    builder.Configuration.GetSection(CoreDataOptions.CoreData));
 
 builder.Services.AddHttpClient(Constants.HttpClientWikidataRestApi, httpClient =>
 {
