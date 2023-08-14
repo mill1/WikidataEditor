@@ -18,7 +18,7 @@ namespace WikidataEditorTests.Controllers
             var id = "Q1";
 
             coreDataService.Setup(x => x.Get(It.IsAny<string>()))
-                           .Returns(new FlatWikidataItemDto { Id = id});
+                           .Returns(new FlatWikidataItemDto { Id = id });
 
             var controller = new CoreDataController(coreDataService.Object);
 

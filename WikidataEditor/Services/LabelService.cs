@@ -35,7 +35,7 @@ namespace WikidataEditor.Services
             };
 
             string uri = $"items/{id}/labels/{languageCode}";
-            await _httpClientWikidataApi.PutAsync(uri, request);            
+            await _httpClientWikidataApi.PutAsync(uri, request);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace WikidataEditor.Controllers
 
         [HttpGet("{id}/descriptions")]
         public async Task<IActionResult> Get(string id)
-        {            
+        {
             // John Fleming: https://localhost:7085/api/items/Q15429542/descriptions
             return Ok(await service.Get(id));
         }

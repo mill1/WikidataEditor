@@ -41,7 +41,7 @@ namespace WikidataEditor.Middleware
             else
                 statusCode = HttpStatusCode.InternalServerError;
 
-            if(statusCode == null)
+            if (statusCode == null)
                 statusCode = HttpStatusCode.InternalServerError;
 
             if (statusCode == HttpStatusCode.InternalServerError)

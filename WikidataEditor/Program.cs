@@ -10,9 +10,13 @@
 // https://en.wikipedia.org/wiki/Thomas_Taylor,_Baron_Taylor_of_Gryfe
 // https://www.wikidata.org/wiki/Q7794369
 // https://www.theguardian.com/news/2001/jul/30/guardianobituaries1
+//
+// https://www.wikidata.org/wiki/Q129678
+// https://en.wikipedia.org/wiki/Category:Mountains_of_Chile
 
 using Microsoft.Net.Http.Headers;
 using WikidataEditor.Common;
+using WikidataEditor.Configuration;
 using WikidataEditor.Middleware;
 using WikidataEditor.Services;
 
@@ -24,6 +28,10 @@ builder.Services.AddControllers();
 // Learn more about configUring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-7.0
+builder.Services.Configure<CoreDataOptions>(
+    builder.Configuration.GetSection(CoreDataOptions.CoreData));
 
 builder.Services.AddHttpClient(Constants.HttpClientWikidataRestApi, httpClient =>
 {

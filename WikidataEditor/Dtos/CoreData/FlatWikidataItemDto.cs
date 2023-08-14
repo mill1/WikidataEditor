@@ -1,8 +1,6 @@
 ﻿namespace WikidataEditor.Dtos.CoreData
-{
-    // https://www.wikidata.org/wiki/Help:Properties
-
-    public class FlatWikidataItemDto 
+{  
+    public class FlatWikidataItemDto
     {
         /// <summary>
         /// The unique identifier of the wikidata-item        
