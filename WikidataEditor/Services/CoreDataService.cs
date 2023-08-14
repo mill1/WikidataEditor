@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using WikidataEditor.Common;
+using WikidataEditor.Configuration;
 using WikidataEditor.Dtos.CoreData;
 using WikidataEditor.Models;
 
@@ -7,13 +8,18 @@ namespace WikidataEditor.Services
 {
     public class CoreDataService : ICoreDataService
     {
+        private readonly IConfiguration _configuration;
         private readonly IHttpClientWikidataApi _httpClientWikidataApi;
         private readonly IWikidataHelper _helper;
 
-        public CoreDataService(IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
+        public CoreDataService(IConfiguration configuration, IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
         {
+            _configuration = configuration;
             _httpClientWikidataApi = httpClientWikidataApi;
             _helper = wikidataHelper;
+
+            var positionOptions = new PositionOptions();
+            _configuration.GetSection(PositionOptions.Position).Bind(positionOptions);
         }
 
         public FlatWikidataItemDto Get(string id)
@@ -75,8 +81,8 @@ namespace WikidataEditor.Services
                     return GetPropertiesOfAstronomicalObjectType();
                 default:
                     // TODO in maxNumberOfCoreDataProperties appsetting
-                    int maxNumberOfCoreDataProperties = 5;
-                    return _helper.GetProperties(statementsObject, maxNumberOfCoreDataProperties);
+                    int maxNumberOfProperties = 5;
+                    return _helper.GetProperties(statementsObject, maxNumberOfProperties);
             }
 
         }
