@@ -6,24 +6,34 @@ using WikidataEditor.Models;
 
 namespace WikidataEditor.Services
 {
-    public class CoreDataService : ICoreDataService
+    public class ItemService : IItemService
     {
-        private readonly IHttpClientWikidataApi _httpClientWikidataApi;
+        private readonly IHttpClientWikidataApi _clientWikipediaApi;
         private readonly IWikidataHelper _helper;
         private readonly CoreDataOptions? _coreDataOptions;
 
-        public CoreDataService(IConfiguration configuration, IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
+        public ItemService(IConfiguration configuration, IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
         {
-            _httpClientWikidataApi = httpClientWikidataApi;
+            _clientWikipediaApi = httpClientWikidataApi;
             _helper = wikidataHelper;
 
             _coreDataOptions = new CoreDataOptions();
             configuration.GetSection(CoreDataOptions.CoreData).Bind(_coreDataOptions);
         }
 
-        public FlatWikidataItemDto Get(string id)
+        public JObject Get(string id)
+        {            
+            var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
+
+            JObject jObject =  JObject.Parse(jsonString);
+
+            return jObject;  //.ToObject<dynamic>();
+        }
+
+        public FlatWikidataItemDto GetCoreData(string id)
         {
-            var jsonString = _httpClientWikidataApi.GetStringAsync("items/" + id).Result;
+            // TODO
+            var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
 
             JObject jObject = JObject.Parse(jsonString);
 

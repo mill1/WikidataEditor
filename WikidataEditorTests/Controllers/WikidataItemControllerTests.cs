@@ -14,13 +14,13 @@ namespace WikidataEditorTests.Controllers
         public void Get_ShouldReturnOkResult()
         {
             // Arrange
-            var coreDataService = new Mock<ICoreDataService>();
+            var coreDataService = new Mock<IItemService>();
             var id = "Q1";
 
-            coreDataService.Setup(x => x.Get(It.IsAny<string>()))
+            coreDataService.Setup(x => x.GetCoreData(It.IsAny<string>()))
                            .Returns(new FlatWikidataItemDto { Id = id });
 
-            var controller = new CoreDataController(coreDataService.Object);
+            var controller = new ItemController(coreDataService.Object);
 
             var result = controller.Get("some id");
 

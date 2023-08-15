@@ -6,13 +6,27 @@
  * https://www.mediawiki.org/wiki/Wikibase/DataModel
  */
 
-// TODO: Add statement(s)!:
-// https://en.wikipedia.org/wiki/Thomas_Taylor,_Baron_Taylor_of_Gryfe
-// https://www.wikidata.org/wiki/Q7794369
-// https://www.theguardian.com/news/2001/jul/30/guardianobituaries1
-//
+// TODO: Add statement(s):
 // https://www.wikidata.org/wiki/Q129678
 // https://en.wikipedia.org/wiki/Category:Mountains_of_Chile
+
+/*
+ Regarding auto-adding ref. The Guardian obituary to the date of death:
+ https://en.wikipedia.org/wiki/Thomas_Taylor,_Baron_Taylor_of_Gryfe
+ https://www.wikidata.org/wiki/Q7794369
+ https://www.theguardian.com/news/2001/jul/30/guardianobituaries1
+
+ - First get the wikidata id from the wikipedia title:
+ https://en.wikipedia.org/w/api.php?action=query&prop=pageprops&titles=Thomas_Taylor,_Baron_Taylor_of_Gryfe
+
+ - Check if date of death statement exists.
+
+if not: Add date of death statement ( + ref.); END
+
+if exists:
+replace statement: use the response and add the ref. data
+
+*/
 
 using Microsoft.Net.Http.Headers;
 using WikidataEditor.Common;
@@ -40,8 +54,16 @@ builder.Services.AddHttpClient(Constants.HttpClientWikidataRestApi, httpClient =
     httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Wikidata Editor application");
 });
 
+builder.Services.AddHttpClient(Constants.HttpClientEnglishWikipediaApi, httpClient =>
+{
+    httpClient.BaseAddress = new Uri("https://en.wikipedia.org/w/api.php");
+    httpClient.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
+    httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Wikidata Editor application");
+});
+
 builder.Services.AddScoped<IHttpClientWikidataApi, HttpClientWikidataApi>();
-builder.Services.AddScoped<ICoreDataService, CoreDataService>();
+builder.Services.AddScoped<IHttpClientEnglishWikipediaApi, HttpClientEnglishWikipediaApi>();
+builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IWikidataHelper, WikidataHelper>();
 builder.Services.AddScoped<LabelService>();
 builder.Services.AddScoped<DescriptionService>();

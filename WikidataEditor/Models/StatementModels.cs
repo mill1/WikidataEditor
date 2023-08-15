@@ -15,7 +15,7 @@
     public class TimeContent
     {
         public string time { get; set; }
-        public int precision { get; set; }
+        public int? precision { get; set; }
         public string calendarmodel { get; set; }
     }
 
@@ -23,8 +23,8 @@
     {
         public decimal latitude { get; set; }
         public decimal longitude { get; set; }
-        public decimal altitude { get; set; }
-        public decimal precision { get; set; }
+        public decimal? altitude { get; set; }
+        public decimal? precision { get; set; }
         public string globe { get; set; }
     }
 

@@ -12,19 +12,46 @@
 
     <!--
         ####################################################################################################################
-        C O R E  D A T A
+        W I K I D A T A   I T E M
         ####################################################################################################################
      -->
 
-    <strong>Core data of wikidata item</strong><br />
-    Implemented entities:
-    <a href="https://www.wikidata.org/wiki/Q5" target="_blank">humans</a>,
-    <a href="https://www.wikidata.org/wiki/Q4167410" target="_blank">disambiguation pages</a> and
-    <a href="https://www.wikidata.org/wiki/Q17444909" target="_blank">astronomical object types</a>
     <form action="/api/items/coredata" method="get">
-        <label for="itemidcoredata">Wikidata item id:</label>
-        <input type="text" id="itemidcoredata" name="id" maxlength="10" size="10" placeholder="Q..."><br>
-        <input type="submit" value="fetch">
+        <table>
+            <tr>
+                <th colspan="2">Wikidata item</th>
+            </tr>
+            <tbody>
+                <tr>
+                    <td><label for="itemid">Wikidata item id:</label></td>
+                    <td><input type="text" id="itemid" name="id" maxlength="10" size="10" placeholder="Q..."></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><input type="submit" value="fetch"></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <form action="/api/items/coredata" method="get">
+        <strong>Core data of wikidata item</strong><br />
+        Implemented entities (see appsettings.json):
+        <a href="https://www.wikidata.org/wiki/Q5" target="_blank">humans</a>,
+        <a href="https://www.wikidata.org/wiki/Q4167410" target="_blank">disambiguation pages</a> and
+        <a href="https://www.wikidata.org/wiki/Q17444909" target="_blank">astronomical object types</a>
+        <table>
+            <tbody>
+                <tr>
+                    <td><label for="itemidcoredata">Wikidata item id:</label></td>
+                    <td><input type="text" id="itemidcoredata" name="id" maxlength="10" size="10" placeholder="Q..."></td>
+                    <td><label for="titlecoredata">&nbsp;&nbsp;..or Wikipedia title (enwiki):</label></td>
+                    <td><input type="text" id="titlecoredata" name="wikipediatitle" size="34" placeholder="Douglas Adams"></td>
+                </tr>
+                <tr>
+                    <td colspan="4"><input type="submit" value="fetch"></td>
+                </tr>
+            </tbody>
+        </table>
     </form>
 
     <hr />
@@ -47,7 +74,7 @@
                 <tr>
                     <td><label for="propertyid">Property:</label></td>
                     <td>
-                        <input type="text" id="propertyid" name="property" maxlength="10" size="10" placeholder="P31 (or *)" 
+                        <input type="text" id="propertyid" name="property" maxlength="10" size="10" placeholder="P31 (or *)"
                                title="Enter a property id to fetch a single statement. For all statements on the Wikidata item enter '*' (without the quotes)."><br>
                     </td>
                 </tr>

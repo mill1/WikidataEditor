@@ -5,17 +5,24 @@ namespace WikidataEditor.Controllers
 {
     [ApiController]
     [Route("api/items")]
-    public class CoreDataController : ControllerBase
+    public class ItemController : ControllerBase
     {
-        private readonly ICoreDataService _coreDataService;
+        private readonly IItemService _service;
 
-        public CoreDataController(ICoreDataService coreDataService)
+        public ItemController(IItemService itemService)
         {
-            _coreDataService = coreDataService;
+            _service = itemService;
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult Get(string id)
+        {
+            // John Fleming: https://localhost:7085/api/items/Q15429542
+            return Ok(_service.Get(id));
         }
 
         [HttpGet("{id}/coredata")]
-        public IActionResult Get(string id)
+        public IActionResult GetCoreData(string id)
         {
             /*
                 human:                    https://localhost:7085/api/items/Q15429542/coredata (John Fleming)
@@ -23,14 +30,14 @@ namespace WikidataEditor.Controllers
                 astronomical object type: https://localhost:7085/api/items/Q3863/coredata     (asteroid)
                 other:                    https://localhost:7085/api/items/Q368481/coredata   (Bonfire (horse))
             */
-            return Ok(_coreDataService.Get(id));
+            return Ok(_service.GetCoreData(id));
         }
 
         [HttpGet("coredata")]
-        public IActionResult GetById([FromQuery(Name = "id")] string id)
+        public IActionResult GetCoreDataById([FromQuery(Name = "id")] string id)
         {
             // human: https://localhost:7085/api/items/coredata?id=Q99589194 (Lesley Cunliffe)
-            return Ok(_coreDataService.Get(id));
+            return Ok(_service.GetCoreData(id));
         }
     }
 }
