@@ -5,12 +5,10 @@ namespace WikidataEditor.Services
 {
     public class StatementService
     {
-        private readonly IHttpClientWikidataApi _httpClientWikidataApi;
         private readonly IWikidataHelper _wikidataHelper;
 
         public StatementService(IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
         {
-            _httpClientWikidataApi = httpClientWikidataApi;
             _wikidataHelper = wikidataHelper;
         }
 

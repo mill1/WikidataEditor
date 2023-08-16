@@ -1,42 +1,69 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Reflection.Emit;
 using WikidataEditor.Common;
 using WikidataEditor.Configuration;
+using WikidataEditor.Dtos;
 using WikidataEditor.Dtos.CoreData;
+using WikidataEditor.Dtos.Requests;
 using WikidataEditor.Models;
 
 namespace WikidataEditor.Services
 {
-    public class CoreDataService : ICoreDataService
+    public class ItemService : IItemService
     {
-        private readonly IHttpClientWikidataApi _httpClientWikidataApi;
+        private readonly IHttpClientWikidataApi _clientWikipediaApi;
         private readonly IWikidataHelper _helper;
         private readonly CoreDataOptions? _coreDataOptions;
 
-        public CoreDataService(IConfiguration configuration, IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
+        public ItemService(IConfiguration configuration, IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
         {
-            _httpClientWikidataApi = httpClientWikidataApi;
+            _clientWikipediaApi = httpClientWikidataApi;
             _helper = wikidataHelper;
 
             _coreDataOptions = new CoreDataOptions();
             configuration.GetSection(CoreDataOptions.CoreData).Bind(_coreDataOptions);
         }
 
-        public FlatWikidataItemDto Get(string id)
+        public WikidataItemDto Get(string id)
         {
-            var jsonString = _httpClientWikidataApi.GetStringAsync("items/" + id).Result;
+            var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
 
             JObject jObject = JObject.Parse(jsonString);
 
-            var type = (string)((JValue)jObject["type"])?.Value ?? "null";
-            if (type != "item")
-                throw new ArgumentException($"Result is not of type item. Encountered type: {type}");
+            var item = jObject.ToObject<WikidataItemBase>();
 
+            var itemDto = new WikidataItemDto(item.id, item.type, item.aliases);
+
+            itemDto.Labels = GetFilledTexts(item.labels);
+            itemDto.Descriptions = GetFilledTexts(item.descriptions);            
+            itemDto.Sitelinks = GetFilledSitelinks(item.sitelinks); 
+
+            return itemDto;
+        }
+
+        private IEnumerable<EntityTextDto> GetFilledTexts(LanguageCodes codes)
+        {
+            return codes.GetType().GetProperties()
+                .Where(c => c.PropertyType == typeof(string))
+                .Select(c => new EntityTextDto
+                {
+                    LanguageCode = c.Name,
+                    Value = (string)c.GetValue(codes)
+                })
+                .Where(text => !string.IsNullOrEmpty((string)text.Value));
+        }
+
+        public FlatWikidataItemDto GetCoreData(string id)
+        {
+            var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
+
+            JObject jObject = JObject.Parse(jsonString);
             JObject statementsObject = jObject["statements"].ToObject<dynamic>();
             var instanceOfValue = ResolveFirstInstanceValue(statementsObject);
 
             var properties = ResolveProperties(instanceOfValue, statementsObject);
-            WikidataItemBase itemBase = jObject.ToObject<WikidataItemBase>();
-            FlatWikidataItemDto flatWikidataItemDto = ResolveBaseData(id, statementsObject, itemBase);
+            var itemBase = jObject.ToObject<WikidataItemBase>();
+            var flatWikidataItemDto = ResolveBaseData(id, statementsObject, itemBase);
             flatWikidataItemDto.Statements = _helper.GetStatementsValues(statementsObject, properties);
 
             return flatWikidataItemDto;
