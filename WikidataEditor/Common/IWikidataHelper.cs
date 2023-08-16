@@ -15,7 +15,7 @@ namespace WikidataEditor.Common
         Task<IEnumerable<EntityTextDto>> GetEntityTexts(string id, string entityType);
         Task<IEnumerable<EntityTextDto>> GetEntityText(string id, string languageCode, string entityType);
         Task<IEnumerable<EntityTextDto>> GetAliases(string id);
-        string GetTextValue(LanguageCodes codes);
+        string GetSingleTextValue(LanguageCodes codes);
         IEnumerable<string> ResolveValues(Statement[] statements);
     }
 }
