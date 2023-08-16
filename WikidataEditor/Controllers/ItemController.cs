@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using WikidataEditor.Services;
 
 namespace WikidataEditor.Controllers
@@ -8,16 +9,18 @@ namespace WikidataEditor.Controllers
     public class ItemController : ControllerBase
     {
         private readonly IItemService _service;
+        private readonly IWikipediaApiService _wikipediaApiService;
 
-        public ItemController(IItemService itemService)
+        public ItemController(IItemService itemService, IWikipediaApiService wikipediaApiService)
         {
             _service = itemService;
+            _wikipediaApiService = wikipediaApiService;
         }
 
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
-            // John Fleming: https://localhost:7085/api/items/Q15429542
+            // John Fleming: https://localhost:44351/api/items/Q15429542
             return Ok(_service.Get(id));
         }
 
@@ -25,10 +28,10 @@ namespace WikidataEditor.Controllers
         public IActionResult GetCoreData(string id)
         {
             /*
-                human:                    https://localhost:7085/api/items/Q15429542/coredata (John Fleming)
-                disambiguation page:      https://localhost:7085/api/items/Q231486/coredata   (Silver)
-                astronomical object type: https://localhost:7085/api/items/Q3863/coredata     (asteroid)
-                other:                    https://localhost:7085/api/items/Q368481/coredata   (Bonfire (horse))
+                human:                    https://localhost:44351/api/items/Q15429542/coredata (John Fleming)
+                disambiguation page:      https://localhost:44351/api/items/Q231486/coredata   (Silver)
+                astronomical object type: https://localhost:44351/api/items/Q3863/coredata     (asteroid)
+                other:                    https://localhost:44351/api/items/Q368481/coredata   (Bonfire (horse))
             */
             return Ok(_service.GetCoreData(id));
         }
@@ -36,19 +39,36 @@ namespace WikidataEditor.Controllers
         [HttpGet]
         public IActionResult GetById([FromQuery(Name = "id")] string id = null, [FromQuery(Name = "wikipediatitle")] string title = null)
         {
-            if(id == null && title == null) 
-            {
-                return BadRequest("Either field id or title is required");
-            }
 
-            // human: https://localhost:7085/api/items/coredata?id=Q99589194 (Lesley Cunliffe)
+            if (id == null && title == null) 
+                throw new HttpRequestException("Either field id or title is required", null, HttpStatusCode.BadRequest);
+
+            if(id != null)
+                return Ok(_service.Get(id));
+
+            id = _wikipediaApiService.GetWikibaseItemId(title);
+
+            if (id == null)
+                throw new HttpRequestException($"No wikidata item found for Wikipedia title '{title}'", null, HttpStatusCode.NotFound);
+
             return Ok(_service.Get(id));
         }
 
         [HttpGet("coredata")]
-        public IActionResult GetCoreDataById([FromQuery(Name = "id")] string id)
+        public IActionResult GetCoreDataById([FromQuery(Name = "id")] string id = null, [FromQuery(Name = "wikipediatitle")] string title = null)
         {
-            // human: https://localhost:7085/api/items/coredata?id=Q99589194 (Lesley Cunliffe)
+
+            if (id == null && title == null)
+                throw new HttpRequestException("Either field id or title is required", null, HttpStatusCode.BadRequest);
+
+            if (id != null)
+                return Ok(_service.GetCoreData(id));
+
+            id = _wikipediaApiService.GetWikibaseItemId(title);
+
+            if (id == null)
+                throw new HttpRequestException($"No wikidata item found for Wikipedia title '{title}'", null, HttpStatusCode.NotFound);
+            
             return Ok(_service.GetCoreData(id));
         }
     }
