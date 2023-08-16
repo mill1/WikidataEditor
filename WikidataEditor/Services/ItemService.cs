@@ -1,7 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Reflection.Emit;
 using WikidataEditor.Common;
 using WikidataEditor.Configuration;
+using WikidataEditor.Dtos;
 using WikidataEditor.Dtos.CoreData;
+using WikidataEditor.Dtos.Requests;
 using WikidataEditor.Models;
 
 namespace WikidataEditor.Services
@@ -21,13 +24,34 @@ namespace WikidataEditor.Services
             configuration.GetSection(CoreDataOptions.CoreData).Bind(_coreDataOptions);
         }
 
-        public JObject Get(string id)
-        {            
+        public WikidataItemDto Get(string id)
+        {
             var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
 
-            JObject jObject =  JObject.Parse(jsonString);
+            JObject jObject = JObject.Parse(jsonString);
 
-            return jObject;  //.ToObject<dynamic>();
+            var item = jObject.ToObject<WikidataItemBase>();
+
+            var itemDto = new WikidataItemDto(item.id, item.type);
+
+            itemDto.Labels = item.labels.GetType().GetProperties()
+                .Where(c => c.PropertyType == typeof(string))
+                .Select(c => new EntityTextDto
+                {
+                    LanguageCode = c.Name,
+                    Value = (string)c.GetValue(item.labels)
+                })
+                .Where(value => !string.IsNullOrEmpty((string)value.Value));
+
+            return itemDto;
+        }
+
+        private string GetValueOfFirstFilledProperty(LanguageCodes codes)
+        {
+            return codes.GetType().GetProperties()
+            .Where(c => c.PropertyType == typeof(string))
+            .Select(c => (string)c.GetValue(codes))
+            .FirstOrDefault(value => !string.IsNullOrEmpty(value));
         }
 
         public FlatWikidataItemDto GetCoreData(string id)
