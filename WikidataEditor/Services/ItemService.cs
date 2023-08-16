@@ -24,22 +24,31 @@ namespace WikidataEditor.Services
             configuration.GetSection(CoreDataOptions.CoreData).Bind(_coreDataOptions);
         }
 
+        /*
+            var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
+            JObject jObject = JObject.Parse(jsonString);
+            JObject statementsObject = jObject["statements"].ToObject<dynamic>();
+            var instanceOfValue = ResolveFirstInstanceValue(statementsObject);
+            var properties = ResolveProperties(instanceOfValue, statementsObject);         
+         */
+
         public WikidataItemDto Get(string id)
         {
             var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
-
-            JObject jObject = JObject.Parse(jsonString);
+            JObject jObject = JObject.Parse(jsonString);            
+            JObject statementsObject = jObject["statements"].ToObject<dynamic>();
+            var instanceOfValue = ResolveFirstInstanceValue(statementsObject);
+            var properties = ResolveProperties(instanceOfValue, statementsObject);
 
             var item = jObject.ToObject<WikidataItemBase>();
-
             var itemDto = new WikidataItemDto(item.id, item.type, item.aliases);
-
             itemDto.Labels = GetFilledTexts(item.labels);
             itemDto.Descriptions = GetFilledTexts(item.descriptions);            
-            itemDto.Sitelinks = GetFilledSitelinks(item.sitelinks); 
+            itemDto.Sitelinks = GetFilledSitelinks(item.sitelinks);
 
             return itemDto;
         }
+
 
         private IEnumerable<EntityTextDto> GetFilledTexts(LanguageCodes codes)
         {
@@ -56,12 +65,11 @@ namespace WikidataEditor.Services
         public FlatWikidataItemDto GetCoreData(string id)
         {
             var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
-
             JObject jObject = JObject.Parse(jsonString);
             JObject statementsObject = jObject["statements"].ToObject<dynamic>();
             var instanceOfValue = ResolveFirstInstanceValue(statementsObject);
-
             var properties = ResolveProperties(instanceOfValue, statementsObject);
+
             var itemBase = jObject.ToObject<WikidataItemBase>();
             var flatWikidataItemDto = ResolveBaseData(id, statementsObject, itemBase);
             flatWikidataItemDto.Statements = _helper.GetStatementsValues(statementsObject, properties);
@@ -74,8 +82,8 @@ namespace WikidataEditor.Services
             FlatWikidataItemDto flatWikidataItemDto = new FlatWikidataItemDto();
 
             flatWikidataItemDto.Id = id;
-            flatWikidataItemDto.Label = _helper.GetTextValue(itemBase.labels);
-            flatWikidataItemDto.Description = _helper.GetTextValue(itemBase.descriptions);
+            flatWikidataItemDto.Label = _helper.GetSingleTextValue(itemBase.labels);
+            flatWikidataItemDto.Description = _helper.GetSingleTextValue(itemBase.descriptions);
             flatWikidataItemDto.TotalNumberOfStatements = (statementsObject).Count;
             flatWikidataItemDto.Aliases = GetAliases(itemBase.aliases);
             flatWikidataItemDto.UriCollection = GetUriCollection(id, itemBase.sitelinks);

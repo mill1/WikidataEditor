@@ -277,7 +277,7 @@ namespace WikidataEditor.Common
             return Constants.Missing;
         }
 
-        public string GetTextValue(LanguageCodes codes)
+        public string GetSingleTextValue(LanguageCodes codes)
         {
             if (codes.en == null)
             {
@@ -304,14 +304,6 @@ namespace WikidataEditor.Common
             .Where(c => c.PropertyType == typeof(string))
             .Select(c => (string)c.GetValue(codes))
             .FirstOrDefault(value => !string.IsNullOrEmpty(value));
-        }
-
-        // Cannot part from it
-        private IEnumerable<string> ResolveInstanceTexts(Statement[] instances)
-        {
-            var values = ResolveValues(instances);
-            var ids = instances.Select(id => id.value.content.ToString());
-            return values.Zip(ids, (first, second) => first + " (" + second + ")");
         }
     }
 }
