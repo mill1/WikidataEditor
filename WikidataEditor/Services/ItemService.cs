@@ -32,45 +32,38 @@ namespace WikidataEditor.Services
 
             var item = jObject.ToObject<WikidataItemBase>();
 
-            var itemDto = new WikidataItemDto(item.id, item.type);
+            var itemDto = new WikidataItemDto(item.id, item.type, item.aliases);
 
-            itemDto.Labels = item.labels.GetType().GetProperties()
-                .Where(c => c.PropertyType == typeof(string))
-                .Select(c => new EntityTextDto
-                {
-                    LanguageCode = c.Name,
-                    Value = (string)c.GetValue(item.labels)
-                })
-                .Where(value => !string.IsNullOrEmpty((string)value.Value));
+            itemDto.Labels = GetFilledTexts(item.labels);
+            itemDto.Descriptions = GetFilledTexts(item.descriptions);            
+            itemDto.Sitelinks = GetFilledSitelinks(item.sitelinks); 
 
             return itemDto;
         }
 
-        private string GetValueOfFirstFilledProperty(LanguageCodes codes)
+        private IEnumerable<EntityTextDto> GetFilledTexts(LanguageCodes codes)
         {
             return codes.GetType().GetProperties()
-            .Where(c => c.PropertyType == typeof(string))
-            .Select(c => (string)c.GetValue(codes))
-            .FirstOrDefault(value => !string.IsNullOrEmpty(value));
+                .Where(c => c.PropertyType == typeof(string))
+                .Select(c => new EntityTextDto
+                {
+                    LanguageCode = c.Name,
+                    Value = (string)c.GetValue(codes)
+                })
+                .Where(text => !string.IsNullOrEmpty((string)text.Value));
         }
 
         public FlatWikidataItemDto GetCoreData(string id)
         {
-            // TODO
             var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
 
             JObject jObject = JObject.Parse(jsonString);
-
-            var type = (string)((JValue)jObject["type"])?.Value ?? "null";
-            if (type != "item")
-                throw new ArgumentException($"Result is not of type item. Encountered type: {type}");
-
             JObject statementsObject = jObject["statements"].ToObject<dynamic>();
             var instanceOfValue = ResolveFirstInstanceValue(statementsObject);
 
             var properties = ResolveProperties(instanceOfValue, statementsObject);
-            WikidataItemBase itemBase = jObject.ToObject<WikidataItemBase>();
-            FlatWikidataItemDto flatWikidataItemDto = ResolveBaseData(id, statementsObject, itemBase);
+            var itemBase = jObject.ToObject<WikidataItemBase>();
+            var flatWikidataItemDto = ResolveBaseData(id, statementsObject, itemBase);
             flatWikidataItemDto.Statements = _helper.GetStatementsValues(statementsObject, properties);
 
             return flatWikidataItemDto;

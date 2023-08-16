@@ -1,5 +1,6 @@
 ﻿
 using WikidataEditor.Dtos.Requests;
+using WikidataEditor.Models;
 
 namespace WikidataEditor.Dtos
 {
@@ -8,10 +9,11 @@ namespace WikidataEditor.Dtos
     /// </summary>
     public class WikidataItemDto
     {
-        public WikidataItemDto(string id, string @type)
+        public WikidataItemDto(string id, string @type, Dictionary<string, List<string>> aliases)
         {
             Id = id;
             Type = @type;
+            Aliases = aliases;
         }
 
         public string Id { get; set; }
@@ -19,7 +21,6 @@ namespace WikidataEditor.Dtos
         public IEnumerable<EntityTextDto> Labels { get; set; }
         public IEnumerable<EntityTextDto> Descriptions { get; set; }
         public Dictionary<string, List<string>> Aliases { get; set; }
-        // TODO
-        //public Sitelinks sitelinks { get; set; }
+        public List<Sitelink?> Sitelinks { get; set; }
     }
 }

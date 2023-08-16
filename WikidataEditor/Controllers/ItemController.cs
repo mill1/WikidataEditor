@@ -33,6 +33,18 @@ namespace WikidataEditor.Controllers
             return Ok(_service.GetCoreData(id));
         }
 
+        [HttpGet]
+        public IActionResult GetById([FromQuery(Name = "id")] string id = null, [FromQuery(Name = "wikipediatitle")] string title = null)
+        {
+            if(id == null && title == null) 
+            {
+                return BadRequest("Either field id or title is required");
+            }
+
+            // human: https://localhost:7085/api/items/coredata?id=Q99589194 (Lesley Cunliffe)
+            return Ok(_service.Get(id));
+        }
+
         [HttpGet("coredata")]
         public IActionResult GetCoreDataById([FromQuery(Name = "id")] string id)
         {
