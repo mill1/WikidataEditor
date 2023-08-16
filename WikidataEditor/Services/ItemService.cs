@@ -24,31 +24,23 @@ namespace WikidataEditor.Services
             configuration.GetSection(CoreDataOptions.CoreData).Bind(_coreDataOptions);
         }
 
-        /*
-            var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
-            JObject jObject = JObject.Parse(jsonString);
-            JObject statementsObject = jObject["statements"].ToObject<dynamic>();
-            var instanceOfValue = ResolveFirstInstanceValue(statementsObject);
-            var properties = ResolveProperties(instanceOfValue, statementsObject);         
-         */
-
         public WikidataItemDto Get(string id)
         {
-            var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
-            JObject jObject = JObject.Parse(jsonString);            
-            JObject statementsObject = jObject["statements"].ToObject<dynamic>();
-            var instanceOfValue = ResolveFirstInstanceValue(statementsObject);
-            var properties = ResolveProperties(instanceOfValue, statementsObject);
+            JObject jObject, statementsObject;
+            string instanceOfValue;
+            ResolveVariables(id, out jObject, out statementsObject, out instanceOfValue);
+
+            IEnumerable<string> properties = _helper.GetProperties(statementsObject, int.MaxValue);
 
             var item = jObject.ToObject<WikidataItemBase>();
             var itemDto = new WikidataItemDto(item.id, item.type, item.aliases);
             itemDto.Labels = GetFilledTexts(item.labels);
-            itemDto.Descriptions = GetFilledTexts(item.descriptions);            
+            itemDto.Descriptions = GetFilledTexts(item.descriptions);  
+            itemDto.Statements = _helper.GetStatementsValues(statementsObject, properties);
             itemDto.Sitelinks = GetFilledSitelinks(item.sitelinks);
 
             return itemDto;
         }
-
 
         private IEnumerable<EntityTextDto> GetFilledTexts(LanguageCodes codes)
         {
@@ -64,17 +56,26 @@ namespace WikidataEditor.Services
 
         public FlatWikidataItemDto GetCoreData(string id)
         {
-            var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
-            JObject jObject = JObject.Parse(jsonString);
-            JObject statementsObject = jObject["statements"].ToObject<dynamic>();
-            var instanceOfValue = ResolveFirstInstanceValue(statementsObject);
-            var properties = ResolveProperties(instanceOfValue, statementsObject);
+            JObject jObject, statementsObject;
+            string instanceOfValue;
+            ResolveVariables(id, out jObject, out statementsObject, out instanceOfValue);
+
+            IEnumerable<string> properties = ResolveProperties(instanceOfValue, statementsObject);
 
             var itemBase = jObject.ToObject<WikidataItemBase>();
             var flatWikidataItemDto = ResolveBaseData(id, statementsObject, itemBase);
             flatWikidataItemDto.Statements = _helper.GetStatementsValues(statementsObject, properties);
 
             return flatWikidataItemDto;
+        }
+
+        private void ResolveVariables(string id, out JObject jObject, out JObject statementsObject, out string instanceOfValue)
+        {
+            var jsonString = _clientWikipediaApi.GetStringAsync("items/" + id).Result;
+            jObject = JObject.Parse(jsonString);
+            statementsObject = jObject["statements"].ToObject<dynamic>();
+
+            instanceOfValue = ResolveFirstInstanceValue(statementsObject);            
         }
 
         private FlatWikidataItemDto ResolveBaseData(string id, JObject statementsObject, WikidataItemBase itemBase)
