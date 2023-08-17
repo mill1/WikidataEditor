@@ -20,7 +20,7 @@ namespace WikidataEditor.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(string id)
         {
-            // John Fleming: https://localhost:44351/api/items/Q15429542
+            // John Fleming: http://localhost:38583//api/items/Q15429542
             return Ok(_service.Get(id));
         }
 
@@ -28,10 +28,10 @@ namespace WikidataEditor.Controllers
         public IActionResult GetCoreData(string id)
         {
             /*
-                human:                    https://localhost:44351/api/items/Q15429542/coredata (John Fleming)
-                disambiguation page:      https://localhost:44351/api/items/Q231486/coredata   (Silver)
-                astronomical object type: https://localhost:44351/api/items/Q3863/coredata     (asteroid)
-                other:                    https://localhost:44351/api/items/Q368481/coredata   (Bonfire (horse))
+                human:                    http://localhost:38583//api/items/Q15429542/coredata (John Fleming)
+                disambiguation page:      http://localhost:38583//api/items/Q231486/coredata   (Silver)
+                astronomical object type: http://localhost:38583//api/items/Q3863/coredata     (asteroid)
+                other:                    http://localhost:38583//api/items/Q368481/coredata   (Bonfire (horse))
             */
             return Ok(_service.GetCoreData(id));
         }

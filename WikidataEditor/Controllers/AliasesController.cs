@@ -17,21 +17,21 @@ namespace WikidataEditor.Controllers
         [HttpGet("{id}/aliases")]
         public async Task<IActionResult> Get(string id)
         {
-            //  Douglas Adams: https://localhost:44351/api/items/Q42/aliases
+            //  Douglas Adams: http://localhost:38583//api/items/Q42/aliases
             return Ok(await service.Get(id));
         }
 
         [HttpGet("{id}/aliases/languagecodes/{languageCode}")]
         public async Task<IActionResult> Get(string id, string languageCode)
         {
-            // Douglas Adams: https://localhost:44351/api/items/Q42/aliases/languagecodes/en
+            // Douglas Adams: http://localhost:38583//api/items/Q42/aliases/languagecodes/en
             return Ok(await service.Get(id, languageCode));
         }
 
         [HttpGet("aliases")]
         public async Task<IActionResult> GetByQueryParameters([FromQuery(Name = "id")] string id, [FromQuery(Name = "languagecode")] string languageCode)
         {
-            // Douglas Adams: https://localhost:44351/api/items/aliases?id=Q42&languagecode=nl
+            // Douglas Adams: http://localhost:38583//api/items/aliases?id=Q42&languagecode=nl
             var result = languageCode == "*" ? await service.Get(id) : await service.Get(id, languageCode);
             return Ok(result);
         }

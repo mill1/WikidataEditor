@@ -1,6 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Reflection.Emit;
+using System.Xml.Linq;
 using WikidataEditor.Common;
 using WikidataEditor.Dtos;
+using WikidataEditor.Dtos.Requests;
+using WikidataEditor.Models;
 
 namespace WikidataEditor.Services
 {
@@ -37,8 +42,8 @@ namespace WikidataEditor.Services
          https://www.theguardian.com/news/2001/jul/30/guardianobituaries1
 
         // template existing ref The Guardian for DoD. TODO date regarding prop 'retrieved' (P813) is empty?
-        // Ted Rogers (Q7693675):
-        // https://localhost:44351/api/items/statements?id=Q7693675&property=P570
+        // Simone Benmussa (Q3484538):
+        // http://localhost:38583//api/items/statements?id=Q3484538&property=P570
         Check if date of death statement exists.
         if not: Add date of death statement ( + ref.); END
         if exists:
@@ -46,34 +51,79 @@ namespace WikidataEditor.Services
 
         */
 
-        public void UpsertStatementDoDReference(string id, string url)
+        public void UpsertStatementDoDReference(string id, DateOnly dateOfDeath, string url)
         {
             var statements = _wikidataHelper.GetStatementsAsJObject(id).Result;
 
-            var statementDoD = TryGetStatementDoD(statements);
+            var statementsDoD = TryGetStatementDoD(statements);
 
-            if(statementDoD == null) 
+            if(statementsDoD == null) 
             {
-                // TODO: Add volledig P570 statement + ref. met de datum die voorkomt in de url.
+                // TODO: Add volledige P570 statement + ref. met meegegeven datum 
                 throw new NotImplementedException("Adding a P570 statement has not been implemented yet.");
             }
 
-            string multilineMessage = """
-               {
-                 "property": {
-                   "id": "P813",
-                   "data-type": "time"
-                 },
-                 "value": {
-                   "type": "value",
-                   "content": {
-                     "time": "+2017-10-09T00:00:00Z",
-                     "precision": 11,
-                     "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
-                   }
-                 }
-               }
-            """;
+            bool existingValueDoD = false;
+
+            foreach (var child in statementsDoD)
+            {
+                var time = TryGetDoD(child);
+
+                if (time == null)
+                    continue;
+
+                var dateString = ((string)time).Substring(1,10);
+                DateOnly date;
+                if (DateOnly.TryParse(dateString, out date))
+                {
+                    if (date == dateOfDeath)
+                    {
+                        existingValueDoD = true;
+
+                        // Maybe store when de
+
+                        var refs = child["references"].ToObject<Reference[]>();
+
+                        if (refs == null)
+                            continue;                        
+                            
+
+                        foreach (var reference in child["references"])
+                        {
+                            foreach (var part in reference["parts"])
+                            {
+                                if ((string)part["property"]["id"] == "P248") // 'stated in'
+                                {
+                                    if ((string)part["value"]["content"] == "Q11148") // 'The Guardian'
+                                        throw new HttpRequestException("Reference already exists", null, HttpStatusCode.BadRequest);
+                                }
+                            }
+                        }
+                    }
+                }            
+            }
+
+            var request = new UpdateStatementRequestDto
+            {
+                statement = new Statement
+                {
+                    rank = "normal",
+                    property = new Property { id = "P570"},
+                    value = new Value
+                    {
+                        
+                    }
+
+                },
+                tags = new string[0],
+                bot = false,
+                comment = "Testing add statement via rest API"
+            };
+
+            /*
+            string uri = $"items/{id}/labels/{languageCode}";
+            await _httpClientWikidataApi.PutAsync(uri, request);
+            */
 
 
         }
@@ -83,8 +133,19 @@ namespace WikidataEditor.Services
         {
             try
             {
-                //var firstPageName = ((JProperty)statements.First).Name;
                 return statements["P570"];
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private JToken? TryGetDoD(JToken? statementDoD)
+        {
+            try
+            {
+                return statementDoD["value"]["content"]["time"];
             }
             catch (Exception)
             {
