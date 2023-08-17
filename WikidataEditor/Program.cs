@@ -16,6 +16,8 @@
  https://www.wikidata.org/wiki/Q7794369
  https://www.theguardian.com/news/2001/jul/30/guardianobituaries1
 
+// template existing ref The Guardian for DoD. TODO date regarding prop 'retrieved' (P813) is empty?
+// https://localhost:44351/api/items/statements?id=Q7693675&property=P570
 Check if date of death statement exists.
 if not: Add date of death statement ( + ref.); END
 if exists:

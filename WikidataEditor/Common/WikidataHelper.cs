@@ -70,6 +70,9 @@ namespace WikidataEditor.Common
         {
             var statement = statementsObject[property];
 
+            // https://localhost:44351/api/items/statements?id=Q7693675&property=P570 : not deserialized. Depth limit?
+            // var timeOfPartRetrievedOfThirdReference = statement[0]["references"][2]["parts"][1]["value"]["content"]["time"];
+
             if (statement == null)
                 return CreateStatement(property, $"Property {property} not found in statements");
 
@@ -78,7 +81,7 @@ namespace WikidataEditor.Common
                 new StatementsDto
                 {
                     Property = property,
-                    Statement = statement.ToObject<Statement[]>()
+                    Statement =  statement.ToObject<Statement[]>() // = JsonConvert.DeserializeObject<Statement[]>(statement.ToString())
                 }
             };
         }

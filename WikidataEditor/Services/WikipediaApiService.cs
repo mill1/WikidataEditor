@@ -22,11 +22,22 @@ namespace WikidataEditor.Services
             JObject jObject = JObject.Parse(jsonString);
             JObject pagesObject = jObject["query"]["pages"].ToObject<dynamic>();
 
-            var firstPageName = ((JProperty)pagesObject.First).Name;
-
-            var wikibaseItemId = pagesObject[firstPageName]["pageprops"]["wikibase_item"];
+            var wikibaseItemId = TryGetWikibaseItem(pagesObject);
 
             return (string)((JValue)wikibaseItemId)?.Value;
+        }
+
+        private JToken? TryGetWikibaseItem(JObject pagesObject)
+        {
+            try
+            {
+                var firstPageName = ((JProperty)pagesObject.First).Name;
+                return pagesObject[firstPageName]["pageprops"]["wikibase_item"];
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }
