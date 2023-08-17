@@ -87,6 +87,27 @@
         </table>
     </form>
 
+    <form action="/api/items/statement/upsertdodref" method="get">
+        <table>
+            <tr>
+                <th colspan="2">Add reference to DoD statement (P570)</th>
+            </tr>
+            <tbody>
+                <tr>
+                    <td><label for="titleupdatestatement">Wikipedia title (en):</label></td>
+                    <td><input type="text" id="titleupdatestatement" name="title" maxlength="75" size="75" placeholder="Thomas Taylor, Baron Taylor of Gryfe"></td>
+                </tr>
+                <tr>
+                    <td><label for="urlupdatestatement">Url:</label></td>
+                    <td><input type="text" id="urlupdatestatement" name="url" size="75"></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><input type="submit" value="update" style="background-color:#f69b5b;"></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+
     <hr />
 
     <!--
@@ -129,7 +150,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2"><input type="submit" value="update" style="background-color:#f69b5b;"></td>
+                    <td colspan="2"><input type="submit" value="fetch"></td>
                 </tr>
             </tbody>
         </table>
@@ -175,7 +196,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2"><input type="submit" value="fetch"></td>
+                    <td colspan="2"><input type="submit" value="update" style="background-color:#f69b5b;"></td>
                 </tr>
             </tbody>
         </table>
