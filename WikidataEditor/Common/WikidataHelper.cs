@@ -83,7 +83,7 @@ namespace WikidataEditor.Common
             };
         }
 
-        public List<FlatStatementDto> GetStatementsValues(dynamic statementsObject, IEnumerable<string> properties)
+        public IEnumerable<FlatStatementDto> GetStatementsValues(dynamic statementsObject, IEnumerable<string> properties)
         {
             var flatStatements = new List<FlatStatementDto>();
 

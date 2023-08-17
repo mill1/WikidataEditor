@@ -11,18 +11,18 @@ namespace WikidataEditorTests.Controllers
     public class WikidataItemControllerTests
     {
         [TestMethod]
-        public void Get_ShouldReturnOkResult()
+        public void GetCoreData_ShouldReturnOkResult()
         {
             // Arrange
-            var coreDataService = new Mock<IItemService>();
+            var itemService = new Mock<IItemService>();
             var id = "Q1";
 
-            coreDataService.Setup(x => x.GetCoreData(It.IsAny<string>()))
+            itemService.Setup(x => x.GetCoreData(It.IsAny<string>()))
                            .Returns(new FlatWikidataItemDto { Id = id });
 
-            var controller = new ItemController(coreDataService.Object);
+            var controller = new ItemController(itemService.Object, null);
 
-            var result = controller.Get("some id");
+            var result = controller.GetCoreData("some id");
 
             result.Should().BeOfType<OkObjectResult>();
             var value = ((ObjectResult)result).Value;
