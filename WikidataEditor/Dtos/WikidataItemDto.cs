@@ -21,7 +21,7 @@ namespace WikidataEditor.Dtos
         public IEnumerable<EntityTextDto> Labels { get; set; }
         public IEnumerable<EntityTextDto> Descriptions { get; set; }
         public Dictionary<string, List<string>> Aliases { get; set; }
-        public List<FlatStatementDto> Statements { get; internal set; }
-        public List<Sitelink?> Sitelinks { get; set; }       
+        public IEnumerable<StatementsDto> Statements { get; internal set; }
+        public IEnumerable<Sitelink?> Sitelinks { get; set; }       
     }
 }

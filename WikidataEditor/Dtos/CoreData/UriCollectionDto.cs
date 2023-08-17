@@ -3,6 +3,6 @@
     public class UriCollectionDto
     {
         public string WikidataUri { get; set; }
-        public List<string> Wikipedias { get; set; }
+        public IEnumerable<string> Wikipedias { get; set; }
     }
 }

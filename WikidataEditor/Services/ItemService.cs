@@ -28,15 +28,15 @@ namespace WikidataEditor.Services
         {
             JObject jObject, statementsObject;
             string instanceOfValue;
-            ResolveVariables(id, out jObject, out statementsObject, out instanceOfValue);
+            ResolveVariables(id, out jObject, out statementsObject, out _);
 
-            IEnumerable<string> properties = _helper.GetProperties(statementsObject, int.MaxValue);
+           // IEnumerable<string> properties = _helper.GetProperties(statementsObject, int.MaxValue);
 
             var item = jObject.ToObject<WikidataItemBase>();
             var itemDto = new WikidataItemDto(item.id, item.type, item.aliases);
             itemDto.Labels = GetFilledTexts(item.labels);
-            itemDto.Descriptions = GetFilledTexts(item.descriptions);  
-            itemDto.Statements = _helper.GetStatementsValues(statementsObject, properties);
+            itemDto.Descriptions = GetFilledTexts(item.descriptions);
+            itemDto.Statements = _helper.GetStatements(id).Result;
             itemDto.Sitelinks = GetFilledSitelinks(item.sitelinks);
 
             return itemDto;

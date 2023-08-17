@@ -11,7 +11,7 @@ namespace WikidataEditor.Common
         Task<IEnumerable<StatementsDto>> GetStatement(string id, string property);
         IEnumerable<string> GetProperties(dynamic statementsObject, int count);
         Task<IEnumerable<StatementsDto>> GetStatements(string id);
-        List<FlatStatementDto> GetStatementsValues(dynamic statementsObject, IEnumerable<string> properties);
+        IEnumerable<FlatStatementDto> GetStatementsValues(dynamic statementsObject, IEnumerable<string> properties);
         Task<IEnumerable<EntityTextDto>> GetEntityTexts(string id, string entityType);
         Task<IEnumerable<EntityTextDto>> GetEntityText(string id, string languageCode, string entityType);
         Task<IEnumerable<EntityTextDto>> GetAliases(string id);
