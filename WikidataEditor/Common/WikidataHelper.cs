@@ -75,7 +75,7 @@ namespace WikidataEditor.Common
         {
             var statement = statementsObject[property];
 
-            // http://localhost:38583//api/items/statements?id=Q7693675&property=P570 : not deserialized. Depth limit?
+            // http://localhost:38583/api/items/statements?id=Q7693675&property=P570 : not deserialized. Depth limit?
             // var timeOfPartRetrievedOfThirdReference = statement[0]["references"][2]["parts"][1]["value"]["content"]["time"];
 
             if (statement == null)
