@@ -6,25 +6,6 @@
  * https://www.mediawiki.org/wiki/Wikibase/DataModel
  */
 
-// TODO: Add statement(s):
-// https://www.wikidata.org/wiki/Q129678
-// https://en.wikipedia.org/wiki/Category:Mountains_of_Chile
-
-/*
- Regarding auto-adding ref. The Guardian obituary to the date of death:
- https://en.wikipedia.org/wiki/Thomas_Taylor,_Baron_Taylor_of_Gryfe
- https://www.wikidata.org/wiki/Q7794369
- https://www.theguardian.com/news/2001/jul/30/guardianobituaries1
-
-// template existing ref The Guardian for DoD. TODO date regarding prop 'retrieved' (P813) is empty?
-// https://localhost:44351/api/items/statements?id=Q7693675&property=P570
-Check if date of death statement exists.
-if not: Add date of death statement ( + ref.); END
-if exists:
-replace statement: use the response and add the ref. data
-
-*/
-
 using Microsoft.Net.Http.Headers;
 using WikidataEditor.Common;
 using WikidataEditor.Configuration;

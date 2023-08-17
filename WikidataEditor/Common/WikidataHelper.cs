@@ -60,17 +60,22 @@ namespace WikidataEditor.Common
 
         public async Task<IEnumerable<StatementsDto>> GetStatement(string id, string property)
         {
-            JObject jsonObject = await GetEntityData(id, "statements");
-            var statementsObject = jsonObject.ToObject<dynamic>();
+            JObject statementsObject = await GetStatementsAsJObject(id);
 
             return await GetStatement(statementsObject, property);
+        }
+
+        public async Task<JObject> GetStatementsAsJObject(string id)
+        {
+            JObject jsonObject = await GetEntityData(id, "statements");
+            return jsonObject.ToObject<dynamic>();
         }
 
         public async Task<IEnumerable<StatementsDto>> GetStatement(JObject statementsObject, string property)
         {
             var statement = statementsObject[property];
 
-            // https://localhost:44351/api/items/statements?id=Q7693675&property=P570 : not deserialized. Depth limit?
+            // http://localhost:38583/api/items/statements?id=Q7693675&property=P570 : not deserialized. Depth limit?
             // var timeOfPartRetrievedOfThirdReference = statement[0]["references"][2]["parts"][1]["value"]["content"]["time"];
 
             if (statement == null)
