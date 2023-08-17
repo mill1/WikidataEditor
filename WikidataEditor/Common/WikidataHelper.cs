@@ -60,10 +60,15 @@ namespace WikidataEditor.Common
 
         public async Task<IEnumerable<StatementsDto>> GetStatement(string id, string property)
         {
-            JObject jsonObject = await GetEntityData(id, "statements");
-            var statementsObject = jsonObject.ToObject<dynamic>();
+            JObject statementsObject = await GetStatementsAsJObject(id);
 
             return await GetStatement(statementsObject, property);
+        }
+
+        public async Task<JObject> GetStatementsAsJObject(string id)
+        {
+            JObject jsonObject = await GetEntityData(id, "statements");
+            return jsonObject.ToObject<dynamic>();
         }
 
         public async Task<IEnumerable<StatementsDto>> GetStatement(JObject statementsObject, string property)

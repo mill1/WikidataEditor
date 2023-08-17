@@ -47,7 +47,7 @@ namespace WikidataEditor.Controllers
         /// <returns></returns>
         /// <exception cref="HttpRequestException"></exception>
         [HttpGet("statement/upsertdodref")]
-        public async Task<IActionResult> UpsertStatementDoDReferenceAsync([FromQuery(Name = "title")] string title, [FromQuery(Name = "url")] string url)
+        public IActionResult UpsertStatementDoDReferenceAsync([FromQuery(Name = "title")] string title, [FromQuery(Name = "url")] string url)
         {
             // https://localhost:44351/api/items/statement/upsertdodref?title=Douglas%20Adams&url=some-url
 
@@ -59,7 +59,7 @@ namespace WikidataEditor.Controllers
             if (id == null)
                 throw new HttpRequestException($"No wikidata item found for Wikipedia title '{title}'", null, HttpStatusCode.NotFound);
 
-            //await _service.UpsertLabel(id, label, languageCode, $"Added/updated {languageCode} label");
+            _service.UpsertStatementDoDReference(id, url);
 
             return Ok($"https://www.wikidata.org/wiki/{id}");
         }
