@@ -53,6 +53,8 @@ namespace WikidataEditor.Services
 
             var statementsDoD = TryGetStatementDoD(statements);
 
+            var statedInId = ResolveStatedInId(url);
+
             if (statementsDoD == null)
             {
                 // TODO: Add volledige P570 statement + ref. met meegegeven datum 
@@ -60,7 +62,7 @@ namespace WikidataEditor.Services
             }
 
             List<Reference> references = new();
-            var statementId = CheckStatementDoD(dateOfDeath, statementsDoD, ref references);
+            var statementId = CheckStatementDoD(dateOfDeath, url, statementsDoD, ref references);
 
             if (statementId == string.Empty)
             {
@@ -69,7 +71,7 @@ namespace WikidataEditor.Services
             }
 
             // Add a new reference to the existing ones
-            references.Add(CreateReference(url));
+            references.Add(CreateReference(url, statedInId));
 
             var request = CreateUpdateStatementRequest(dateOfDeath, references, statementId);
 
@@ -103,13 +105,13 @@ namespace WikidataEditor.Services
                 },
                 tags = new string[0],
                 bot = false,
-                comment = "Added statement via [[User:Mill 1|Mill 1]]'s edit app using Wikibase REST API 0.1 OAS3"
+                comment = "Added reference to date of death via [[User:Mill 1|Mill 1]]'s edit app using Wikibase REST API 0.1 OAS3"
             };
         }
 
-        private string CheckStatementDoD(DateOnly dateOfDeath, JToken? statementsDoD, ref List<Reference> references)
+        private string CheckStatementDoD(DateOnly dateOfDeath, string url, JToken? statementsDoD, ref List<Reference> references)
         {
-            var statementId = string.Empty;
+            var statementId = string.Empty;            
 
             foreach (var child in statementsDoD)
             {
@@ -131,8 +133,8 @@ namespace WikidataEditor.Services
                             break;
 
                         var existingReference = references.SelectMany(r => r.parts, (reference, part) => new { reference, part })
-                                    .Where(refAndPart => refAndPart.part.property.id == "P248") // "P248" = 'stated in'
-                                    .Where(x => x.part.value.content.ToString() == "Q11148");   // "Q11148" = 'The Guardian'
+                                    .Where(refAndPart => refAndPart.part.property.id == "P854") // "P854" = 'reference URL'
+                                    .Where(x => x.part.value.content.ToString().Contains(url, StringComparison.OrdinalIgnoreCase));
 
                         if (existingReference.Any())
                             throw new HttpRequestException("Reference already exists", null, HttpStatusCode.BadRequest);
@@ -143,25 +145,22 @@ namespace WikidataEditor.Services
             return statementId;
         }
 
-        private Reference CreateReference(string url)
+        private string ResolveStatedInId(string url)
         {
-            return new Reference
+            if (url.Contains("theguardian.com", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Q11148"; /// = 'The Guardian'
+            }
+
+            return null;
+        }
+
+        private Reference CreateReference(string url, string statedInId)
+        {
+            var reference =  new Reference
             {
                 parts = new Part[]
-                {
-                    new Part
-                    {
-                        property = new Property
-                        {
-                            id = "P248", // stated in
-                            datatype = "wikibase-item"
-                        },
-                        value = new Value
-                        {
-                            type = "value",
-                            content = "Q11148" // The Guardian
-                        }
-                    },
+                {                    
                     new Part
                     {
                         property = new Property
@@ -180,23 +179,34 @@ namespace WikidataEditor.Services
                             }
                         }
                     },
-                    new Part
-                    {
-                        property = new Property
-                        {
-                            id = "P854", // url
-                            datatype = "wikibase-item"
-                        },
-                        value = new Value
-                        {
-                            type = "value",
-                            content = url
-                        }
-                    }
+                }
+            };
+
+            reference.parts.ToList().Add(CreatePart(url, "P854")); // "P854" = reference url
+
+            if (statedInId != null)
+                reference.parts.ToList().Add(CreatePart(statedInId, "P248")); // "P248" = stated in
+
+            return reference;
+        }
+
+        private static Part CreatePart(string content, string propertyId)
+        {
+            return new Part
+            {
+                property = new Property
+                {
+                    id = propertyId,
+                    datatype = "wikibase-item"
+                },
+                value = new Value
+                {
+                    type = "value",
+                    content = content
                 }
             };
         }
- 
+
         private JToken? TryGetStatementDoD(JObject statements)
         {
             try
