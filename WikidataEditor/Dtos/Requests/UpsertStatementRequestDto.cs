@@ -2,7 +2,7 @@
 
 namespace WikidataEditor.Dtos.Requests
 {
-    public class UpdateStatementRequestDto : UpdateRequestBaseDto
+    public class UpsertStatementRequestDto : UpdateRequestBaseDto
     {
         public Statement statement { get; set; }
     }

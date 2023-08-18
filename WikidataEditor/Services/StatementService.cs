@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Net;
-using System.Reflection.Emit;
-using System.Xml.Linq;
 using WikidataEditor.Common;
 using WikidataEditor.Dtos;
 using WikidataEditor.Dtos.Requests;
@@ -31,57 +29,69 @@ namespace WikidataEditor.Services
             return await _wikidataHelper.GetStatement(id, property);
         }
 
-
-        // TODO: Add statement(s):
-        // https://www.wikidata.org/wiki/Q129678
-        // https://en.wikipedia.org/wiki/Category:Mountains_of_Chile
-
         /*
          Regarding auto-adding ref. The Guardian obituary to the date of death:
          https://en.wikipedia.org/wiki/Thomas_Taylor,_Baron_Taylor_of_Gryfe
          https://www.wikidata.org/wiki/Q7794369
          https://www.theguardian.com/news/2001/jul/30/guardianobituaries1
 
-        // template existing ref The Guardian for DoD. TODO date regarding prop 'retrieved' (P813) is empty?
-        // Simone Benmussa (Q3484538):
-        // http://localhost:38583/api/items/statements?id=Q3484538&property=P570
+        Simone Benmussa (Q3484538):
+        http://localhost:38583/api/items/statements?id=Q3484538&property=P570
+        http://localhost:38583/api/items/statement/upsertdodref?title=As%C4%B1m+Bezirci&dateofdeath=2+July+1993&url=https%3A%2F%2Fdagyeliverlag.com%2Fbook-author%2Fasim-bezirci%2F
         */
 
         public void UpsertStatementDoDReference(string id, DateOnly dateOfDeath, string url)
         {
             var statements = _wikidataHelper.GetStatementsAsJObject(id).Result;
-
-            var statementsDoD = TryGetStatementDoD(statements);
-
             var statedInId = ResolveStatedInId(url);
+            var statementsDoD = TryGetStatement(statements, Constants.PropertyIdDateOfDeath);
 
             if (statementsDoD == null)
             {
-                // TODO: Add volledige P570 statement + ref. met meegegeven datum 
-                throw new NotImplementedException("Adding a P570 (=DoD) statement has not been implemented yet.");
+                AddDoDStatement(id, dateOfDeath, url, statedInId);
+                return;
             }
 
             List<Reference> references = new();
-            var statementId = CheckStatementDoD(dateOfDeath, url, statementsDoD, ref references);
+            var statementId = ResolveStatementId(dateOfDeath, url, statementsDoD, ref references);
 
             if (statementId == string.Empty)
             {
-                // TODO P570 statement bestaat, maar bestaat nog niet voor de meegegeven datum
-                throw new NotImplementedException("Adding a day to a P570 statement has not been implemented yet.");
+                // P570 statement exists, but statement does not exist for the passed date of death
+                AddDoDStatement(id, dateOfDeath, url, statedInId);
+                return;
             }
 
+            UpdateDoDStatement(id, dateOfDeath, url, statedInId, references, statementId);
+        }
+
+        private void UpdateDoDStatement(string id, DateOnly dateOfDeath, string url, string statedInId, List<Reference> references, string statementId)
+        {
             // Add a new reference to the existing ones
             references.Add(CreateReference(url, statedInId));
 
-            var request = CreateUpdateStatementRequest(dateOfDeath, references, statementId);
+            var requestPut = CreateUpsertStatementRequest(dateOfDeath, references, statementId);
 
             string uri = $"items/{id}/statements/{statementId}";
-            _httpClientWikidataApi.PutAsync(uri, request);
+            _httpClientWikidataApi.PutAsync(uri, requestPut);
         }
 
-        private static UpdateStatementRequestDto CreateUpdateStatementRequest(DateOnly dateOfDeath, List<Reference> references, string statementId)
+        private void AddDoDStatement(string id, DateOnly dateOfDeath, string url, string statedInId)
         {
-            return new UpdateStatementRequestDto
+            List<Reference> references = new()
+            {
+                CreateReference(url, statedInId)
+            };
+
+            var requestPost = CreateUpsertStatementRequest(dateOfDeath, references);
+
+            string uri = $"items/{id}/statements";
+            _httpClientWikidataApi.PostAsync(uri, requestPost);
+        }
+
+        private static UpsertStatementRequestDto CreateUpsertStatementRequest(DateOnly dateOfDeath, List<Reference> references, string statementId = null)
+        {
+            return new UpsertStatementRequestDto
             {
                 statement = new Statement
                 {
@@ -89,7 +99,7 @@ namespace WikidataEditor.Services
                     rank = "normal",
                     property = new Property
                     {
-                        id = "P570"
+                        id = Constants.PropertyIdDateOfDeath
                     },
                     value = new Value
                     {
@@ -105,11 +115,11 @@ namespace WikidataEditor.Services
                 },
                 tags = new string[0],
                 bot = false,
-                comment = "Added reference to date of death via [[User:Mill 1|Mill 1]]'s edit app using Wikibase REST API 0.1 OAS3"
+                comment = $"Added{(statementId == null ? " " : " reference to ")}date of death via [[User:Mill 1|Mill 1]]'s edit app using Wikibase REST API 0.1 OAS3"
             };
         }
 
-        private string CheckStatementDoD(DateOnly dateOfDeath, string url, JToken? statementsDoD, ref List<Reference> references)
+        private string ResolveStatementId(DateOnly dateOfDeath, string url, JToken? statementsDoD, ref List<Reference> references)
         {
             var statementId = string.Empty;            
 
@@ -127,53 +137,64 @@ namespace WikidataEditor.Services
                     if (date == dateOfDeath)
                     {
                         statementId = child["id"].ToString();
-                        references = child["references"].ToObject<Reference[]>().ToList();
-
-                        if (!references.Any())
-                            break;
-
-                        var existingReference = references.SelectMany(r => r.parts, (reference, part) => new { reference, part })
-                                    .Where(refAndPart => refAndPart.part.property.id == "P854") // "P854" = 'reference URL'
-                                    .Where(x => x.part.value.content.ToString().Contains(url, StringComparison.OrdinalIgnoreCase));
-
-                        if (existingReference.Any())
-                            throw new HttpRequestException("Reference already exists", null, HttpStatusCode.BadRequest);
+                        CheckIfReferenceExists(url, child["references"].ToObject<Reference[]>().ToList());
+                        break;
                     }
                 }
             }
-
             return statementId;
+        }
+
+        private static void CheckIfReferenceExists(string url, List<Reference> references)
+        {
+            if (!references.Any())
+                return;
+
+            var existingReference = references.SelectMany(r => r.parts, (reference, part) => new { reference, part })
+                                                .Where(refAndPart => refAndPart.part.property.id == Constants.PropertyIdReferenceUrl) 
+                                                .Where(r => r.part.value.content.ToString().Contains(url, StringComparison.OrdinalIgnoreCase));
+
+            if (existingReference.Any())
+                throw new HttpRequestException("Reference already exists", null, HttpStatusCode.BadRequest);
         }
 
         private string ResolveStatedInId(string url)
         {
+            const string ItemIdTheGuardian = "Q11148";
+            const string ItemIdTheIndependent = "Q11149";
+            const string ItemIdTheNewYorkTimes = "Q9684";
+
             if (url.Contains("theguardian.com", StringComparison.OrdinalIgnoreCase))
-            {
-                return "Q11148"; /// = 'The Guardian'
-            }
+                return ItemIdTheGuardian;
+
+            if (url.Contains("independent.co.uk", StringComparison.OrdinalIgnoreCase))
+                return ItemIdTheIndependent;
+
+            if (url.Contains("nytimes.com", StringComparison.OrdinalIgnoreCase))
+                return ItemIdTheNewYorkTimes;
 
             return null;
-        }
+        }       
 
         private Reference CreateReference(string url, string statedInId)
         {
-            var reference =  new Reference
+            var reference = new Reference
             {
                 parts = new Part[]
-                {                    
+                {
                     new Part
                     {
                         property = new Property
                         {
-                            id = "P813", // retrieved
+                            id = Constants.PropertyIdDateRetrieved,
                             datatype = "wikibase-item"
                         },
                         value = new Value
                         {
                             type = "value",
-                            content = new TimeContent // Now
+                            content = new TimeContent // Now, corrected for UTC
                             {
-                                time = $"+{DateTime.Now.AddHours(-12).ToString("yyyy-MM-dd")}T00:00:00Z",
+                                time = $"+{DateTime.Now.AddHours(-2).ToString("yyyy-MM-dd")}T00:00:00Z",
                                 precision = 11,
                                 calendarmodel = "http://www.wikidata.org/entity/Q1985727"
                             }
@@ -181,13 +202,27 @@ namespace WikidataEditor.Services
                     },
                 }
             };
-
-            reference.parts.ToList().Add(CreatePart(url, "P854")); // "P854" = reference url
+           
+            reference.parts = AddPart(reference, url, Constants.PropertyIdReferenceUrl); 
 
             if (statedInId != null)
-                reference.parts.ToList().Add(CreatePart(statedInId, "P248")); // "P248" = stated in
+                reference.parts = AddPart(reference, statedInId, Constants.PropertyIdStatedIn);
 
             return reference;
+        }
+
+        private static Part[] AddPart(Reference? reference, string content, string propertyId)
+        {
+            /* Changing array to list and back again results in invalid payload for request.
+            List<Part> parts = reference.parts.ToList();
+            parts.Add(CreatePart(content, content));
+            return parts.ToArray();
+            */
+
+            var parts = reference.parts;
+            Array.Resize(ref parts, parts.Length + 1);
+            parts[parts.Length - 1] = CreatePart(content, propertyId);
+            return parts;
         }
 
         private static Part CreatePart(string content, string propertyId)
@@ -207,11 +242,11 @@ namespace WikidataEditor.Services
             };
         }
 
-        private JToken? TryGetStatementDoD(JObject statements)
+        private JToken? TryGetStatement(JObject statements, string propertyId)
         {
             try
             {
-                return statements["P570"];
+                return statements[propertyId];
             }
             catch (Exception)
             {

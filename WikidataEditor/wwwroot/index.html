@@ -88,10 +88,12 @@
     </form>
 
     <form action="/api/items/statement/upsertdodref" method="get">
+        <strong>Add reference to DoD statement (<a href="https://www.wikidata.org/wiki/Property:P570" target="_blank">P570</a>)</strong><br />
+        Implemented <a href="https://www.wikidata.org/wiki/Property:P248" target="_blank">'stated in'</a> reference sources:
+                    <a href="https://www.wikidata.org/wiki/Q9684" target="_blank">nytimes.com</a>,
+                    <a href="https://www.wikidata.org/wiki/Q11148" target="_blank">theguardian.com</a> and
+                    <a href="https://www.wikidata.org/wiki/Q11149" target="_blank">independent.co.uk</a>
         <table>
-            <tr>
-                <th colspan="2">Add reference to DoD statement (P570)</th>
-            </tr>
             <tbody>
                 <tr>
                     <td><label for="titleupdatestatement">Wikipedia title (en):</label></td>
@@ -99,8 +101,10 @@
                 </tr>
                 <tr>
                     <td><label for="dateofdeathupdatestatement">Date of death:</label></td>
-                    <td><input type="text" id="dateofdeathupdatestatement" name="dateofdeath" maxlength="16" size="16" placeholder="June 4 2001" 
-                               title="Enter anything that can be parsed into a DateTime like 'June 4 2001' or '2001-6-4' (without the quotes)"></td>
+                    <td>
+                        <input type="text" id="dateofdeathupdatestatement" name="dateofdeath" maxlength="16" size="16" placeholder="June 4 2001"
+                               title="Enter anything that can be parsed into a DateTime like 'June 4 2001' or '2001-6-4' (without the quotes)">
+                    </td>
                 </tr>
                 <tr>
                     <td><label for="urlupdatestatement">Reference url:</label></td>

@@ -94,7 +94,7 @@ namespace WikidataEditor.Services
 
         private string ResolveFirstInstanceValue(JObject statementsObject)
         {
-            var statements = _helper.GetStatement(statementsObject, Constants.WikidataPropertyIdInstanceOf).Result;
+            var statements = _helper.GetStatement(statementsObject, Constants.PropertyIdInstanceOf).Result;
             var instances = statements.Select(x => x.Statement).FirstOrDefault();
 
             if (instances == null)

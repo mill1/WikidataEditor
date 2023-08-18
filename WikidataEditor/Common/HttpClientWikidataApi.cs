@@ -27,5 +27,15 @@ namespace WikidataEditor.Common
             var response = await _httpClient.PutAsync(uri, requestContent);
             response.EnsureSuccessStatusCode();
         }
+
+        // TODO refactor; zie hierboven
+        public async Task PostAsync(string uri, object request)
+        {
+            string json = JsonConvert.SerializeObject(request);
+            var requestContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(uri, requestContent);
+            response.EnsureSuccessStatusCode();
+        }
     }
 }
