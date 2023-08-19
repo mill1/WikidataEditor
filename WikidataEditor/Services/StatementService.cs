@@ -1,18 +1,20 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
 using System.Globalization;
 using System.Net;
+using System.Threading.RateLimiting;
 using WikidataEditor.Common;
 using WikidataEditor.Dtos;
 using WikidataEditor.Dtos.Requests;
 using WikidataEditor.Models;
 using Wikimedia.Utilities.Interfaces;
-using Wikimedia.Utilities.Services;
+
 
 namespace WikidataEditor.Services
 {
     public class StatementService
     {
+        private const string ItemIdEnglishWikipedia = "Q328";
+
         private readonly IHttpClientWikidataApi _httpClientWikidataApi;
         private readonly IWikidataHelper _wikidataHelper;
         private readonly IWikiTextService _wikiTextService;
@@ -36,75 +38,142 @@ namespace WikidataEditor.Services
             return await _wikidataHelper.GetStatement(id, property);
         }
 
-        public void UpsertStatementDoDWikipediaAsync(string articleTitle, string id, DateOnly dateOfDeath)
+        public void UpsertStatementDoDWikipedia(string articleTitle, string id, DateOnly dateOfDeath)
         {
-            // Check if the DoD is present in the item's wiki bio.
-            string wikiText = _wikipediaWebClient.GetWikiTextArticle(articleTitle, out string redirectedArticle);
+            PerformWikipediaChecks(articleTitle, dateOfDeath);
 
-            // Redirect?
-            if (redirectedArticle != null)
-                throw new HttpRequestException($"'{articleTitle}' results in a redirect to '{redirectedArticle}", null, HttpStatusCode.BadRequest);
-
-            var dateOfDeathInArticle = _wikiTextService.ResolveDate(wikiText, dateOfDeath.ToDateTime(TimeOnly.MinValue));
-
-            if (dateOfDeathInArticle == DateTime.MinValue)
-            {
-                var deathDateText = dateOfDeath.ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("en-US"));
-                throw new HttpRequestException($"Death date {deathDateText} not encountered in article", null, HttpStatusCode.NotFound);
-            }
-
-        }
-
-        public void UpsertStatementDoDReference(string id, DateOnly dateOfDeath, string url)
-        {
             var statements = _wikidataHelper.GetStatementsAsJObject(id).Result;
-            var statedInId = ResolveStatedInId(url);
             var statementsDoD = TryGetStatement(statements, Constants.PropertyIdDateOfDeath);
 
             if (statementsDoD == null)
             {
-                AddDoDStatement(id, dateOfDeath, url, statedInId);
+                AddDoDStatementWithWikipediaReference(id, dateOfDeath);
                 return;
             }
 
             List<Reference> references = new();
-            var statementId = ResolveStatementId(dateOfDeath, url, statementsDoD, ref references);
+            string statementId;
+            ResolveExistingStatementInfo(dateOfDeath, ItemIdEnglishWikipedia, Constants.PropertyIdImportedFromWikimediaProject, statementsDoD, ref references, out statementId);
 
             if (statementId == string.Empty)
             {
                 // P570 statement exists, but statement does not exist for the passed date of death
-                AddDoDStatement(id, dateOfDeath, url, statedInId);
+                AddDoDStatementWithWikipediaReference(id, dateOfDeath);
                 return;
             }
 
-            UpdateDoDStatement(id, dateOfDeath, url, statedInId, references, statementId);
+            var newReference = CreateWikipediaReference();
+            UpdateDoDStatementWithReference(id, dateOfDeath, newReference, references, statementId);
+            RemoveOtherWikipediaReferences(id, dateOfDeath, statementsDoD);
         }
 
-        private void UpdateDoDStatement(string id, DateOnly dateOfDeath, string url, string statedInId, List<Reference> references, string statementId)
+        /// <summary>
+        /// Remove the Wikipedia reference(s), if any, regarding other dates of death statements
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="dateOfDeath"></param>
+        /// <param name="statementsDoD"></param>
+        private void RemoveOtherWikipediaReferences(string id, DateOnly dateOfDeath, JToken? statementsDoD)
+        {
+            foreach (var child in statementsDoD)
+            {
+                var time = TryGetDoD(child);
+
+                if (time == null)
+                    continue;
+
+                DateOnly date = DateOnly.MinValue;
+
+                // DateOfDeathToString(dateOfDeath)
+                if (date != dateOfDeath)
+                {
+                    // Get the references for this this day
+                    var references = child["references"].ToObject<Reference[]>().ToList();
+
+                    var existingWikipediaReferences = GetExistingReferencesByProperty(ItemIdEnglishWikipedia, Constants.PropertyIdImportedFromWikimediaProject, references);
+
+                    if (!existingWikipediaReferences.Any())
+                        break;
+
+                    // Remove the reference from the existing ones
+                    references.Remove(existingWikipediaReferences.First().Reference);
+
+                    var statementId = child["id"].ToString();
+                    var requestPut = CreateUpsertStatementRequest("1997-00-00", references, "Removed reference from date of death", statementId);
+
+                    string uri = $"items/{id}/statements/{statementId}";
+                    _httpClientWikidataApi.PutAsync(uri, requestPut);
+                }
+            }
+        }
+
+        public void UpsertStatementDoDReference(string id, DateOnly dateOfDeath, string url)
+        {
+            var statedInId = ResolveStatedInId(url);
+
+            var statements = _wikidataHelper.GetStatementsAsJObject(id).Result;
+            var statementsDoD = TryGetStatement(statements, Constants.PropertyIdDateOfDeath);
+
+            if (statementsDoD == null)
+            {
+                AddDoDStatementWithUrlReference(id, dateOfDeath, url, statedInId);
+                return;
+            }
+
+            List<Reference> references = new();
+            string statementId;
+            ResolveExistingStatementInfo(dateOfDeath, url, Constants.PropertyIdReferenceUrl, statementsDoD, ref references, out statementId);
+
+            if (statementId == string.Empty)
+            {
+                // P570 statement exists, but statement does not exist for the passed date of death
+                AddDoDStatementWithUrlReference(id, dateOfDeath, url, statedInId);
+                return;
+            }
+
+            var newReference = CreateUrlReference(url, statedInId);
+
+            UpdateDoDStatementWithReference(id, dateOfDeath, newReference, references, statementId);
+        }
+
+        private void UpdateDoDStatementWithReference(string id, DateOnly dateOfDeath, Reference newReference, List<Reference> references, string statementId)
         {
             // Add a new reference to the existing ones
-            references.Add(CreateReference(url, statedInId));
+            references.Add(newReference);
 
-            var requestPut = CreateUpsertStatementRequest(dateOfDeath, references, statementId);
+            var requestPut = CreateUpsertStatementRequest(DateOfDeathToString(dateOfDeath), references, "Added reference to date of death", statementId);
 
             string uri = $"items/{id}/statements/{statementId}";
             _httpClientWikidataApi.PutAsync(uri, requestPut);
         }
 
-        private void AddDoDStatement(string id, DateOnly dateOfDeath, string url, string statedInId)
+        private void AddDoDStatementWithWikipediaReference(string id, DateOnly dateOfDeath)
         {
             List<Reference> references = new()
             {
-                CreateReference(url, statedInId)
+                CreateWikipediaReference()
             };
 
-            var requestPost = CreateUpsertStatementRequest(dateOfDeath, references);
+            var requestPost = CreateUpsertStatementRequest(DateOfDeathToString(dateOfDeath), references, "Added date of death statement");
 
             string uri = $"items/{id}/statements";
             _httpClientWikidataApi.PostAsync(uri, requestPost);
         }
 
-        private static UpsertStatementRequestDto CreateUpsertStatementRequest(DateOnly dateOfDeath, List<Reference> references, string statementId = null)
+        private void AddDoDStatementWithUrlReference(string id, DateOnly dateOfDeath, string url, string statedInId)
+        {
+            List<Reference> references = new()
+            {
+                CreateUrlReference(url, statedInId)
+            };
+
+            var requestPost = CreateUpsertStatementRequest(DateOfDeathToString(dateOfDeath), references, "Added date of death statement");
+
+            string uri = $"items/{id}/statements";
+            _httpClientWikidataApi.PostAsync(uri, requestPost);
+        }
+
+        private static UpsertStatementRequestDto CreateUpsertStatementRequest(string dateOfDeathString, List<Reference> references, string comment, string statementId = null)
         {
             return new UpsertStatementRequestDto
             {
@@ -120,7 +189,7 @@ namespace WikidataEditor.Services
                     {
                         content = new TimeContent
                         {
-                            time = $"+{dateOfDeath.ToString("yyyy-MM-dd")}T00:00:00Z",
+                            time = dateOfDeathString,
                             precision = 11,
                             calendarmodel = "http://www.wikidata.org/entity/Q1985727"
                         },
@@ -130,13 +199,19 @@ namespace WikidataEditor.Services
                 },
                 tags = new string[0],
                 bot = false,
-                comment = $"Added{(statementId == null ? " " : " reference to ")}date of death via [[User:Mill 1|Mill 1]]'s edit app using Wikibase REST API 0.1 OAS3"
+                comment = $"{comment} via [[User:Mill 1]]'s edit app using Wikibase REST API 0.1 OAS3"
             };
         }
 
-        private string ResolveStatementId(DateOnly dateOfDeath, string url, JToken? statementsDoD, ref List<Reference> references)
+        private static string DateOfDeathToString(DateOnly dateOfDeath)
         {
-            var statementId = string.Empty;            
+            return $"+{dateOfDeath.ToString("yyyy-MM-dd")}T00:00:00Z";
+        }
+
+        private void ResolveExistingStatementInfo(DateOnly dateOfDeath, string content, string propertyId, JToken? statementsDoD,
+                        ref List<Reference> references, out string statementId)
+        {
+            statementId = string.Empty;
 
             foreach (var child in statementsDoD)
             {
@@ -151,26 +226,35 @@ namespace WikidataEditor.Services
                 {
                     if (date == dateOfDeath)
                     {
+                        // Get the existing references for this this day
+                        references = child["references"].ToObject<Reference[]>().ToList();
+
+                        var existingReferences = GetExistingReferencesByProperty(content, propertyId, references);
+
+                        if (existingReferences.Any())
+                            throw new HttpRequestException("Reference already exists", null, HttpStatusCode.BadRequest);
+
                         statementId = child["id"].ToString();
-                        CheckIfReferenceExists(url, child["references"].ToObject<Reference[]>().ToList());
                         break;
                     }
                 }
             }
-            return statementId;
         }
 
-        private static void CheckIfReferenceExists(string url, List<Reference> references)
+        private static IEnumerable<FlattenedReference> GetExistingReferencesByProperty(string content, string propertyId, IEnumerable<Reference> references)
         {
             if (!references.Any())
-                return;
+                return new List<FlattenedReference>();
 
-            var existingReference = references.SelectMany(r => r.parts, (reference, part) => new { reference, part })
-                                                .Where(refAndPart => refAndPart.part.property.id == Constants.PropertyIdReferenceUrl) 
-                                                .Where(r => r.part.value.content.ToString().Contains(url, StringComparison.OrdinalIgnoreCase));
-
-            if (existingReference.Any())
-                throw new HttpRequestException("Reference already exists", null, HttpStatusCode.BadRequest);
+            return references.SelectMany(r => r.parts, (reference, part) => new { reference, part })
+                            .Where(refAndPart => refAndPart.part.property.id == propertyId)
+                            .Where(r => r.part.value.content.ToString().Contains(content, StringComparison.OrdinalIgnoreCase))
+                            .Select(refAndPart =>
+                                new FlattenedReference
+                                {
+                                    Reference = refAndPart.reference,
+                                    Part = refAndPart.part
+                                });
         }
 
         private string ResolveStatedInId(string url)
@@ -199,7 +283,27 @@ namespace WikidataEditor.Services
             return null;
         }       
 
-        private Reference CreateReference(string url, string statedInId)
+        private Reference CreateWikipediaReference()
+        {            
+            Reference reference = CreateReference();
+            reference.parts = AddPart(reference, ItemIdEnglishWikipedia, Constants.PropertyIdImportedFromWikimediaProject);
+            
+            return reference;
+        }
+
+        private Reference CreateUrlReference(string url, string statedInId)
+        {
+            Reference reference = CreateReference();
+
+            reference.parts = AddPart(reference, url, Constants.PropertyIdReferenceUrl);
+
+            if (statedInId != null)
+                reference.parts = AddPart(reference, statedInId, Constants.PropertyIdStatedIn);
+
+            return reference;
+        }
+
+        private static Reference CreateReference()
         {
             var reference = new Reference
             {
@@ -225,12 +329,6 @@ namespace WikidataEditor.Services
                     },
                 }
             };
-           
-            reference.parts = AddPart(reference, url, Constants.PropertyIdReferenceUrl); 
-
-            if (statedInId != null)
-                reference.parts = AddPart(reference, statedInId, Constants.PropertyIdStatedIn);
-
             return reference;
         }
 
@@ -287,6 +385,32 @@ namespace WikidataEditor.Services
             {
                 return null;
             }
+        }
+        private void PerformWikipediaChecks(string articleTitle, DateOnly dateOfDeath)
+        {
+            // Check if the DoD is present in the item's wiki bio.
+            string wikiText = _wikipediaWebClient.GetWikiTextArticle(articleTitle, out string redirectedArticle);
+
+            // Redirect?
+            if (redirectedArticle != null)
+                throw new HttpRequestException($"'{articleTitle}' results in a redirect to '{redirectedArticle}", null, HttpStatusCode.BadRequest);
+
+            // "Disambiguation page?
+            if (wikiText.Contains("{{hndis", StringComparison.OrdinalIgnoreCase))
+                throw new HttpRequestException($"'{articleTitle}' leads to a disambiguation page", null, HttpStatusCode.BadRequest);
+
+            var dateOfDeathInArticle = _wikiTextService.ResolveDate(wikiText, dateOfDeath.ToDateTime(TimeOnly.MinValue));
+
+            if (dateOfDeathInArticle == DateTime.MinValue)
+            {
+                var deathDateText = dateOfDeath.ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("en-US"));
+                throw new HttpRequestException($"Death date {deathDateText} not encountered in article", null, HttpStatusCode.NotFound);
+            }
+        }
+        private class FlattenedReference
+        {
+            public Reference Reference { get; set; }
+            public Part Part { get; set; }
         }
     }
 }

@@ -77,7 +77,7 @@ namespace WikidataEditor.Controllers
             if (id == null)
                 throw new HttpRequestException($"No wikidata item found for Wikipedia title '{title}'", null, HttpStatusCode.NotFound);
 
-            _service.UpsertStatementDoDWikipediaAsync(title, id, dateOfDeath);
+            _service.UpsertStatementDoDWikipedia(title, id, dateOfDeath);
 
             return Ok($"https://www.wikidata.org/wiki/{id}");
         }

@@ -10,5 +10,6 @@
         public const string PropertyIdReferenceUrl = "P854";
         public const string PropertyIdStatedIn = "P248";
         public const string PropertyIdDateRetrieved = "P813";
+        public const string PropertyIdImportedFromWikimediaProject = "P143";
     }
 }
