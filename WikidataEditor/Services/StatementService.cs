@@ -1,10 +1,13 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Globalization;
 using System.Net;
 using WikidataEditor.Common;
 using WikidataEditor.Dtos;
 using WikidataEditor.Dtos.Requests;
 using WikidataEditor.Models;
+using Wikimedia.Utilities.Interfaces;
+using Wikimedia.Utilities.Services;
 
 namespace WikidataEditor.Services
 {
@@ -12,11 +15,15 @@ namespace WikidataEditor.Services
     {
         private readonly IHttpClientWikidataApi _httpClientWikidataApi;
         private readonly IWikidataHelper _wikidataHelper;
+        private readonly IWikiTextService _wikiTextService;
+        private readonly IWikipediaWebClient _wikipediaWebClient;
 
-        public StatementService(IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper)
+        public StatementService(IHttpClientWikidataApi httpClientWikidataApi, IWikidataHelper wikidataHelper, IWikiTextService wikiTextService, IWikipediaWebClient wikipediaWebClient)
         {
             _httpClientWikidataApi = httpClientWikidataApi;
             _wikidataHelper = wikidataHelper;
+            _wikiTextService = wikiTextService;
+            _wikipediaWebClient = wikipediaWebClient;
         }
 
         public async Task<IEnumerable<StatementsDto>> Get(string id)
@@ -29,9 +36,23 @@ namespace WikidataEditor.Services
             return await _wikidataHelper.GetStatement(id, property);
         }
 
-        public void UpsertStatementDoDWikipediaAsync(string id)
+        public void UpsertStatementDoDWikipediaAsync(string articleTitle, string id, DateOnly dateOfDeath)
         {
-            throw new NotImplementedException();
+            // Check if the DoD is present in the item's wiki bio.
+            string wikiText = _wikipediaWebClient.GetWikiTextArticle(articleTitle, out string redirectedArticle);
+
+            // Redirect?
+            if (redirectedArticle != null)
+                throw new HttpRequestException($"'{articleTitle}' results in a redirect to '{redirectedArticle}", null, HttpStatusCode.BadRequest);
+
+            var dateOfDeathInArticle = _wikiTextService.ResolveDate(wikiText, dateOfDeath.ToDateTime(TimeOnly.MinValue));
+
+            if (dateOfDeathInArticle == DateTime.MinValue)
+            {
+                var deathDateText = dateOfDeath.ToString("d MMMM yyyy", CultureInfo.GetCultureInfo("en-US"));
+                throw new HttpRequestException($"Death date {deathDateText} not encountered in article", null, HttpStatusCode.NotFound);
+            }
+
         }
 
         public void UpsertStatementDoDReference(string id, DateOnly dateOfDeath, string url)

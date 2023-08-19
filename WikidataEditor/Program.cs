@@ -11,6 +11,8 @@ using WikidataEditor.Common;
 using WikidataEditor.Configuration;
 using WikidataEditor.Middleware;
 using WikidataEditor.Services;
+using Wikimedia.Utilities.Interfaces;
+using Wikimedia.Utilities.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +41,8 @@ builder.Services.AddHttpClient(Constants.HttpClientEnglishWikipediaApi, httpClie
     httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "Wikidata Editor application");
 });
 
+builder.Services.AddScoped<IWikiTextService, WikiTextService>();
+builder.Services.AddScoped<IWikipediaWebClient, WikipediaWebClient>();
 builder.Services.AddScoped<IHttpClientWikidataApi, HttpClientWikidataApi>();
 builder.Services.AddScoped<IHttpClientEnglishWikipediaApi, HttpClientEnglishWikipediaApi>();
 builder.Services.AddScoped<IItemService, ItemService>();

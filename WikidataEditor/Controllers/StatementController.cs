@@ -69,7 +69,7 @@ namespace WikidataEditor.Controllers
         /// <returns></returns>
         /// <exception cref="HttpRequestException"></exception>
         [HttpGet("statement/upsertdodwikipedia")]
-        public IActionResult UpsertStatementDoDWikipediaAsync([FromQuery(Name = "title")] string title)
+        public IActionResult UpsertStatementDoDWikipediaAsync([FromQuery(Name = "title")] string title, [FromQuery(Name = "dateofdeath")] DateOnly dateOfDeath)
         {
 
             string id = _wikipediaApiService.GetWikibaseItemId(title);
@@ -77,7 +77,7 @@ namespace WikidataEditor.Controllers
             if (id == null)
                 throw new HttpRequestException($"No wikidata item found for Wikipedia title '{title}'", null, HttpStatusCode.NotFound);
 
-            _service.UpsertStatementDoDWikipediaAsync(id);
+            _service.UpsertStatementDoDWikipediaAsync(title, id, dateOfDeath);
 
             return Ok($"https://www.wikidata.org/wiki/{id}");
         }

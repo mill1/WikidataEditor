@@ -125,7 +125,15 @@
             <tbody>
                 <tr>
                     <td><label for="titleupdatestatement">Wikipedia title (en):</label></td>
-                    <td><input type="text" id="titleupdatestatement" name="title" maxlength="75" size="75" placeholder="Simone Benmussa" title="Date of death stated in the Wikipedia article will be used regarding P570"></td>
+                    <td><input type="text" id="titleupdatestatement" name="title" maxlength="75" size="75" placeholder="Simone Benmussa"></td>
+                </tr>
+                <tr>
+                    <td><label for="dateofdeathupdatestatement">Its date of death:</label></td>
+                    <td>
+                        <input type="text" id="dateofdeathupdatestatement" name="dateofdeath" maxlength="16" size="16" placeholder="June 4 2001"
+                               title="Enter anything that can be parsed into a DateTime like 'June 4 2001' or '2001-6-4' (without the quotes)">
+                        &nbsp;&nbsp;<small><i>(is used to check if the entered date is actually present in item's wiki bio.)</i></small>
+                    </td>
                 </tr>
                 <tr>
                     <td colspan="2"><input type="submit" value="update" style="background-color:#f69b5b;"></td>
