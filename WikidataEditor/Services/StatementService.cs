@@ -29,16 +29,10 @@ namespace WikidataEditor.Services
             return await _wikidataHelper.GetStatement(id, property);
         }
 
-        /*
-         Regarding auto-adding ref. The Guardian obituary to the date of death:
-         https://en.wikipedia.org/wiki/Thomas_Taylor,_Baron_Taylor_of_Gryfe
-         https://www.wikidata.org/wiki/Q7794369
-         https://www.theguardian.com/news/2001/jul/30/guardianobituaries1
-
-        Simone Benmussa (Q3484538):
-        http://localhost:38583/api/items/statements?id=Q3484538&property=P570
-        http://localhost:38583/api/items/statement/upsertdodref?title=As%C4%B1m+Bezirci&dateofdeath=2+July+1993&url=https%3A%2F%2Fdagyeliverlag.com%2Fbook-author%2Fasim-bezirci%2F
-        */
+        public void UpsertStatementDoDWikipediaAsync(string id)
+        {
+            throw new NotImplementedException();
+        }
 
         public void UpsertStatementDoDReference(string id, DateOnly dateOfDeath, string url)
         {
@@ -163,6 +157,8 @@ namespace WikidataEditor.Services
             const string ItemIdTheGuardian = "Q11148";
             const string ItemIdTheIndependent = "Q11149";
             const string ItemIdTheNewYorkTimes = "Q9684";
+            const string ItemIdWorldFootball = "Q20773699";
+            const string ItemIdNationalFootballTeams = "Q18693731";
 
             if (url.Contains("theguardian.com", StringComparison.OrdinalIgnoreCase))
                 return ItemIdTheGuardian;
@@ -172,6 +168,12 @@ namespace WikidataEditor.Services
 
             if (url.Contains("nytimes.com", StringComparison.OrdinalIgnoreCase))
                 return ItemIdTheNewYorkTimes;
+
+            if (url.Contains("worldfootball.net", StringComparison.OrdinalIgnoreCase))
+                return ItemIdWorldFootball;
+
+            if (url.Contains("national-football-teams.com", StringComparison.OrdinalIgnoreCase))
+                return ItemIdNationalFootballTeams;
 
             return null;
         }       

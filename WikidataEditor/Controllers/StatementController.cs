@@ -61,5 +61,25 @@ namespace WikidataEditor.Controllers
 
             return Ok($"https://www.wikidata.org/wiki/{id}");
         }
+
+        /// <summary>
+        /// Add/Update the statement on Date of death (P570) regarding Wikipedia
+        /// </summary>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException"></exception>
+        [HttpGet("statement/upsertdodwikipedia")]
+        public IActionResult UpsertStatementDoDWikipediaAsync([FromQuery(Name = "title")] string title)
+        {
+
+            string id = _wikipediaApiService.GetWikibaseItemId(title);
+
+            if (id == null)
+                throw new HttpRequestException($"No wikidata item found for Wikipedia title '{title}'", null, HttpStatusCode.NotFound);
+
+            _service.UpsertStatementDoDWikipediaAsync(id);
+
+            return Ok($"https://www.wikidata.org/wiki/{id}");
+        }
     }
 }
