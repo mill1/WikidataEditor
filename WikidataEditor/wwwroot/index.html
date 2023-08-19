@@ -90,9 +90,9 @@
     <form action="/api/items/statement/upsertdodref" method="get">
         <strong>Add reference to DoD statement (<a href="https://www.wikidata.org/wiki/Property:P570" target="_blank">P570</a>)</strong><br />
         Implemented <a href="https://www.wikidata.org/wiki/Property:P248" target="_blank">'stated in'</a> reference sources:
-                    <a href="https://www.wikidata.org/wiki/Q9684" target="_blank">nytimes.com</a>,
-                    <a href="https://www.wikidata.org/wiki/Q11148" target="_blank">theguardian.com</a> and
-                    <a href="https://www.wikidata.org/wiki/Q11149" target="_blank">independent.co.uk</a>
+        <a href="https://www.wikidata.org/wiki/Q9684" target="_blank">nytimes.com</a>,
+        <a href="https://www.wikidata.org/wiki/Q11148" target="_blank">theguardian.com</a> and
+        <a href="https://www.wikidata.org/wiki/Q11149" target="_blank">independent.co.uk</a>
         <table>
             <tbody>
                 <tr>
@@ -109,6 +109,31 @@
                 <tr>
                     <td><label for="urlupdatestatement">Reference url:</label></td>
                     <td><input type="text" id="urlupdatestatement" name="url" size="75"></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><input type="submit" value="update" style="background-color:#f69b5b;"></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <form action="/api/items/statement/upsertdodwikipedia" method="get">
+        <table>
+            <tr>
+                <th colspan="2">Update Wikipedia info on DoD statement</th>
+            </tr>
+            <tbody>
+                <tr>
+                    <td><label for="titleupdatestatement">Wikipedia title (en):</label></td>
+                    <td><input type="text" id="titleupdatestatement" name="title" maxlength="75" size="75" placeholder="Simone Benmussa"></td>
+                </tr>
+                <tr>
+                    <td><label for="dateofdeathupdatestatement">Its date of death:</label></td>
+                    <td>
+                        <input type="text" id="dateofdeathupdatestatement" name="dateofdeath" maxlength="16" size="16" placeholder="June 4 2001"
+                               title="Enter anything that can be parsed into a DateTime like 'June 4 2001' or '2001-6-4' (without the quotes)">
+                        &nbsp;&nbsp;<small><i>(is used to check if the entered date is actually present in item's wiki bio.)</i></small>
+                    </td>
                 </tr>
                 <tr>
                     <td colspan="2"><input type="submit" value="update" style="background-color:#f69b5b;"></td>
