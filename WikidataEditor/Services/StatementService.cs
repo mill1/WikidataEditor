@@ -82,10 +82,9 @@ namespace WikidataEditor.Services
                 if (time == null)
                     continue;
 
-                string date = time.ToString();
-                date = date.Replace("-00-00", "-01-01");
+                string existingDateString = time.ToString();
 
-                if (date != DateOfDeathToString(dateOfDeath))
+                if (existingDateString != DateOfDeathToString(dateOfDeath))
                 {
                     // Get the references for this this day
                     var references = child["references"].ToObject<Reference[]>().ToList();
@@ -99,7 +98,7 @@ namespace WikidataEditor.Services
                     references.Remove(existingWikipediaReferences.First().Reference);
 
                     var statementId = child["id"].ToString();
-                    var requestPut = CreateUpsertStatementRequest(date, references, "Removed Wikipedia reference from date of death", statementId);
+                    var requestPut = CreateUpsertStatementRequest(existingDateString, references, "Removed Wikipedia reference from date of death", statementId);
 
                     string uri = $"items/{id}/statements/{statementId}";
                     _httpClientWikidataApi.PutAsync(uri, requestPut);
