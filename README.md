@@ -3,7 +3,7 @@ Webapplication that implements CRUD actions on Wikidata items.
 
 This .NET Core application facilitates creating, reading, updating, and deleting Wikidata items via a basic front end.
 
-The application targets the Wikibase REST API regarding the GET, PUT, and POST requests.
+The application targets the Wikibase REST API through GET, PUT, and POST requests.
 
 ### Item targets
 Next elements of a Wikidata item can be changed:
