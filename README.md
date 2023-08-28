@@ -1,5 +1,5 @@
 # WikidataEditor
-Weba pplication that implements CRUD actions on Wikidata items.
+Web application that implements CRUD actions on Wikidata items.
 
 The .NET Core application facilitates creating, reading, updating, and deleting Wikidata items via a basic front end.
 
