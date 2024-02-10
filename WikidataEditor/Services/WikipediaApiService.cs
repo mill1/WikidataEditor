@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Net;
 using WikidataEditor.Common;
-using WikidataEditor.Models;
 
 namespace WikidataEditor.Services
 {
@@ -32,10 +32,19 @@ namespace WikidataEditor.Services
             try
             {
                 var firstPageName = ((JProperty)pagesObject.First).Name;
-                return pagesObject[firstPageName]["pageprops"]["wikibase_item"];
+
+                var pageProperties = pagesObject[firstPageName]["pageprops"];
+
+                if (((JProperty)pageProperties.First()).Name == "disambiguation")
+                    throw new HttpRequestException("Wikibase item as a Wikimedia disambiguation page", null, HttpStatusCode.BadRequest);
+
+                return pageProperties["wikibase_item"];
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                if (e is HttpRequestException)
+                    throw (HttpRequestException)e;
+
                 return null;
             }
         }

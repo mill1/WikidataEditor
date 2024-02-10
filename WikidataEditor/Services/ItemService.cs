@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using System.Reflection.Emit;
 using WikidataEditor.Common;
 using WikidataEditor.Configuration;
 using WikidataEditor.Dtos;
