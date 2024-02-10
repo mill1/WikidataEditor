@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.Net;
-using System.Threading.RateLimiting;
 using WikidataEditor.Common;
 using WikidataEditor.Dtos;
 using WikidataEditor.Dtos.Requests;
@@ -141,6 +140,19 @@ namespace WikidataEditor.Services
             references.Add(newReference);
 
             var requestPut = CreateUpsertStatementRequest(DateOfDeathToString(dateOfDeath), references, "Added reference to date of death", statementId);
+
+            // TODO lw
+            //string jsonString = System.Text.Json.JsonSerializer.Serialize(requestPut); // does not serialize all time props :(
+            /*
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.NullValueHandling = NullValueHandling.Ignore;
+
+            using (StreamWriter sw = new StreamWriter(@"C:\websites\json.txt"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, requestPut);
+            }
+            */
 
             string uri = $"items/{id}/statements/{statementId}";
             _httpClientWikidataApi.PutAsync(uri, requestPut);

@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using System.Text;
-
-namespace WikidataEditor.Common
+﻿namespace WikidataEditor.Common
 {
     public class HttpClientEnglishWikipediaApi : IHttpClientEnglishWikipediaApi
     {
